@@ -233,8 +233,10 @@ ui <- fluidPage(
   # Application title
   titlePanel( "Pacific Herring spawn index by year and location -- 
     DRAFT DO NOT USE FOR PLANNING" ),
-  p( "For more information or to report issues, contact Matthew Grinnell or ",
-    "Jaclyn Cleary, DFO Science, Pacific Biological Station." ),
+  p( HTML("For more information or to report issues, contact",
+    "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew Grinnell</a> or",
+    "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>", 
+    "DFO Science, Pacific Biological Station.") ),
   
   # Sidebar with input parameters 
   sidebarLayout(
@@ -284,9 +286,10 @@ ui <- fluidPage(
       ),
       
       h3( "Note" ),
-      p( HTML("The 'spawn index' represents the raw survey data only, ",
-        "and is not scaled by the spawn survey scaling parameter <em>q</em>; ",
-        "therefore it is a relative index of spawning biomass.") ),
+      p( HTML("The 'spawn index' represents the raw survey data only,",
+        "and is not scaled by the spawn survey scaling parameter <em>q</em>;",
+        "therefore it is a relative index of spawning biomass",
+        "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") ),
       
       # hc3( "View results" ),
       submitButton( "Update", icon("refresh") ) 
@@ -313,112 +316,108 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   # Update data and make the graphic
-  output$map <- renderPlot(res=150,
-    {
-      
-      # Ensure map buffer is larger than spill buffer
-      validate(
-        need(input$bufSpill <= input$bufMap, 
-          "Error: spill buffer can not exceed map bufer." )
-      )
-      
-      # Get the spill location
-      spill <- ConvLocation( xy=c(input$longitude, input$latitude) )
-      
-      # Clip stock and land shapefiles
-      shapesSub <- ClipPolys( stocks=secPoly, land=landPoly, pt=spill$xySP, 
-        buf=input$bufMap*1000 )
-      
-      # Get spawn data
-      spawnSub <- CropSpawn( dat=spawn, yrs=input$yrRange, si=input$siRange,
-        ext=shapesSub$extBuff ) %>%
-        select( -optional )
-      
-      # Calculate the number of spawns
-      nSpawns <- format( nrow(spawnSub), big.mark="," )
-      
-      # Summarise spawns by location
-      if( "loc" %in% input$summary ) {
-        spawnSub <- spawnSub %>%
-          group_by( Region, StatArea, Section, LocationCode, Eastings, 
-            Northings ) %>%
-          summarise( SpawnIndex=mean(SpawnIndex), Number=n() ) %>%
-          ungroup( )
-      }
-      
-      # Ensure there are spawn locations to show
-      validate(
-        need(nrow(spawnSub) >= 1, "Error: no spawns match these criteria." )
-      )
-      
-      # Make a circle
-      circDF <- MakeCircle( center=coordinates(spill$xySP), 
-        radius=input$bufSpill*1000 )
-      
-      # Plot the area (default map)
-      hMap <- ggplot( data=shapesSub$landDF, aes(x=Eastings, y=Northings) ) +
-        geom_polygon( data=shapesSub$landDF, aes(group=group), fill="lightgrey" )
-      
-      if( "sec" %in% input$polys ) {
-        hMap <- hMap + 
-          geom_path( data=shapesSub$secDF, aes(group=Section), size=0.25,
-            colour="black" ) +
-          geom_label( data=shapesSub$secCentDF, alpha=0.5, aes(label=Section) )
-      }
-      
-      if( "pt" %in% input$location ) {
-        hMap <- hMap + 
-          geom_point( data=spill$xyDF, colour="red", shape=42, size=8 )
-      }
-      
-      if( "buf" %in% input$location ) {
-        hMap <- hMap + 
-          geom_path( data=circDF, colour="red", size=0.5 )
-      }
-      
-      if( "loc" %in% input$summary ) {
-        hMap <- hMap +
-          geom_point( data=spawnSub, aes(colour=SpawnIndex, size=Number),
-            alpha=0.5 ) +
-          labs( colour="Mean\nspawn\nindex (t)", size="Number\nof spawns" )
-      } else {
-        hMap <- hMap +
-          geom_point( data=spawnSub, aes(colour=SpawnIndex), size=4, 
-            alpha=0.5 ) +
-          labs( colour="Spawn\nindex (t)" )
-      }
-      
+  output$map <- renderPlot(res=150, {
+    
+    # Ensure map buffer is larger than spill buffer
+    validate( need(input$bufSpill <= input$bufMap, 
+      "Error: spill buffer can not exceed map bufer.") )
+    
+    # Get the spill location
+    spill <- ConvLocation( xy=c(input$longitude, input$latitude) )
+    
+    # Clip stock and land shapefiles
+    shapesSub <- ClipPolys( stocks=secPoly, land=landPoly, pt=spill$xySP, 
+      buf=input$bufMap*1000 )
+    
+    # Get spawn data
+    spawnSub <- CropSpawn( dat=spawn, yrs=input$yrRange, si=input$siRange,
+      ext=shapesSub$extBuff ) %>%
+      select( -optional )
+    
+    # Calculate the number of spawns
+    nSpawns <- format( nrow(spawnSub), big.mark="," )
+    
+    # Summarise spawns by location
+    if( "loc" %in% input$summary ) {
+      spawnSub <- spawnSub %>%
+        group_by( Region, StatArea, Section, LocationCode, Eastings, 
+          Northings ) %>%
+        summarise( SpawnIndex=mean(SpawnIndex), Number=n() ) %>%
+        ungroup( ) %>%
+        mutate( Number=as.integer(Number) )
+    }  # End if summarising by location
+    
+    # Ensure there are spawn locations to show
+    validate( need(nrow(spawnSub) >= 1, 
+      "Error: no spawns match these criteria.") )
+    
+    # Make a circle
+    circDF <- MakeCircle( center=coordinates(spill$xySP), 
+      radius=input$bufSpill*1000 )
+    
+    # Plot the area (default map)
+    hMap <- ggplot( data=shapesSub$landDF, aes(x=Eastings, y=Northings) ) +
+      geom_polygon( data=shapesSub$landDF, aes(group=group), fill="lightgrey" )
+    
+    # If showing section lines and labels
+    if( "sec" %in% input$polys ) {
+      hMap <- hMap + 
+        geom_path( data=shapesSub$secDF, aes(group=Section), size=0.25,
+          colour="black" ) +
+        geom_label( data=shapesSub$secCentDF, alpha=0.5, aes(label=Section) )
+    }  # End if showing sections
+    
+    # If showing the point location
+    if( "pt" %in% input$location ) {
+      hMap <- hMap + 
+        geom_point( data=spill$xyDF, colour="red", shape=42, size=8 )
+    }  # End if showing the point location
+    
+    # If showing the point buffer
+    if( "buf" %in% input$location ) {
+      hMap <- hMap + 
+        geom_path( data=circDF, colour="red", size=0.5 )
+    }  # End if showing the point bufffer
+    
+    # If aggregating by location
+    if( "loc" %in% input$summary ) {
       hMap <- hMap +
-        scale_colour_viridis( na.value="black", labels=comma ) +
-        coord_equal( ) +
-        labs( title=paste("Number of Pacific Herring spawns:", nSpawns ), 
-          x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
-        scale_x_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) + 
-        scale_y_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
-        myTheme
-      
-      # Print the map
-      print( hMap )
-      
-      # Save the map
-      output$downloadMap <- downloadHandler(
-        filename="SpawnMap.png",
-        content=function(file) {
-          ggsave( filename=file, plot=hMap, dpi=600, height=6.5, width=7 )
-        },
-        contentType="image/png"
-      )
-      
-      # Save data (spawn index)
-      output$downloadData <- downloadHandler(
-        filename="SpawnData.csv",
-        content=function(file) {
-          write_csv( x=spawnSub, path=file )
-        },
-        contentType="text/csv"
-      )
-      
-    })  # End update data and make graphic
+        geom_point( data=spawnSub, aes(colour=SpawnIndex, size=Number),
+          alpha=0.5 ) +
+        labs( colour="Mean\nspawn\nindex (t)", size="Number\nof spawns" ) +
+        scale_size_area( )
+    } else {  # End if aggregatign by location, otherwise
+      hMap <- hMap +
+        geom_point( data=spawnSub, aes(colour=SpawnIndex), size=4, 
+          alpha=0.5 ) +
+        labs( colour="Spawn\nindex (t)" )
+    }  # End if not aggregating by location
+    
+    # Add map layers
+    hMap <- hMap +
+      scale_colour_viridis( na.value="black", labels=comma ) +
+      coord_equal( ) +
+      labs( title=paste("Number of Pacific Herring spawns:", nSpawns ), 
+        x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
+      scale_x_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) + 
+      scale_y_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
+      myTheme
+    
+    # Print the map
+    print( hMap )
+    
+    # Save the map
+    output$downloadMap <- downloadHandler( filename="SpawnMap.png",
+      content=function(file) ggsave( filename=file, plot=hMap, dpi=600, 
+        height=6.5, width=7 ),
+      contentType="image/png" )
+    
+    # Save data (spawn index)
+    output$downloadData <- downloadHandler( filename="SpawnData.csv",
+      content=function(file) write_csv( x=spawnSub, path=file ),
+      contentType="text/csv" )
+    
+  })  # End update data and make graphic
 }  # End server
 
 ##### App #####
