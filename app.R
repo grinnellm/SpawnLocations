@@ -248,9 +248,6 @@ ui <- fluidPage(
     DRAFT DO NOT USE FOR PLANNING" ),
   p( "For more information or to report issues, contact Matthew Grinnell or 
 Jaclyn Cleary, DFO Science, Pacific Biological Station." ),
-  p( a("Email", href=textOutput('url'), target="Matthew.Grinnell") ),
-  # TODO: Add email addresses as links
-  
   
   # Sidebar with input parameters 
   sidebarLayout(
@@ -259,9 +256,9 @@ Jaclyn Cleary, DFO Science, Pacific Biological Station." ),
       h3( "Event location (decimal degrees)" ),
       bootstrapPage(
         div( style="display:inline-block",
-          numericInput(inputId="longitude", label="Longitude", value=-123.9) ),
+          numericInput(inputId="longitude", label="Longitude", value=-123.96) ),
         div( style="display:inline-block",
-          numericInput(inputId="latitude", label="Latitude", value=49.2) )
+          numericInput(inputId="latitude", label="Latitude", value=49.21) )
       ),
       
       # TODO: Allow input in Eastings and Northings?
@@ -270,10 +267,10 @@ Jaclyn Cleary, DFO Science, Pacific Biological Station." ),
       bootstrapPage(
         div( style="display:inline-block", 
           numericInput(inputId="bufSpill", label="Circle around point (radius)",
-            value=15) ),
+            value=10) ),
         div( style="display:inline-block",
           numericInput(inputId="bufMap", label="Distance to map edge", 
-            value=20) )
+            value=12) )
       ),
       
       h3( "Subset spawn index data" ),
@@ -301,19 +298,21 @@ Jaclyn Cleary, DFO Science, Pacific Biological Station." ),
         "therefore it is a relative index of spawning biomass.") ),
       
       # hc3( "View results" ),
-      bootstrapPage(
-        div( style="display:inline-block", 
-          submitButton("Update", icon("refresh"))),
-        div( style="display:inline-block",
-          downloadButton(outputId="downloadMap", label="Download map")),
-        div( style="display:inline-block",
-          downloadButton(outputId="downloadData", label="Download data")))
+      submitButton( "Update", icon("refresh") ) 
+    
     ),  # End sidebar panel
     
     # Show a plot of the generated distribution
     mainPanel(
       withSpinner( ui_element=plotOutput(outputId="map", width="100%", 
-        height="800px") )
+        height="800px") ),
+      
+      # h3( "Downloads" ),
+      bootstrapPage(
+        div( style="display:inline-block",
+          downloadButton(outputId="downloadMap", label="Download map")),
+        div( style="display:inline-block",
+          downloadButton(outputId="downloadData", label="Download data")) )
     )  # End main panel
   )  # End sidebar layout
 )  # End ui
@@ -357,12 +356,6 @@ server <- function(input, output) {
       hMap <- ggplot( data=shapesSub$landDF, aes(x=Eastings, y=Northings) ) +
         geom_polygon( data=shapesSub$landDF, aes(group=group), fill="lightgrey" )
       
-      # if( input$showSA ) {
-      #   hMap <- hMap +
-      #     geom_path( data=shapesSub$saDF, aes(group=StatArea), size=0.75,
-      #       colour="black", linetype="dashed" )
-      # }
-      
       if( "sec" %in% input$polys ) {
         hMap <- hMap + 
           geom_path( data=shapesSub$secDF, aes(group=Section), size=0.25,
@@ -385,7 +378,7 @@ server <- function(input, output) {
         scale_colour_viridis( name="Spawn\nindex (t)", na.value="black", 
           labels=comma ) +
         coord_equal( ) +
-        labs( title=paste("Number of spawns displayed:", 
+        labs( title=paste("Number of Pacific Herring spawn locations:", 
           format(nrow(spawnSub), big.mark=",") ), 
           x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
         scale_x_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) + 
@@ -396,22 +389,19 @@ server <- function(input, output) {
       print( hMap )
       
       # Save the map
-      # TODO: This isn't working 
       output$downloadMap <- downloadHandler(
-        filename="HerringSpawnIndexMap.jpg",
+        filename="SpawnMap.png",
         content=function(file) {
-          ggsave( filename=file, plot=hMap, dpi=600, width=figWidth+1,
-            height=figWidth/shapes$xyRatio+0.25 )
+          ggsave( filename=file, plot=hMap, dpi=600, height=6.5, width=7 )
         },
-        contentType="image/jpg"
+        contentType="image/png"
       )
       
       # Save data
-      # TODO: This isn't working properly (doesnt' overwrite old file)
       output$downloadData <- downloadHandler(
-        filename="HerringSpawnIndexData.csv",
+        filename="SpawnData.csv",
         content=function(file) {
-          write.csv( x=spawnSub, file=file )
+          write_csv( x=spawnSub, path=file )
         },
         contentType="text/csv"
       )
