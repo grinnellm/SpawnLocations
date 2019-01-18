@@ -235,13 +235,18 @@ ui <- fluidPage(
     DRAFT DO NOT USE FOR PLANNING" ),
   p( HTML("For more information or to report issues, contact",
     "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew Grinnell</a> or",
-    "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>", 
+    "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
     "DFO Science, Pacific Biological Station.") ),
   
   # Sidebar with input parameters 
   sidebarLayout(
     # Sidebar (input etc)
     sidebarPanel(
+      
+      p( HTML("<b>Note:</b> The 'spawn index' represents the raw survey data",
+        "only, and is not scaled by the spawn survey scaling parameter",
+        "<em>q</em>; therefore it is a relative index of spawning biomass",
+        "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") ),
       
       h3( "Event location (decimal degrees)" ),
       bootstrapPage(
@@ -285,12 +290,6 @@ ui <- fluidPage(
             choiceNames=c("By Location"), choiceValues=c("loc")) )
       ),
       
-      h3( "Note" ),
-      p( HTML("The 'spawn index' represents the raw survey data only,",
-        "and is not scaled by the spawn survey scaling parameter <em>q</em>;",
-        "therefore it is a relative index of spawning biomass",
-        "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") ),
-      
       # hc3( "View results" ),
       submitButton( "Update", icon("refresh") ) 
       
@@ -299,7 +298,7 @@ ui <- fluidPage(
     # Show a plot of the generated distribution
     mainPanel(
       withSpinner( ui_element=plotOutput(outputId="map", width="100%", 
-        height="800px") ),
+        height="700px") ),
       
       # h3( "Downloads" ),
       bootstrapPage(
