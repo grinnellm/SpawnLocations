@@ -1,0 +1,425 @@
+##### Header #####
+# 
+# Author:       Matthew H. Grinnell
+# Affiliation:  Pacific Biological Station, Fisheries and Oceans Canada (DFO) 
+# Group:        Offshore Assessment, Aquatic Resources, Research, and Assessment
+# Address:      3190 Hammond Bay Road, Nanaimo, BC, Canada, V9T 6N7
+# Contact:      e-mail: matt.grinnell@dfo-mpo.gc.ca | tel: 250.756.7055
+# Project:      Herring
+# Code name:    Locations.R
+# Version:      1.0
+# Date started: Jan 8, 2019
+# Date edited:  Jan 8, 2019
+# 
+# Overview: 
+# Show herring spawn events within a given distance from a point.
+# 
+# Requirements: 
+# 
+# 
+# Notes: 
+# This is a Shiny web application; run it by clicking the 'Run App' button.
+#
+# References:
+# 
+
+# TODO:
+# 1. Include 'incomplete' spawns on these maps -- might require loading and 
+#    processing the raw spawn data, not the data from the data summaries
+# 2. Instead of showing spawns on top of one another, calculate some summary
+#    info for each spawn location: the average spawn, and the number of times
+#    that there was spawn -- then show these two features on the plot using 
+#    point colour (average spawn) and size (number of spawns)
+# 3. Some spawns aren't shown because they don't have Lat/Long info -- check if
+#    there is another data with Lat/Long (maybe the dive transects file)
+
+##### Housekeeping #####
+
+# General options
+graphics.off( )       # Turn graphics off
+
+# Install missing packages and load required packages (if required)
+UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
+  # Reverse the list 
+  rPkgs <- rev( pkgs )
+  # Identify missing (i.e., not yet installed) packages
+  newPkgs <- rPkgs[!(rPkgs %in% installed.packages( )[, "Package"])]
+  # Install missing packages if required
+  if( length(newPkgs) )  install.packages( newPkgs, repos=locn )
+  # Loop over all packages
+  for( i in 1:length(rPkgs) ) {
+    # Load required packages using 'library'
+    eval( parse(text=paste("suppressPackageStartupMessages(library(", rPkgs[i], 
+      "))", sep="")) )
+  }  # End i loop over package names
+}  # End UsePackages function
+
+# Make packages available
+UsePackages( pkgs=c("tidyverse", "sp", "rgdal", "raster", "rgeos", 
+  "scales", "ggforce", "plyr", "viridis", "shiny", "shinycssloaders") )
+
+##### Controls ##### 
+
+# Saved csv datafile (from Spawn.R)
+spawnLoc <- file.path( "Data", "SpawnRaw.csv" )
+
+# Input coordinate reference system (spill)
+crsSpill <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+
+# Input coordinate reference system (herring sections)
+crsSect <- "+proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000
++y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+
+# Input coordinate reference system (land)
+crsLand <- "+proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000
++y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+
+# Input coordinate reference system (spawn)
+crsSpawn <- "+proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000
++y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+
+# Output coordinate reference system (BC Albers)
+crsOut <- "+proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000
++y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+
+# Geographic projection
+geoProj <- "Projection: BC Albers (NAD 1983)"
+
+# Location of the BC stocks shapefiles
+locStocks <- list( loc=file.path("Data", "Polygons"), lyr="SectionsIntegrated" )
+
+# Location of the BC land file
+locLand <- list( loc=file.path("Data", "Polygons"), lyr="GSHHS_h_L1_Alb" )
+
+# Change default ggplot theme to 'black and white'
+theme_set( theme_bw() )
+
+# Modify default theme
+myTheme <- theme( 
+  legend.box.background=element_rect(fill=alpha("white", 0.7)),
+  legend.box.margin=margin(1, 1, 1, 1, "mm"),
+  legend.key=element_blank(), legend.margin=margin(), legend.text.align=1,
+  panel.grid.major=element_line(colour="darkgrey", size=0.2),
+  panel.grid.minor=element_line(colour="darkgrey", size=0.1),
+  legend.background=element_rect(fill="transparent"),
+  plot.margin=unit(c(0.1, 0.6, 0.1, 0.1), "lines") )
+
+##### Data #####
+
+# Load spawn data
+spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
+  group_by( Year, Region, StatArea, Section, LocationCode, SpawnNumber ) %>%
+  summarise( Eastings=unique(Eastings), Northings=unique(Northings),
+    SpawnIndex=sum(SurfSI, MacroSI, UnderSI, na.rm=TRUE) ) %>%
+  ungroup( ) %>%
+  filter( !is.na(Eastings), !is.na(Northings), !is.na(SpawnIndex) )
+
+# Convert location to Albers
+ConvLocation <- function( xy ) {
+  # Make a matrix
+  xyMat <- matrix( xy, ncol=2 )
+  # Convert to spatial points
+  xySP <- SpatialPoints( coords=xyMat, proj4string=CRS(crsSpill) )
+  # Transform to correct projection
+  xySP <- spTransform( x=xySP, CRSobj=CRS(crsOut) )
+  # Make a data frame
+  xyDF <- data.frame( xySP ) %>%
+    rename( Eastings=coords.x1, Northings=coords.x2 )
+  # Return the points
+  return( list(xySP=xySP, xyDF=xyDF) )
+}  # End ConvLocation function
+
+# Load the Section shapefile (has Statistical Areas and Regions)
+secPoly <- readOGR( dsn=file.path(locStocks$loc), layer=locStocks$lyr, 
+  verbose=FALSE )
+
+# Load land polygon
+# TODO: Use ggmap to load a better terrain/satellite map
+landPoly <- readOGR( dsn=file.path(locLand$loc), layer=locLand$lyr, 
+  verbose=FALSE )
+
+# Function to wrangle shapefiles
+ClipPolys <- function( stocks, land, pt, buf ) {
+  # Function to perform some light wrangling
+  UpdateSections <- function( dat ) {
+    # Some light wrangling
+    dat@data <- dat@data %>%
+      mutate( StatArea=as.character(StatArea), 
+        Section=as.character(Section) ) %>%
+      select( SAR, StatArea, Section )
+    # Remove the non-SAR areas
+    res <- dat#[dat$Section %in% c(111, 112, 121:127, 131:136), ]
+    #    # Update the SAR
+    #    res$SAR <- 8
+    # Return updated sections
+    return( res )
+  }  # End UpdateSections function
+  # Update sections
+  secBC <- UpdateSections( dat=stocks )
+  # Project to BC
+  secBC <- spTransform( x=secBC, CRSobj=CRS(crsOut) )
+  # Get a buffer around the region(s) in question
+  buff <- gBuffer( spgeom=pt, width=buf, byid=FALSE )
+  # Calculate the extent
+  extBuff <- bbox( buff )
+  # Convert the extent to a table
+  extDF <- tibble( Eastings=extBuff[1, ], Northings=extBuff[2, ] )
+  # Determine x:y aspect ration (for plotting)
+  xyRatio <- diff(extDF$Eastings) / diff(extDF$Northings)
+  # Crop the sections
+  secBC <- crop( x=secBC, y=extBuff )
+  # Determine section centroids
+  secCent <- gCentroid( spgeom=secBC, byid=TRUE )
+  # Convert to data frame
+  secCentDF <- secCent %>%
+    as_tibble( ) %>%
+    rename( Eastings=x, Northings=y ) %>%
+    mutate( Section=formatC(secBC$Section, width=3, flag="0") ) %>%
+    arrange( Section )
+  # Convert to data frame and select stat areas in question
+  secDF <- secBC %>%
+    fortify( region="Section" ) %>%
+    rename( Eastings=long, Northings=lat, Section=group ) %>%
+    as_tibble( )
+  # # Dissolve to stat area
+  # saBC <- aggregate( x=secBC, by=list(Temp=secBC$StatArea), FUN=unique )
+  # # Convert to data frame and select stat areas in question
+  # saDF <- saBC %>%
+  #   fortify( region="StatArea" ) %>%
+  #   rename( Eastings=long, Northings=lat, StatArea=group ) %>%
+  #   as_tibble( )
+  # Transform
+  landSPDF <- spTransform( x=land, CRSobj=CRS(crsOut) )
+  # Clip the land to the buffer: big
+  landSPDF <- crop( x=landSPDF, y=extBuff )
+  # Convert to data frame
+  landDF <- landSPDF %>%
+    fortify( region="id" ) %>%
+    rename( Eastings=long, Northings=lat ) %>%
+    as_tibble( )
+  # Build a list to return
+  res <- list( secDF=secDF, secCentDF=secCentDF, #saDF=saDF, 
+    landDF=landDF, extDF=extDF, extBuff=extBuff, xyRatio=xyRatio )
+  # Return info
+  return( res )
+}  # End ClipPolys function
+
+# Function to crop (spatially) spawn
+CropSpawn <- function( dat, yrs, si, ext ) {
+  # Filter spawn index
+  dat <- dat %>%
+    filter( Year>=yrs[1], Year<=yrs[2], SpawnIndex>=si[1], SpawnIndex<=si[2])
+  # Convert to a spatial object
+  coordinates( dat ) <- ~ Eastings+Northings
+  # Give the projection
+  crs( dat ) <- CRS( crsSpawn )
+  # Transform
+  datSP <- spTransform( x=dat, CRSobj=CRS(crsOut) )
+  # Clip to extent
+  # TODO: This has the warning re "seq.default(along = cand): partial argument
+  # match of 'along' to 'along.with'"
+  datSP <- crop( x=datSP, y=ext )
+  # Make a data frame
+  dat <- data.frame( datSP ) %>%
+    as_tibble( ) #%>%
+  # Return the data
+  return( dat )
+}  # End CropSpawn function
+
+# Draw a circle
+MakeCircle <- function( center=c(0,0), radius=1, nPts=100 ){
+  # Vector of points
+  tt <- seq( from=0, to=2*pi, length.out=nPts )
+  # X values (math!)
+  xx <- center[1] + radius * cos(tt)
+  # Y values (and geometry!)
+  yy <- center[2] + radius * sin(tt)
+  # Return the data (x and y for a circle)
+  return( tibble(Eastings=xx, Northings=yy) )
+}  # End MakeCircle function
+
+##### User interface #####
+
+# Define UI for application that draws a histogram
+ui <- fluidPage(
+  
+  # Application title
+  titlePanel( "Pacific Herring spawn index locations -- 
+    DRAFT DO NOT USE FOR PLANNING" ),
+  p( "For more information or to report issues, contact Matthew Grinnell or 
+Jaclyn Cleary, DFO Science, Pacific Biological Station." ),
+  p( a("Email", href=textOutput('url'), target="Matthew.Grinnell") ),
+  # TODO: Add email addresses as links
+  
+  
+  # Sidebar with input parameters 
+  sidebarLayout(
+    sidebarPanel(
+      
+      h3( "Event location (decimal degrees)" ),
+      bootstrapPage(
+        div( style="display:inline-block",
+          numericInput(inputId="longitude", label="Longitude", value=-123.9) ),
+        div( style="display:inline-block",
+          numericInput(inputId="latitude", label="Latitude", value=49.2) )
+      ),
+      
+      # TODO: Allow input in Eastings and Northings?
+      
+      h3( "Buffers (kilometres)" ),
+      bootstrapPage(
+        div( style="display:inline-block", 
+          numericInput(inputId="bufSpill", label="Circle around point (radius)",
+            value=15) ),
+        div( style="display:inline-block",
+          numericInput(inputId="bufMap", label="Distance to map edge", 
+            value=20) )
+      ),
+      
+      h3( "Subset spawn index data" ),
+      sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
+        max=max(spawn$Year), value=range(spawn$Year), sep="" ),
+      sliderInput( inputId="siRange", label="Spawn index (tonnes, t)", 
+        min=min(spawn$SpawnIndex),max=ceiling(max(spawn$SpawnIndex)), 
+        value=range(spawn$SpawnIndex) ),
+      
+      h3( "Map features" ),
+      bootstrapPage(
+        div( style="display:inline-block; vertical-align: text-top",
+          checkboxGroupInput(inputId="location", label="Show event location", 
+            choiceNames=c("Point", "Buffer"), choiceValues=c("pt", "buf"),
+            selected=c("pt", "buf")) ),
+        div( style="display:inline-block; vertical-align: text-top",
+          checkboxGroupInput(inputId="polys", label="Show area boudaries", 
+            choiceNames=c("Sections"), choiceValues=c("sec"), 
+            selected=c("sec")) )
+      ),
+      
+      h3( "Note" ),
+      p( HTML("The 'spawn index' represents the raw survey data only, ",
+        "and is not scaled by the spawn survey scaling parameter <em>q</em>; ",
+        "therefore it is a relative index of spawning biomass.") ),
+      
+      # hc3( "View results" ),
+      bootstrapPage(
+        div( style="display:inline-block", 
+          submitButton("Update", icon("refresh"))),
+        div( style="display:inline-block",
+          downloadButton(outputId="downloadMap", label="Download map")),
+        div( style="display:inline-block",
+          downloadButton(outputId="downloadData", label="Download data")))
+    ),  # End sidebar panel
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      withSpinner( ui_element=plotOutput(outputId="map", width="100%", 
+        height="800px") )
+    )  # End main panel
+  )  # End sidebar layout
+)  # End ui
+
+##### Server #####
+
+# Define server logic required to draw a histogram
+server <- function(input, output) {
+  # Update data and make the graphic
+  output$map <- renderPlot(res=150,
+    {
+      
+      # Ensure map buffer is larger than spill buffer
+      validate(
+        need(input$bufSpill <= input$bufMap, 
+          "Error: spill buffer can not exceed map bufer." )
+      )
+      
+      # Get the spill location
+      spill <- ConvLocation( xy=c(input$longitude, input$latitude) )
+      
+      # Clip stock and land shapefiles
+      shapesSub <- ClipPolys( stocks=secPoly, land=landPoly, pt=spill$xySP, 
+        buf=input$bufMap*1000 )
+      
+      # Get spawn data
+      spawnSub <- CropSpawn( dat=spawn, yrs=input$yrRange, si=input$siRange,
+        ext=shapesSub$extBuff ) %>%
+        select( -optional )
+      
+      # Ensure there are spawn locations to show
+      validate(
+        need(nrow(spawnSub) >= 1, "Error: no spawns match these criteria." )
+      )
+      
+      # Make a circle
+      circDF <- MakeCircle( center=coordinates(spill$xySP), 
+        radius=input$bufSpill*1000 )
+      
+      # Plot the area (default map)
+      hMap <- ggplot( data=shapesSub$landDF, aes(x=Eastings, y=Northings) ) +
+        geom_polygon( data=shapesSub$landDF, aes(group=group), fill="lightgrey" )
+      
+      # if( input$showSA ) {
+      #   hMap <- hMap +
+      #     geom_path( data=shapesSub$saDF, aes(group=StatArea), size=0.75,
+      #       colour="black", linetype="dashed" )
+      # }
+      
+      if( "sec" %in% input$polys ) {
+        hMap <- hMap + 
+          geom_path( data=shapesSub$secDF, aes(group=Section), size=0.25,
+            colour="black" ) +
+          geom_label( data=shapesSub$secCentDF, alpha=0.5, aes(label=Section) )
+      }
+      
+      if( "pt" %in% input$location ) {
+        hMap <- hMap + 
+          geom_point( data=spill$xyDF, colour="red", shape=42, size=8 )
+      }
+      
+      if( "buf" %in% input$location ) {
+        hMap <- hMap + 
+          geom_path( data=circDF, colour="red", size=0.5 )
+      }
+      
+      hMap <- hMap +
+        geom_point( data=spawnSub, aes(colour=SpawnIndex), size=4, alpha=0.5 ) +
+        scale_colour_viridis( name="Spawn\nindex (t)", na.value="black", 
+          labels=comma ) +
+        coord_equal( ) +
+        labs( title=paste("Number of spawns displayed:", 
+          format(nrow(spawnSub), big.mark=",") ), 
+          x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
+        scale_x_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) + 
+        scale_y_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
+        myTheme
+      
+      # Print the map
+      print( hMap )
+      
+      # Save the map
+      # TODO: This isn't working 
+      output$downloadMap <- downloadHandler(
+        filename="HerringSpawnIndexMap.jpg",
+        content=function(file) {
+          ggsave( filename=file, plot=hMap, dpi=600, width=figWidth+1,
+            height=figWidth/shapes$xyRatio+0.25 )
+        },
+        contentType="image/jpg"
+      )
+      
+      # Save data
+      # TODO: This isn't working properly (doesnt' overwrite old file)
+      output$downloadData <- downloadHandler(
+        filename="HerringSpawnIndexData.csv",
+        content=function(file) {
+          write.csv( x=spawnSub, file=file )
+        },
+        contentType="text/csv"
+      )
+      
+    })  # End update data and make graphic
+}  # End server
+
+##### App #####
+
+# Run the application 
+shinyApp( ui=ui, server=server )
