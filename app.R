@@ -231,7 +231,7 @@ MakeCircle <- function( center=c(0,0), radius=1, nPts=100 ){
 ui <- fluidPage(
   
   # Application title
-  titlePanel( "Pacific Herring spawn index locations -- 
+  titlePanel( "Pacific Herring spawn index by year and location -- 
     DRAFT DO NOT USE FOR PLANNING" ),
   p( "For more information or to report issues, contact Matthew Grinnell or ",
     "Jaclyn Cleary, DFO Science, Pacific Biological Station." ),
@@ -286,8 +286,7 @@ ui <- fluidPage(
       h3( "Note" ),
       p( HTML("The 'spawn index' represents the raw survey data only, ",
         "and is not scaled by the spawn survey scaling parameter <em>q</em>; ",
-        "therefore it is a relative index of spawning biomass.",
-        "By default, the spawn index is aggregated by Year and Location.") ),
+        "therefore it is a relative index of spawning biomass.") ),
       
       # hc3( "View results" ),
       submitButton( "Update", icon("refresh") ) 
@@ -381,16 +380,16 @@ server <- function(input, output) {
         hMap <- hMap +
           geom_point( data=spawnSub, aes(colour=SpawnIndex, size=Number),
             alpha=0.5 ) +
-          scale_colour_viridis( name="Mean\nspawn\nindex (t)", na.value="black", 
-            labels=comma )
+          labs( colour="Mean\nspawn\nindex (t)", size="Number\nof spawns" )
       } else {
         hMap <- hMap +
-          geom_point( data=spawnSub, aes(colour=SpawnIndex), size=4, alpha=0.5 ) +
-          scale_colour_viridis( name="Spawn\nindex (t)", na.value="black", 
-            labels=comma )
+          geom_point( data=spawnSub, aes(colour=SpawnIndex), size=4, 
+            alpha=0.5 ) +
+          labs( colour="Spawn\nindex (t)" )
       }
       
-      hMap <- hMap +  
+      hMap <- hMap +
+        scale_colour_viridis( na.value="black", labels=comma ) +
         coord_equal( ) +
         labs( title=paste("Number of Pacific Herring spawns:", nSpawns ), 
           x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
@@ -410,7 +409,7 @@ server <- function(input, output) {
         contentType="image/png"
       )
       
-      # Save data
+      # Save data (spawn index)
       output$downloadData <- downloadHandler(
         filename="SpawnData.csv",
         content=function(file) {
