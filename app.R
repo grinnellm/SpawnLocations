@@ -8,8 +8,8 @@
 # Project:      Herring
 # Code name:    Locations.R
 # Version:      1.0
-# Date started: Jan 8, 2019
-# Date edited:  Jan 8, 2019
+# Date started: Jan 08, 2019
+# Date edited:  Jan 18, 2019
 # 
 # Overview: 
 # Show herring spawn events within a given distance from a point.
@@ -26,10 +26,6 @@
 # TODO:
 # 1. Include 'incomplete' spawns on these maps -- might require loading and 
 #    processing the raw spawn data, not the data from the data summaries
-# 2. Instead of showing spawns on top of one another, calculate some summary
-#    info for each spawn location: the average spawn, and the number of times
-#    that there was spawn -- then show these two features on the plot using 
-#    point colour (average spawn) and size (number of spawns)
 # 3. Some spawns aren't shown because they don't have Lat/Long info -- check if
 #    there is another data with Lat/Long (maybe the dive transects file)
 
@@ -106,9 +102,9 @@ myTheme <- theme(
 
 ##### Data #####
 
-# Load spawn data
+# Load spawn data, and aggregate by location code
 spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
-  group_by( Year, Region, StatArea, Section, LocationCode, SpawnNumber ) %>%
+  group_by( Year, Region, StatArea, Section, LocationCode ) %>%
   summarise( Eastings=unique(Eastings), Northings=unique(Northings),
     SpawnIndex=sum(SurfSI, MacroSI, UnderSI, na.rm=TRUE) ) %>%
   ungroup( ) %>%
@@ -147,10 +143,8 @@ ClipPolys <- function( stocks, land, pt, buf ) {
       mutate( StatArea=as.character(StatArea), 
         Section=as.character(Section) ) %>%
       select( SAR, StatArea, Section )
-    # Remove the non-SAR areas
-    res <- dat#[dat$Section %in% c(111, 112, 121:127, 131:136), ]
-    #    # Update the SAR
-    #    res$SAR <- 8
+    # Get results
+    res <- dat
     # Return updated sections
     return( res )
   }  # End UpdateSections function
@@ -181,13 +175,6 @@ ClipPolys <- function( stocks, land, pt, buf ) {
     fortify( region="Section" ) %>%
     rename( Eastings=long, Northings=lat, Section=group ) %>%
     as_tibble( )
-  # # Dissolve to stat area
-  # saBC <- aggregate( x=secBC, by=list(Temp=secBC$StatArea), FUN=unique )
-  # # Convert to data frame and select stat areas in question
-  # saDF <- saBC %>%
-  #   fortify( region="StatArea" ) %>%
-  #   rename( Eastings=long, Northings=lat, StatArea=group ) %>%
-  #   as_tibble( )
   # Transform
   landSPDF <- spTransform( x=land, CRSobj=CRS(crsOut) )
   # Clip the land to the buffer: big
@@ -198,8 +185,8 @@ ClipPolys <- function( stocks, land, pt, buf ) {
     rename( Eastings=long, Northings=lat ) %>%
     as_tibble( )
   # Build a list to return
-  res <- list( secDF=secDF, secCentDF=secCentDF, #saDF=saDF, 
-    landDF=landDF, extDF=extDF, extBuff=extBuff, xyRatio=xyRatio )
+  res <- list( secDF=secDF, secCentDF=secCentDF, landDF=landDF, extDF=extDF, 
+    extBuff=extBuff, xyRatio=xyRatio )
   # Return info
   return( res )
 }  # End ClipPolys function
@@ -216,8 +203,8 @@ CropSpawn <- function( dat, yrs, si, ext ) {
   # Transform
   datSP <- spTransform( x=dat, CRSobj=CRS(crsOut) )
   # Clip to extent
-  # TODO: This has the warning re "seq.default(along = cand): partial argument
-  # match of 'along' to 'along.with'"
+  # TODO: 'crop' generates a warning re "seq.default(along = cand): partial 
+  # argument match of 'along' to 'along.with'"
   datSP <- crop( x=datSP, y=ext )
   # Make a data frame
   dat <- data.frame( datSP ) %>%
@@ -246,11 +233,12 @@ ui <- fluidPage(
   # Application title
   titlePanel( "Pacific Herring spawn index locations -- 
     DRAFT DO NOT USE FOR PLANNING" ),
-  p( "For more information or to report issues, contact Matthew Grinnell or 
-Jaclyn Cleary, DFO Science, Pacific Biological Station." ),
+  p( "For more information or to report issues, contact Matthew Grinnell or ",
+    "Jaclyn Cleary, DFO Science, Pacific Biological Station." ),
   
   # Sidebar with input parameters 
   sidebarLayout(
+    # Sidebar (input etc)
     sidebarPanel(
       
       h3( "Event location (decimal degrees)" ),
@@ -289,17 +277,21 @@ Jaclyn Cleary, DFO Science, Pacific Biological Station." ),
         div( style="display:inline-block; vertical-align: text-top",
           checkboxGroupInput(inputId="polys", label="Show area boudaries", 
             choiceNames=c("Sections"), choiceValues=c("sec"), 
-            selected=c("sec")) )
+            selected=c("sec")) ),
+        div( style="display:inline-block; vertical-align: text-top",
+          checkboxGroupInput(inputId="summary", label="Summarise spawns", 
+            choiceNames=c("By Location"), choiceValues=c("loc")) )
       ),
       
       h3( "Note" ),
       p( HTML("The 'spawn index' represents the raw survey data only, ",
         "and is not scaled by the spawn survey scaling parameter <em>q</em>; ",
-        "therefore it is a relative index of spawning biomass.") ),
+        "therefore it is a relative index of spawning biomass.",
+        "By default, the spawn index is aggregated by Year and Location.") ),
       
       # hc3( "View results" ),
       submitButton( "Update", icon("refresh") ) 
-    
+      
     ),  # End sidebar panel
     
     # Show a plot of the generated distribution
@@ -343,6 +335,18 @@ server <- function(input, output) {
         ext=shapesSub$extBuff ) %>%
         select( -optional )
       
+      # Calculate the number of spawns
+      nSpawns <- format( nrow(spawnSub), big.mark="," )
+      
+      # Summarise spawns by location
+      if( "loc" %in% input$summary ) {
+        spawnSub <- spawnSub %>%
+          group_by( Region, StatArea, Section, LocationCode, Eastings, 
+            Northings ) %>%
+          summarise( SpawnIndex=mean(SpawnIndex), Number=n() ) %>%
+          ungroup( )
+      }
+      
       # Ensure there are spawn locations to show
       validate(
         need(nrow(spawnSub) >= 1, "Error: no spawns match these criteria." )
@@ -373,13 +377,22 @@ server <- function(input, output) {
           geom_path( data=circDF, colour="red", size=0.5 )
       }
       
-      hMap <- hMap +
-        geom_point( data=spawnSub, aes(colour=SpawnIndex), size=4, alpha=0.5 ) +
-        scale_colour_viridis( name="Spawn\nindex (t)", na.value="black", 
-          labels=comma ) +
+      if( "loc" %in% input$summary ) {
+        hMap <- hMap +
+          geom_point( data=spawnSub, aes(colour=SpawnIndex, size=Number),
+            alpha=0.5 ) +
+          scale_colour_viridis( name="Mean\nspawn\nindex (t)", na.value="black", 
+            labels=comma )
+      } else {
+        hMap <- hMap +
+          geom_point( data=spawnSub, aes(colour=SpawnIndex), size=4, alpha=0.5 ) +
+          scale_colour_viridis( name="Spawn\nindex (t)", na.value="black", 
+            labels=comma )
+      }
+      
+      hMap <- hMap +  
         coord_equal( ) +
-        labs( title=paste("Number of Pacific Herring spawn locations:", 
-          format(nrow(spawnSub), big.mark=",") ), 
+        labs( title=paste("Number of Pacific Herring spawns:", nSpawns ), 
           x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
         scale_x_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) + 
         scale_y_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
