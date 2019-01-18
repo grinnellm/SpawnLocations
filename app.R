@@ -208,7 +208,7 @@ CropSpawn <- function( dat, yrs, si, ext ) {
   datSP <- crop( x=datSP, y=ext )
   # Make a data frame
   dat <- data.frame( datSP ) %>%
-    as_tibble( ) #%>%
+    as_tibble( )
   # Return the data
   return( dat )
 }  # End CropSpawn function
