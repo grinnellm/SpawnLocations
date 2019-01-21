@@ -379,6 +379,12 @@ server <- function(input, output) {
         'Spawn index (t)'=SpawnIndex, 'Eastings (km)'=Eastings,
         'Northings (km)'=Northings )
     
+    # If grouping by location
+    if( "loc" %in% input$summary )
+      res <- res %>%
+      rename( 'Number of spawns'=Number, 
+        'Mean spawn index (t)'='Spawn index (t)' )
+    
     # Return the table
     return( res )
   }, options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
