@@ -102,13 +102,29 @@ myTheme <- theme(
 
 ##### Data #####
 
+# Cross-walk table for SAR to region and region name
+regions <- read_csv( file=
+    "Region, RegionName, Major
+  HG, Haida Gwaii, TRUE
+  PRD, Prince Rupert District, TRUE
+  CC, Central Coast, TRUE
+  SoG, Strait of Georgia, TRUE
+  WCVI, West Coast of Vancouver Island, TRUE
+  A27, Area 27, FALSE
+  A2W, Area 2 West, FALSE",
+  col_types=cols() )
+
 # Load spawn data, and aggregate by location code
 spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
   group_by( Year, Region, StatArea, Section, LocationCode ) %>%
   summarise( Eastings=unique(Eastings), Northings=unique(Northings),
     SpawnIndex=sum(SurfSI, MacroSI, UnderSI, na.rm=TRUE) ) %>%
   ungroup( ) %>%
-  filter( !is.na(Eastings), !is.na(Northings), !is.na(SpawnIndex) )
+  filter( !is.na(Eastings), !is.na(Northings), !is.na(SpawnIndex) ) %>%
+  left_join( y=regions, by="Region" ) %>%
+  select( Year, RegionName, StatArea, Section, LocationCode, Eastings,
+    Northings, SpawnIndex ) %>%
+  rename( Region=RegionName )
 
 # Convert location to Albers
 ConvLocation <- function( xy ) {
@@ -251,20 +267,11 @@ ui <- fluidPage(
   # Application title
   titlePanel( "Pacific Herring spawn index by year and location -- 
     DRAFT DO NOT USE FOR PLANNING" ),
-  p( HTML("For more information or to report issues, contact",
-    "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew Grinnell</a> or",
-    "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
-    "DFO Science, Pacific Biological Station.") ),
   
   # Sidebar with input parameters 
   sidebarLayout(
     # Sidebar (input etc)
     sidebarPanel(
-      
-      p( HTML("<b>Note:</b> The 'spawn index' represents the raw survey data",
-        "only, and is not scaled by the spawn survey scaling parameter",
-        "<em>q</em>; therefore it is a relative index of spawning biomass",
-        "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") ),
       
       h3( "Event location (decimal degrees)" ),
       bootstrapPage(
@@ -316,19 +323,34 @@ ui <- fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-      tabsetPanel( type="tabs",
-        tabPanel( "Map",
+      tabsetPanel( type="tabs", selected="Map",
+        tabPanel( title="Map", br(),
           withSpinner(ui_element=plotOutput(outputId="map", width="100%", 
             height="700px")) ),
-        tabPanel( "Data" , 
+        tabPanel( title="Data", br(),
           withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
-        tabPanel( "Download",
-          h3( "Under construction..." ),
+        tabPanel( title="Download", br(),
           bootstrapPage(
             div( style="display:inline-block",
               downloadButton(outputId="downloadMap", label="Download map")),
             div( style="display:inline-block",
-              downloadButton(outputId="downloadData", label="Download data")) )
+              downloadButton(outputId="downloadData", label="Download data"))) ),
+        tabPanel( title="About", br(), 
+          p( HTML("For more information or to report issues, contact",
+            "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew", 
+            "Grinnell</a> or",
+            "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
+            "DFO Science, Pacific Biological Station.") ),
+          p( HTML("To view the source code, visit our",
+            "<a href=https://github.com/grinnellm/SpawnLocations>GitHub",
+            "repository</a>.")),
+          
+          h3( "Note" ),
+          p( HTML("The 'spawn index' represents the raw survey data",
+            "only, and is not scaled by the spawn survey scaling parameter",
+            "<em>q</em>; therefore it is a relative index of spawning biomass",
+            "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") )
+          
         )
       )  # End tab
     )  # End main panel
@@ -471,7 +493,7 @@ server <- function(input, output) {
   
   # Save data (spawn index)
   output$downloadData <- downloadHandler( filename="SpawnData.csv",
-    content=function(file) write_csv( x=spawnSub, path=file ),
+    content=function(file) write_csv( x=spawnSub(), path=file ),
     contentType="text/csv" )
   
 }  # End server
