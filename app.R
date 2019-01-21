@@ -52,7 +52,7 @@ UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
 
 # Make packages available
 UsePackages( pkgs=c("tidyverse", "sp", "rgdal", "raster", "rgeos", 
-  "scales", "ggforce", "plyr", "viridis", "shiny", "shinycssloaders") )
+  "scales", "ggforce", "plyr", "viridis", "shiny", "shinycssloaders", "DT") )
 
 ##### Controls ##### 
 
@@ -192,7 +192,7 @@ ClipPolys <- function( stocks, land, pt, buf ) {
 }  # End ClipPolys function
 
 # Function to crop (spatially) spawn
-CropSpawn <- function( dat, yrs, si, ext ) {
+CropSpawn <- function( dat, yrs, si, ext, grp ) {
   # Filter spawn index
   dat <- dat %>%
     filter( Year>=yrs[1], Year<=yrs[2], SpawnIndex>=si[1], SpawnIndex<=si[2])
@@ -209,6 +209,24 @@ CropSpawn <- function( dat, yrs, si, ext ) {
   # Make a data frame
   dat <- data.frame( datSP ) %>%
     as_tibble( )
+  # Light wrangling
+  dat <- dat %>%
+    mutate( Year=as.integer(Year),
+      StatArea=formatC(StatArea, width=2, format="d", flag="0"),
+      Section=formatC(Section, width=3, format="d", flag="0"), 
+      LocationCode=as.character(LocationCode) ) %>%
+    select( Year, Region, StatArea, Section, LocationCode, Eastings, Northings,
+      SpawnIndex ) %>%
+    arrange( Year, Region, StatArea, Section, LocationCode )
+  # Summarise spawns by location
+  if( "loc" %in% grp ) {
+    dat <- dat %>%
+      group_by( Region, StatArea, Section, LocationCode, Eastings, 
+        Northings ) %>%
+      summarise( SpawnIndex=mean(SpawnIndex), Number=n() ) %>%
+      ungroup( ) %>%
+      mutate( Number=as.integer(Number) )
+  }  # End if summarising by location
   # Return the data
   return( dat )
 }  # End CropSpawn function
@@ -290,22 +308,29 @@ ui <- fluidPage(
             choiceNames=c("By Location"), choiceValues=c("loc")) )
       ),
       
-      # hc3( "View results" ),
-      submitButton( "Update", icon("refresh") ) 
+      # h3( "View results" ),
+      div( style="text-align: center",
+        submitButton("Update", icon("refresh")) )
       
     ),  # End sidebar panel
     
     # Show a plot of the generated distribution
     mainPanel(
-      withSpinner( ui_element=plotOutput(outputId="map", width="100%", 
-        height="700px") ),
-      
-      # h3( "Downloads" ),
-      bootstrapPage(
-        div( style="display:inline-block",
-          downloadButton(outputId="downloadMap", label="Download map")),
-        div( style="display:inline-block",
-          downloadButton(outputId="downloadData", label="Download data")) )
+      tabsetPanel( type="tabs",
+        tabPanel( "Map",
+          withSpinner(ui_element=plotOutput(outputId="map", width="100%", 
+            height="700px")) ),
+        tabPanel( "Data" , 
+          withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
+        tabPanel( "Download",
+          h3( "Under construction..." ),
+          bootstrapPage(
+            div( style="display:inline-block",
+              downloadButton(outputId="downloadMap", label="Download map")),
+            div( style="display:inline-block",
+              downloadButton(outputId="downloadData", label="Download data")) )
+        )
+      )  # End tab
     )  # End main panel
   )  # End sidebar layout
 )  # End ui
@@ -314,80 +339,106 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-  # Update data and make the graphic
+  
+  # Get the spill location
+  spill <- reactive( 
+    ConvLocation( xy=c(input$longitude, input$latitude) )
+  )
+  
+  # Clip stock and land shapefiles
+  shapesSub <- reactive(
+    ClipPolys( stocks=secPoly, land=landPoly, pt=spill()$xySP, 
+      buf=input$bufMap*1000 )
+  )
+  
+  # Make a circle
+  circDF <- reactive( 
+    MakeCircle( center=coordinates(spill()$xySP), 
+      radius=input$bufSpill*1000 )
+  )
+  
+  # Get spawn data
+  spawnSub <- reactive( 
+    CropSpawn( dat=spawn, yrs=input$yrRange, si=input$siRange,
+      ext=shapesSub()$extBuff, grp=input$summary )
+  )
+  
+  # Get the data
+  output$dat <- DT::renderDataTable( {
+    
+    # Ensure there are spawn locations to show
+    validate( need(nrow(spawnSub()) >= 1, 
+      "Error: no spawns match these criteria.") )
+    
+    # Light wrangling
+    res <- spawnSub() %>%
+      mutate( SpawnIndex=round(SpawnIndex, digits=3),
+        Eastings=round(Eastings/1000, digits=3), 
+        Northings=round(Northings/1000, digits=3) ) %>%
+      rename( 'Statistical Area'=StatArea, 'Location code'=LocationCode,
+        'Spawn index (t)'=SpawnIndex, 'Eastings (km)'=Eastings,
+        'Northings (km)'=Northings )
+    
+    # Return the table
+    return( res )
+  }, options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
+    pageLength=15, searching=FALSE, ordering=FALSE)
+  )
+  
+  # Make the graphic
   output$map <- renderPlot(res=150, {
     
     # Ensure map buffer is larger than spill buffer
     validate( need(input$bufSpill <= input$bufMap, 
       "Error: spill buffer can not exceed map bufer.") )
     
-    # Get the spill location
-    spill <- ConvLocation( xy=c(input$longitude, input$latitude) )
-    
-    # Clip stock and land shapefiles
-    shapesSub <- ClipPolys( stocks=secPoly, land=landPoly, pt=spill$xySP, 
-      buf=input$bufMap*1000 )
-    
-    # Get spawn data
-    spawnSub <- CropSpawn( dat=spawn, yrs=input$yrRange, si=input$siRange,
-      ext=shapesSub$extBuff ) %>%
-      select( -optional )
-    
-    # Calculate the number of spawns
-    nSpawns <- format( nrow(spawnSub), big.mark="," )
-    
-    # Summarise spawns by location
+    # If grouping by location
     if( "loc" %in% input$summary ) {
-      spawnSub <- spawnSub %>%
-        group_by( Region, StatArea, Section, LocationCode, Eastings, 
-          Northings ) %>%
-        summarise( SpawnIndex=mean(SpawnIndex), Number=n() ) %>%
-        ungroup( ) %>%
-        mutate( Number=as.integer(Number) )
-    }  # End if summarising by location
+      # Calculate the number of spawns: sum of Number
+      nSpawns <- format( sum(spawnSub()$Number), big.mark=",")
+    } else {  # End if grouping by location, otherwise
+      # Calculate the number of spawns: number of rows
+      nSpawns <- format( nrow(spawnSub()), big.mark="," )  
+    }  # End if not grouping by location
     
     # Ensure there are spawn locations to show
-    validate( need(nrow(spawnSub) >= 1, 
+    validate( need(nrow(spawnSub()) >= 1, 
       "Error: no spawns match these criteria.") )
     
-    # Make a circle
-    circDF <- MakeCircle( center=coordinates(spill$xySP), 
-      radius=input$bufSpill*1000 )
-    
     # Plot the area (default map)
-    hMap <- ggplot( data=shapesSub$landDF, aes(x=Eastings, y=Northings) ) +
-      geom_polygon( data=shapesSub$landDF, aes(group=group), fill="lightgrey" )
+    hMap <- ggplot( data=shapesSub()$landDF, aes(x=Eastings, y=Northings) ) +
+      geom_polygon( data=shapesSub()$landDF, aes(group=group), fill="lightgrey" )
     
     # If showing section lines and labels
     if( "sec" %in% input$polys ) {
       hMap <- hMap + 
-        geom_path( data=shapesSub$secDF, aes(group=Section), size=0.25,
+        geom_path( data=shapesSub()$secDF, aes(group=Section), size=0.25,
           colour="black" ) +
-        geom_label( data=shapesSub$secCentDF, alpha=0.5, aes(label=Section) )
+        geom_label( data=shapesSub()$secCentDF, alpha=0.5, aes(label=Section) )
     }  # End if showing sections
     
     # If showing the point location
     if( "pt" %in% input$location ) {
       hMap <- hMap + 
-        geom_point( data=spill$xyDF, colour="red", shape=42, size=8 )
+        geom_point( data=spill()$xyDF, colour="red", shape=42, size=8 )
     }  # End if showing the point location
     
     # If showing the point buffer
     if( "buf" %in% input$location ) {
       hMap <- hMap + 
-        geom_path( data=circDF, colour="red", size=0.5 )
+        geom_path( data=circDF(), colour="red", size=0.5 )
     }  # End if showing the point bufffer
     
     # If aggregating by location
     if( "loc" %in% input$summary ) {
       hMap <- hMap +
-        geom_point( data=spawnSub, aes(colour=SpawnIndex, size=Number),
+        geom_point( data=spawnSub(), aes(colour=SpawnIndex, size=Number),
           alpha=0.5 ) +
         labs( colour="Mean\nspawn\nindex (t)", size="Number\nof spawns" ) +
         scale_size_area( )
     } else {  # End if aggregatign by location, otherwise
       hMap <- hMap +
-        geom_point( data=spawnSub, aes(colour=SpawnIndex), size=4, 
+        geom_point( data=spawnSub(), aes(colour=SpawnIndex), size=4, 
           alpha=0.5 ) +
         labs( colour="Spawn\nindex (t)" )
     }  # End if not aggregating by location
@@ -403,20 +454,20 @@ server <- function(input, output) {
       myTheme
     
     # Print the map
-    print( hMap )
-    
-    # Save the map
-    output$downloadMap <- downloadHandler( filename="SpawnMap.png",
-      content=function(file) ggsave( filename=file, plot=hMap, dpi=600, 
-        height=6.5, width=7 ),
-      contentType="image/png" )
-    
-    # Save data (spawn index)
-    output$downloadData <- downloadHandler( filename="SpawnData.csv",
-      content=function(file) write_csv( x=spawnSub, path=file ),
-      contentType="text/csv" )
-    
-  })  # End update data and make graphic
+    return( hMap )
+  } )  # End update data and make graphic
+  
+  # Save the map
+  output$downloadMap <- downloadHandler( filename="SpawnMap.png",
+    content=function(file) ggsave( filename=file, plot=hMap, dpi=600, 
+      height=6.5, width=7 ),
+    contentType="image/png" )
+  
+  # Save data (spawn index)
+  output$downloadData <- downloadHandler( filename="SpawnData.csv",
+    content=function(file) write_csv( x=spawnSub, path=file ),
+    contentType="text/csv" )
+  
 }  # End server
 
 ##### App #####
