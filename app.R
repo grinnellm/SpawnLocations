@@ -336,21 +336,19 @@ ui <- fluidPage(
             div( style="display:inline-block",
               downloadButton(outputId="downloadData", label="Download data"))) ),
         tabPanel( title="About", br(), 
-          p( HTML("For more information or to report issues, contact",
+          p( HTML("For more information, contact",
             "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew", 
             "Grinnell</a> or",
             "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
             "DFO Science, Pacific Biological Station.") ),
-          p( HTML("To view the source code, visit our",
+          p( HTML("To view the source code and report issues, visit our",
             "<a href=https://github.com/grinnellm/SpawnLocations>GitHub",
             "repository</a>.")),
-          
           h3( "Note" ),
           p( HTML("The 'spawn index' represents the raw survey data",
             "only, and is not scaled by the spawn survey scaling parameter",
             "<em>q</em>; therefore it is a relative index of spawning biomass",
             "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") )
-          
         )
       )  # End tab
     )  # End main panel
@@ -394,26 +392,36 @@ server <- function(input, output) {
     
     # Light wrangling
     res <- spawnSub() %>%
-      mutate( SpawnIndex=round(SpawnIndex, digits=3),
-        Eastings=round(Eastings/1000, digits=3), 
-        Northings=round(Northings/1000, digits=3) ) %>%
+      mutate( Eastings=Eastings/1000, 
+        Northings=Northings/1000 ) %>%
       rename( 'Statistical Area'=StatArea, 'Location code'=LocationCode,
         'Spawn index (t)'=SpawnIndex, 'Eastings (km)'=Eastings,
         'Northings (km)'=Northings )
     
     # If grouping by location
-    if( "loc" %in% input$summary )
+    if( "loc" %in% input$summary ) {
+      # Rename and format
       res <- res %>%
-      rename( 'Number of spawns'=Number, 
-        'Mean spawn index (t)'='Spawn index (t)' )
+        rename( 'Number of spawns'=Number, 
+          'Mean spawn index (t)'='Spawn index (t)' ) %>%
+        datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
+          pageLength=15, searching=FALSE, ordering=FALSE) ) %>%
+        formatRound( columns=c('Mean spawn index (t)', 'Eastings (km)',
+          'Northings (km)'), digits=3 )
+    } else {  # End if grouping by location, otherwise
+      # Format
+      res <- res %>%
+        datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
+          pageLength=15, searching=FALSE, ordering=FALSE) ) %>%
+        formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
+          'Northings (km)'), digits=3 )  
+    }  # End if not grouping by location
     
     # Return the table
     return( res )
-  }, options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
-    pageLength=15, searching=FALSE, ordering=FALSE)
-  )
+  } )  # End data
   
-  # Make the graphic
+  # Make the map
   output$map <- renderPlot(res=150, {
     
     # Ensure map buffer is larger than spill buffer
@@ -483,7 +491,7 @@ server <- function(input, output) {
     
     # Print the map
     return( hMap )
-  } )  # End update data and make graphic
+  } )  # End map
   
   # Save the map
   output$downloadMap <- downloadHandler( filename="SpawnMap.png",
