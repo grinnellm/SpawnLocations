@@ -409,14 +409,14 @@ server <- function(input, output) {
         rename( 'Number of spawns'=Number, 
           'Mean spawn index (t)'='Spawn index (t)' ) %>%
         datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
-          pageLength=15, searching=FALSE, ordering=FALSE), rownames=FALSE ) %>%
+          pageLength=15, searching=FALSE, ordering=FALSE) ) %>%
         formatRound( columns=c('Mean spawn index (t)', 'Eastings (km)',
           'Northings (km)'), digits=3 )
     } else {  # End if grouping by location, otherwise
       # Format
       res <- res %>%
         datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
-          pageLength=15, searching=FALSE, ordering=FALSE), rownames=FALSE ) %>%
+          pageLength=15, searching=FALSE, ordering=FALSE) ) %>%
         formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
           'Northings (km)'), digits=3 )  
     }  # End if not grouping by location
