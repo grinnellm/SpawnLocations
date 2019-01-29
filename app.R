@@ -409,14 +409,14 @@ server <- function(input, output) {
         rename( 'Number of spawns'=Number, 
           'Mean spawn index (t)'='Spawn index (t)' ) %>%
         datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
-          pageLength=15, searching=FALSE, ordering=FALSE) ) %>%
+          pageLength=15, searching=FALSE, ordering=FALSE), rownames=FALSE ) %>%
         formatRound( columns=c('Mean spawn index (t)', 'Eastings (km)',
           'Northings (km)'), digits=3 )
     } else {  # End if grouping by location, otherwise
       # Format
       res <- res %>%
         datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
-          pageLength=15, searching=FALSE, ordering=FALSE) ) %>%
+          pageLength=15, searching=FALSE, ordering=FALSE), rownames=FALSE ) %>%
         formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
           'Northings (km)'), digits=3 )  
     }  # End if not grouping by location
@@ -493,17 +493,17 @@ server <- function(input, output) {
       scale_y_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
       myTheme
     
+    # Save the map (if download requested)
+    output$downloadMap <- downloadHandler( filename="SpawnMap.png",
+      content=function(file) ggsave( filename=file, plot=hMap, dpi=600, 
+        height=6.5, width=7 ),
+      contentType="image/png" )
+    
     # Print the map
     return( hMap )
   } )  # End map
   
-  # Save the map
-  output$downloadMap <- downloadHandler( filename="SpawnMap.png",
-    content=function(file) ggsave( filename=file, plot=hMap, dpi=600, 
-      height=6.5, width=7 ),
-    contentType="image/png" )
-  
-  # Save data (spawn index)
+  # Save data (spawn index; if download requested)
   output$downloadData <- downloadHandler( filename="SpawnData.csv",
     content=function(file) write_csv( x=spawnSub(), path=file ),
     contentType="text/csv" )
