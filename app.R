@@ -229,8 +229,7 @@ CropSpawn <- function( dat, yrs, si, ext, grp ) {
   dat <- dat %>%
     mutate( Year=as.integer(Year),
       StatArea=formatC(StatArea, width=2, format="d", flag="0"),
-      Section=formatC(Section, width=3, format="d", flag="0"), 
-      LocationCode=as.character(LocationCode) ) %>%
+      Section=formatC(Section, width=3, format="d", flag="0") ) %>%
     select( Year, Region, StatArea, Section, LocationCode, Eastings, Northings,
       SpawnIndex ) %>%
     arrange( Year, Region, StatArea, Section, LocationCode )
@@ -320,22 +319,27 @@ ui <- fluidPage(
         submitButton("Update", icon("refresh")) )
       
     ),  # End sidebar panel
-    
+
     # Show a plot of the generated distribution
     mainPanel(
+      # Start tabs
       tabsetPanel( type="tabs", selected="Map",
+        
         tabPanel( title="Map", br(),
           withSpinner(ui_element=plotOutput(outputId="map", width="100%", 
             height="700px")) ),
+        
         tabPanel( title="Data", br(),
           withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
+        
         tabPanel( title="Download", br(),
           bootstrapPage(
             div( style="display:inline-block",
               downloadButton(outputId="downloadMap", label="Download map")),
             div( style="display:inline-block",
               downloadButton(outputId="downloadData", label="Download data"))) ),
-        tabPanel( title="About", br(), style="width: 300pt",
+        
+        tabPanel( title="About", br(), style="width: 350pt",
           p( HTML("For more information, contact",
             "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew", 
             "Grinnell</a> or",
@@ -354,7 +358,7 @@ ui <- fluidPage(
             "<em>q</em>; therefore it is a relative index of spawning biomass",
             "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") )
         )
-      )  # End tab
+      )  # End tabs
     )  # End main panel
   )  # End sidebar layout
 )  # End ui
@@ -396,8 +400,8 @@ server <- function(input, output) {
     
     # Light wrangling
     res <- spawnSub() %>%
-      mutate( Eastings=Eastings/1000, 
-        Northings=Northings/1000 ) %>%
+      mutate( Eastings=Eastings/1000, Northings=Northings/1000,
+        LocationCode=as.character(LocationCode) ) %>%
       rename( 'Statistical Area'=StatArea, 'Location code'=LocationCode,
         'Spawn index (t)'=SpawnIndex, 'Eastings (km)'=Eastings,
         'Northings (km)'=Northings )
