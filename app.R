@@ -271,7 +271,7 @@ ui <- fluidPage(
   # Sidebar with input parameters 
   sidebarLayout(
     # Sidebar (input etc)
-    sidebarPanel(
+    sidebarPanel( width=4,
       
       h3( "Event location (decimal degrees)" ),
       bootstrapPage(
@@ -303,11 +303,11 @@ ui <- fluidPage(
       h3( "Map features" ),
       bootstrapPage(
         div( style="display:inline-block; vertical-align: text-top",
-          checkboxGroupInput(inputId="location", label="Show event location", 
+          checkboxGroupInput(inputId="location", label="Event location", 
             choiceNames=c("Point", "Buffer"), choiceValues=c("pt", "buf"),
             selected=c("pt", "buf")) ),
         div( style="display:inline-block; vertical-align: text-top",
-          checkboxGroupInput(inputId="polys", label="Show area boudaries", 
+          checkboxGroupInput(inputId="polys", label="Area boudaries", 
             choiceNames=c("Sections"), choiceValues=c("sec"), 
             selected=c("sec")) ),
         div( style="display:inline-block; vertical-align: text-top",
@@ -322,7 +322,7 @@ ui <- fluidPage(
     ),  # End sidebar panel
 
     # Show a plot of the generated distribution
-    mainPanel(
+    mainPanel( width=8,
       # Start tabs
       tabsetPanel( type="tabs", selected="Map",
         
