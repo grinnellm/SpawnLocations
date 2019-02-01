@@ -356,7 +356,12 @@ ui <- fluidPage(
           p( HTML("The 'spawn index' represents the raw survey data",
             "only, and is not scaled by the spawn survey scaling parameter",
             "<em>q</em>; therefore it is a relative index of spawning biomass",
-            "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") )
+            "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") ),
+          br(),
+          img( src='HerringDFO.jpg', style="width: 350pt" ),
+          p( HTML("Pacific Herring (<em>Clupea pallasii</em>). Image credit:",
+            "<a href=http://www.pac.dfo-mpo.gc.ca/>Fisheries and Oceans",
+            "Canada</a>.") )
         )
       )  # End tabs
     )  # End main panel
