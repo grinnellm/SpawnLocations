@@ -118,12 +118,13 @@ regions <- read_csv( file=
 spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
   group_by( Year, Region, StatArea, Section, LocationCode ) %>%
   summarise( Eastings=unique(Eastings), Northings=unique(Northings),
+    Longitude=unique(Longitude), Latitude=unique(Latitude),
     SpawnIndex=sum(SurfSI, MacroSI, UnderSI, na.rm=TRUE) ) %>%
   ungroup( ) %>%
   filter( !is.na(Eastings), !is.na(Northings), !is.na(SpawnIndex) ) %>%
   left_join( y=regions, by="Region" ) %>%
   select( Year, RegionName, StatArea, Section, LocationCode, Eastings,
-    Northings, SpawnIndex ) %>%
+    Northings, Longitude, Latitude, SpawnIndex ) %>%
   rename( Region=RegionName )
 
 # Convert location to Albers
@@ -231,13 +232,13 @@ CropSpawn <- function( dat, yrs, si, ext, grp ) {
       StatArea=formatC(StatArea, width=2, format="d", flag="0"),
       Section=formatC(Section, width=3, format="d", flag="0") ) %>%
     select( Year, Region, StatArea, Section, LocationCode, Eastings, Northings,
-      SpawnIndex ) %>%
+      Longitude, Latitude, SpawnIndex ) %>%
     arrange( Year, Region, StatArea, Section, LocationCode )
   # Summarise spawns by location
   if( "loc" %in% grp ) {
     dat <- dat %>%
       group_by( Region, StatArea, Section, LocationCode, Eastings, 
-        Northings ) %>%
+        Northings, Longitude, Latitude ) %>%
       summarise( SpawnIndex=mean(SpawnIndex), Number=n() ) %>%
       ungroup( ) %>%
       mutate( Number=as.integer(Number) )
@@ -358,7 +359,7 @@ ui <- fluidPage(
             "<em>q</em>; therefore it is a relative index of spawning biomass",
             "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") ),
           br(),
-          img( src='HerringDFO.jpg', style="width: 350pt" ),
+          img( src='HerringDFO.jpg', style="width: 100%" ),
           p( HTML("Pacific Herring (<em>Clupea pallasii</em>). Image credit:",
             "<a href=http://www.pac.dfo-mpo.gc.ca/>Fisheries and Oceans",
             "Canada</a>.") )
@@ -420,14 +421,14 @@ server <- function(input, output) {
         datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
           pageLength=15, searching=FALSE, ordering=FALSE) ) %>%
         formatRound( columns=c('Mean spawn index (t)', 'Eastings (km)',
-          'Northings (km)'), digits=3 )
+          'Northings (km)', 'Longitude', 'Latitude'), digits=3 )
     } else {  # End if grouping by location, otherwise
       # Format
       res <- res %>%
         datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
           pageLength=15, searching=FALSE, ordering=FALSE) ) %>%
         formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
-          'Northings (km)'), digits=3 )  
+          'Northings (km)', 'Longitude', 'Latitude'), digits=3 )  
     }  # End if not grouping by location
     
     # Return the table
