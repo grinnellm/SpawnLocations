@@ -124,7 +124,6 @@ spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
     Longitude=unique(Longitude), Latitude=unique(Latitude),
     SpawnIndex=SumNA(c(SurfSI, MacroSI, UnderSI)) ) %>%
   ungroup( ) %>%
-  # , !is.na(SpawnIndex)
   filter( !is.na(Eastings), !is.na(Northings) ) %>%
   select( Year, Region, StatArea, Section, LocationCode, Eastings,
     Northings, Longitude, Latitude, SpawnIndex )
@@ -211,10 +210,10 @@ ClipPolys <- function( stocks, land, pt, buf ) {
 }  # End ClipPolys function
 
 # Function to crop (spatially) spawn
-CropSpawn <- function( dat, yrs, si, ext, grp ) {
+CropSpawn <- function( dat, yrs, ext, grp ) {  # si
   # Filter spawn index
   dat <- dat %>%
-    filter( Year>=yrs[1], Year<=yrs[2], SpawnIndex>=si[1], SpawnIndex<=si[2])
+    filter( Year>=yrs[1], Year<=yrs[2] )#, SpawnIndex>=si[1], SpawnIndex<=si[2])
   # Convert to a spatial object
   coordinates( dat ) <- ~ Eastings+Northings
   # Give the projection
@@ -303,10 +302,10 @@ ui <- fluidPage(
       h3( "Subset spawn index data" ),
       sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
         max=max(spawn$Year), value=range(spawn$Year), sep="" ),
-      sliderInput( inputId="siRange", label="Spawn index (tonnes, t)", 
-        min=floor(min(spawn$SpawnIndex, na.rm=TRUE)), 
-        max=ceiling(max(spawn$SpawnIndex, na.rm=TRUE)), 
-        value=range(spawn$SpawnIndex, na.rm=TRUE) ),
+      # sliderInput( inputId="siRange", label="Spawn index (tonnes, t)", 
+      #   min=floor(min(spawn$SpawnIndex, na.rm=TRUE)), 
+      #   max=ceiling(max(spawn$SpawnIndex, na.rm=TRUE)), 
+      #   value=range(spawn$SpawnIndex, na.rm=TRUE) ),
       
       h3( "Map features" ),
       bootstrapPage(
@@ -413,7 +412,7 @@ server <- function(input, output) {
   
   # Get spawn data
   spawnSub <- reactive( 
-    CropSpawn( dat=spawn, yrs=input$yrRange, si=input$siRange,
+    CropSpawn( dat=spawn, yrs=input$yrRange, #si=input$siRange,
       ext=shapesSub()$extBuff, grp=input$summary )
   )
   
