@@ -9,7 +9,7 @@
 # Code name:    Locations.R
 # Version:      1.0
 # Date started: Jan 08, 2019
-# Date edited:  Jan 18, 2019
+# Date edited:  Feb 05, 2019
 # 
 # Overview: 
 # Show herring spawn events within a given distance from a point.
@@ -26,8 +26,6 @@
 # TODO:
 # 1. Include 'incomplete' spawns on these maps -- might require loading and 
 #    processing the raw spawn data, not the data from the data summaries
-# 3. Some spawns aren't shown because they don't have Lat/Long info -- check if
-#    there is another data with Lat/Long (maybe the dive transects file)
 
 ##### Housekeeping #####
 
@@ -100,6 +98,11 @@ myTheme <- theme(
   legend.background=element_rect(fill="transparent"),
   plot.margin=unit(c(0.1, 0.6, 0.1, 0.1), "lines") )
 
+##### Functions #####
+
+# Load helper functions
+source( file=file.path( "..", "HerringFunctions", "Functions.R") )
+
 ##### Data #####
 
 # Cross-walk table for SAR to region and region name
@@ -119,15 +122,12 @@ spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
   group_by( Year, Region, StatArea, Section, LocationCode ) %>%
   summarise( Eastings=unique(Eastings), Northings=unique(Northings),
     Longitude=unique(Longitude), Latitude=unique(Latitude),
-    SpawnIndex=sum(SurfSI, MacroSI, UnderSI, na.rm=TRUE) ) %>%
+    SpawnIndex=SumNA(c(SurfSI, MacroSI, UnderSI)) ) %>%
   ungroup( ) %>%
-  filter( !is.na(Eastings), !is.na(Northings), !is.na(SpawnIndex) ) %>%
-  # left_join( y=regions, by="Region" ) %>%
-  # select( Year, RegionName, StatArea, Section, LocationCode, Eastings,
-  #   Northings, Longitude, Latitude, SpawnIndex ) %>%
+  # , !is.na(SpawnIndex)
+  filter( !is.na(Eastings), !is.na(Northings) ) %>%
   select( Year, Region, StatArea, Section, LocationCode, Eastings,
     Northings, Longitude, Latitude, SpawnIndex )
-# rename( Region=RegionName )
 
 # Convert location to Albers
 ConvLocation <- function( xy ) {
@@ -241,7 +241,7 @@ CropSpawn <- function( dat, yrs, si, ext, grp ) {
     dat <- dat %>%
       group_by( Region, StatArea, Section, LocationCode, Eastings, 
         Northings, Longitude, Latitude ) %>%
-      summarise( SpawnIndex=mean(SpawnIndex), Number=n() ) %>%
+      summarise( SpawnIndex=mean(SpawnIndex, na.rm=TRUE), Number=n() ) %>%
       ungroup( ) %>%
       mutate( Number=as.integer(Number) )
   }  # End if summarising by location
@@ -283,14 +283,13 @@ ui <- fluidPage(
     sidebarPanel( width=3,
       
       h3( "Event location (decimal degrees)" ),
+      # TODO: Allow input in Eastings and Northings?
       bootstrapPage(
         div( style="display:inline-block; width: 40%",
           numericInput(inputId="longitude", label="Longitude", value=-123.96) ),
         div( style="display:inline-block; width: 40%",
           numericInput(inputId="latitude", label="Latitude", value=49.21) )
       ),
-      
-      # TODO: Allow input in Eastings and Northings?
       
       h3( "Buffers (kilometres, km)" ),
       bootstrapPage(
@@ -305,8 +304,9 @@ ui <- fluidPage(
       sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
         max=max(spawn$Year), value=range(spawn$Year), sep="" ),
       sliderInput( inputId="siRange", label="Spawn index (tonnes, t)", 
-        min=min(spawn$SpawnIndex),max=ceiling(max(spawn$SpawnIndex)), 
-        value=range(spawn$SpawnIndex) ),
+        min=floor(min(spawn$SpawnIndex, na.rm=TRUE)), 
+        max=ceiling(max(spawn$SpawnIndex, na.rm=TRUE)), 
+        value=range(spawn$SpawnIndex, na.rm=TRUE) ),
       
       h3( "Map features" ),
       bootstrapPage(
@@ -367,17 +367,22 @@ ui <- fluidPage(
             "index, read the", 
             "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
             "draft spawn index technical report</a>.") ),
+          br(),
+          img( src='HerringDFO.jpg', style="width: 100%" ),
+          p( HTML("<font color='grey'>Pacific Herring (<em>Clupea",
+            "pallasii</em>). Image credit:",
+            "<a href=http://www.pac.dfo-mpo.gc.ca/>Fisheries and Oceans",
+            "Canada</a>.</font>") ),
           h3( "Note" ),
           p( HTML("The 'spawn index' represents the raw survey data",
             "only, and is not scaled by the spawn survey scaling parameter",
             "<em>q</em>; therefore it is a relative index of spawning biomass",
             "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS
             /2018/2018_002-eng.html>CSAS 2018</a>).") ),
-          br(),
-          img( src='HerringDFO.jpg', style="width: 100%" ),
-          p( HTML("Pacific Herring (<em>Clupea pallasii</em>). Image credit:",
-            "<a href=http://www.pac.dfo-mpo.gc.ca/>Fisheries and Oceans",
-            "Canada</a>.") )
+          p( "[Something to reflect that 'incomplete' spawns are not included",
+            "here. Incomplete spawns include spawns that were observed but not",
+            "quantified/surveyed, and spawns that lack sufficient data to",
+            "calculate the spawn index.]")
         )
       )  # End tabs
     )  # End main panel
@@ -457,9 +462,9 @@ server <- function(input, output) {
       datatable( options=list(lengthChange=FALSE, searching=FALSE,
         paging=FALSE, ordering=FALSE, lengthChange=FALSE, autoWidth=FALSE),
         rownames=FALSE,
-        caption="Include some information regarding the difference
+        caption="[Include some information regarding the difference
         between Major and Minor areas with respect to the spawn index.
-        For example, we search more in the Major areas." )
+        For example, we search more in the Major areas.]" )
   )  # End regions
   
   # Make the map
