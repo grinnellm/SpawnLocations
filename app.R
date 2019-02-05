@@ -261,6 +261,13 @@ MakeCircle <- function( center=c(0,0), radius=1, nPts=100 ){
   return( tibble(Eastings=xx, Northings=yy) )
 }  # End MakeCircle function
 
+# Format the regions table
+regTab <- regions %>% 
+  rename( 'Region name'=RegionName ) %>%
+  mutate( Type=ifelse(Major, "Major", "Minor") ) %>% 
+  rename( 'Region code'=Region ) %>%
+  select( 'Region name', 'Region code', Type )
+
 ##### User interface #####
 
 # Define UI for application that draws a histogram
@@ -340,26 +347,12 @@ ui <- fluidPage(
             div( style="display:inline-block",
               downloadButton(outputId="downloadMap", label="Download map")),
             div( style="display:inline-block",
-              downloadButton(outputId="downloadData", label="Download data"))),
-          h3( "Note" ),
-          p( HTML("The 'spawn index' represents the raw survey data",
-            "only, and is not scaled by the spawn survey scaling parameter",
-            "<em>q</em>; therefore it is a relative index of spawning biomass",
-            "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS
-            /2018/2018_002-eng.html>CSAS 2018</a>).") ) ),
+              downloadButton(outputId="downloadData", label="Download data")))
+        ),
         
         tabPanel( title="Regions", br(), style="width: 350pt",
-          regions %>% 
-            rename( 'Region name'=RegionName ) %>%
-            mutate( Type=ifelse(Major, "Major", "Minor") ) %>% 
-            rename( 'Region code'=Region ) %>%
-            select( 'Region name', 'Region code', Type ) %>%
-            datatable(options=list(lengthChange=FALSE, searching=FALSE,
-              paging=FALSE, ordering=FALSE, lengthChange=FALSE, autoWidth=FALSE), rownames=FALSE,
-              caption="Include some information regarding the difference
-              between Major and Minor areas with respect to the spawn index.
-              For example, we search more in the Major areas.")  ),
-        
+          withSpinner(ui_element=DT::dataTableOutput(outputId="regTab")) ),
+
         tabPanel( title="About", br(), style="width: 350pt",
           p( HTML("For more information on Pafic Herring spawn data, contact",
             "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
@@ -374,6 +367,12 @@ ui <- fluidPage(
             "index, read the", 
             "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
             "draft spawn index technical report</a>.") ),
+          h3( "Note" ),
+          p( HTML("The 'spawn index' represents the raw survey data",
+            "only, and is not scaled by the spawn survey scaling parameter",
+            "<em>q</em>; therefore it is a relative index of spawning biomass",
+            "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS
+            /2018/2018_002-eng.html>CSAS 2018</a>).") ),
           br(),
           img( src='HerringDFO.jpg', style="width: 100%" ),
           p( HTML("Pacific Herring (<em>Clupea pallasii</em>). Image credit:",
@@ -450,6 +449,18 @@ server <- function(input, output) {
     # Return the table
     return( res )
   } )  # End data
+  
+  # Regions table
+  output$regTab <- DT::renderDataTable(
+    # Format options for table
+    regTab %>%
+      datatable( options=list(lengthChange=FALSE, searching=FALSE,
+        paging=FALSE, ordering=FALSE, lengthChange=FALSE, autoWidth=FALSE),
+        rownames=FALSE,
+        caption="Include some information regarding the difference
+        between Major and Minor areas with respect to the spawn index.
+        For example, we search more in the Major areas." )
+  )  # End regions
   
   # Make the map
   output$map <- renderPlot(res=150, {
