@@ -122,10 +122,12 @@ spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
     SpawnIndex=sum(SurfSI, MacroSI, UnderSI, na.rm=TRUE) ) %>%
   ungroup( ) %>%
   filter( !is.na(Eastings), !is.na(Northings), !is.na(SpawnIndex) ) %>%
-  left_join( y=regions, by="Region" ) %>%
-  select( Year, RegionName, StatArea, Section, LocationCode, Eastings,
-    Northings, Longitude, Latitude, SpawnIndex ) %>%
-  rename( Region=RegionName )
+  # left_join( y=regions, by="Region" ) %>%
+  # select( Year, RegionName, StatArea, Section, LocationCode, Eastings,
+  #   Northings, Longitude, Latitude, SpawnIndex ) %>%
+  select( Year, Region, StatArea, Section, LocationCode, Eastings,
+    Northings, Longitude, Latitude, SpawnIndex )
+# rename( Region=RegionName )
 
 # Convert location to Albers
 ConvLocation <- function( xy ) {
@@ -271,24 +273,23 @@ ui <- fluidPage(
   # Sidebar with input parameters 
   sidebarLayout(
     # Sidebar (input etc)
-    sidebarPanel( width=4,
+    sidebarPanel( width=3,
       
       h3( "Event location (decimal degrees)" ),
       bootstrapPage(
-        div( style="display:inline-block",
+        div( style="display:inline-block; width: 40%",
           numericInput(inputId="longitude", label="Longitude", value=-123.96) ),
-        div( style="display:inline-block",
+        div( style="display:inline-block; width: 40%",
           numericInput(inputId="latitude", label="Latitude", value=49.21) )
       ),
       
       # TODO: Allow input in Eastings and Northings?
       
-      h3( "Buffers (kilometres)" ),
+      h3( "Buffers (kilometres, km)" ),
       bootstrapPage(
-        div( style="display:inline-block", 
-          numericInput(inputId="bufSpill", label="Circle around point (radius)",
-            value=10) ),
-        div( style="display:inline-block",
+        div( style="display:inline-block; width: 40%", 
+          numericInput(inputId="bufSpill", label="Circle (radius)", value=10) ),
+        div( style="display:inline-block; width: 40%",
           numericInput(inputId="bufMap", label="Distance to map edge", 
             value=12) )
       ),
@@ -303,11 +304,12 @@ ui <- fluidPage(
       h3( "Map features" ),
       bootstrapPage(
         div( style="display:inline-block; vertical-align: text-top",
-          checkboxGroupInput(inputId="location", label="Event location", 
-            choiceNames=c("Point", "Buffer"), choiceValues=c("pt", "buf"),
-            selected=c("pt", "buf")) ),
-        div( style="display:inline-block; vertical-align: text-top",
-          checkboxGroupInput(inputId="polys", label="Area boudaries", 
+          checkboxGroupInput(inputId="location", label="Event", 
+            choiceNames=c("Point"), choiceValues=c("pt"), selected=c("pt")) ),
+        # Add horizontal padding on this 'div' to make white space
+        div( style="display:inline-block; vertical-align: text-top;
+          padding: 0px 12px",
+          checkboxGroupInput(inputId="polys", label="Polygons", 
             choiceNames=c("Sections"), choiceValues=c("sec"), 
             selected=c("sec")) ),
         div( style="display:inline-block; vertical-align: text-top",
@@ -320,9 +322,9 @@ ui <- fluidPage(
         submitButton("Update", icon("refresh")) )
       
     ),  # End sidebar panel
-
+    
     # Show a plot of the generated distribution
-    mainPanel( width=8,
+    mainPanel( width=9,
       # Start tabs
       tabsetPanel( type="tabs", selected="Map",
         
@@ -333,31 +335,45 @@ ui <- fluidPage(
         tabPanel( title="Data", br(),
           withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
         
-        tabPanel( title="Download", br(),
+        tabPanel( title="Download", br(), style="width: 350pt",
           bootstrapPage(
             div( style="display:inline-block",
               downloadButton(outputId="downloadMap", label="Download map")),
             div( style="display:inline-block",
-              downloadButton(outputId="downloadData", label="Download data"))) ),
-        
-        tabPanel( title="About", br(), style="width: 350pt",
-          p( HTML("For more information, contact",
-            "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew", 
-            "Grinnell</a> or",
-            "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
-            "DFO Science, Pacific Biological Station.") ),
-          p( HTML("To view the source code and report issues, visit our",
-            "<a href=https://github.com/grinnellm/SpawnLocations>GitHub",
-            "repository</a>.")),
-          p( HTML("For more information on the Pacific Herring spawn index,",
-            "read the", 
-            "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
-            "draft spawn index technical report</a>.") ),
+              downloadButton(outputId="downloadData", label="Download data"))),
           h3( "Note" ),
           p( HTML("The 'spawn index' represents the raw survey data",
             "only, and is not scaled by the spawn survey scaling parameter",
             "<em>q</em>; therefore it is a relative index of spawning biomass",
-            "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") ),
+            "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS
+            /2018/2018_002-eng.html>CSAS 2018</a>).") ) ),
+        
+        tabPanel( title="Regions", br(), style="width: 350pt",
+          regions %>% 
+            rename( 'Region name'=RegionName ) %>%
+            mutate( Type=ifelse(Major, "Major", "Minor") ) %>% 
+            rename( 'Region code'=Region ) %>%
+            select( 'Region name', 'Region code', Type ) %>%
+            datatable(options=list(lengthChange=FALSE, searching=FALSE,
+              paging=FALSE, ordering=FALSE, lengthChange=FALSE, autoWidth=FALSE), rownames=FALSE,
+              caption="Include some information regarding the difference
+              between Major and Minor areas with respect to the spawn index.
+              For example, we search more in the Major areas.")  ),
+        
+        tabPanel( title="About", br(), style="width: 350pt",
+          p( HTML("For more information on Pafic Herring spawn data, contact",
+            "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
+            "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew", 
+            "Grinnell</a>, or",
+            "<a href=mailto:Matthew.Thompson@dfo-mpo.gc.ca@dfo-mpo.gc.ca>Matt",
+            "Thompson</a>, DFO Science, Pacific Biological Station.") ),
+          p( HTML("To view the source code and report issues, visit our",
+            "<a href=https://github.com/grinnellm/SpawnLocations>GitHub",
+            "repository</a>, or contact Matthew Grinnell.")),
+          p( HTML("For details on how to calculate the Pacific Herring spawn",
+            "index, read the", 
+            "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
+            "draft spawn index technical report</a>.") ),
           br(),
           img( src='HerringDFO.jpg', style="width: 100%" ),
           p( HTML("Pacific Herring (<em>Clupea pallasii</em>). Image credit:",
@@ -473,12 +489,6 @@ server <- function(input, output) {
         geom_point( data=spill()$xyDF, colour="red", shape=42, size=8 )
     }  # End if showing the point location
     
-    # If showing the point buffer
-    if( "buf" %in% input$location ) {
-      hMap <- hMap + 
-        geom_path( data=circDF(), colour="red", size=0.5 )
-    }  # End if showing the point bufffer
-    
     # If aggregating by location
     if( "loc" %in% input$summary ) {
       hMap <- hMap +
@@ -495,6 +505,7 @@ server <- function(input, output) {
     
     # Add map layers
     hMap <- hMap +
+      geom_path( data=circDF(), colour="red", size=0.5 ) +
       scale_colour_viridis( na.value="black", labels=comma ) +
       coord_equal( ) +
       labs( title=paste("Number of Pacific Herring spawns:", nSpawns ), 
