@@ -44,7 +44,8 @@ UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
 
 # Make packages available
 UsePackages( pkgs=c("tidyverse", "sp", "rgdal", "raster", "rgeos", 
-  "scales", "ggforce", "plyr", "viridis", "shiny", "shinycssloaders", "DT") )
+  "scales", "ggforce", "plyr", "viridis", "shiny", "shinycssloaders", "DT",
+  "plotly") )
 
 ##### Controls ##### 
 
@@ -484,7 +485,7 @@ server <- function(input, output) {
         paging=FALSE, ordering=FALSE, lengthChange=FALSE, autoWidth=FALSE),
         rownames=FALSE,
         caption="There are five major and two minor Pacific Herring Stock
-Assessment Regions (SARs) in British Columbia." )
+                Assessment Regions (SARs) in British Columbia." )
   )  # End regions
   
   # Make the map
@@ -555,6 +556,10 @@ Assessment Regions (SARs) in British Columbia." )
       content=function(file) ggsave( filename=file, plot=hMap, dpi=600, 
         height=6.5, width=7 ),
       contentType="image/png" )
+    
+    # Interactive map
+    # TODO: Not working.. https://plot.ly/ggplot2/interactive-tooltip/
+    # hMap <- ggplotly( p=hMap, width=300, height=300 )
     
     # Print the map
     return( hMap )
