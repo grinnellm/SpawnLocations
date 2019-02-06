@@ -2,7 +2,7 @@
 
 Display Pacific Herring spawn index locations around a point.
 For more information on Pafic Herring spawn data, contact Jaclyn Cleary, Matthew Grinnell, or Matt Thompson, DFO Science, Pacific Biological Station.
-For details on how to calculate the Pacific Herring spawn index, read the (draft spawn index technical report)[https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf].
+For details on how to calculate the Pacific Herring spawn index, read the [draft spawn index technical report](https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf).
 
 ## Notes
 
