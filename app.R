@@ -272,8 +272,8 @@ regTab <- regions %>%
 ui <- fluidPage(
   
   # Application title
-  titlePanel( "FIND Pacific Herring spawn index by year and location -- 
-    DRAFT DO NOT USE FOR PLANNING" ),
+  titlePanel( HTML("Find Pacific Herring spawn index sites by year and", 
+    "Location <b>Draft: do not use for planning</b>") ),
   
   # Sidebar with input parameters 
   sidebarLayout(
@@ -297,10 +297,11 @@ ui <- fluidPage(
       h3( "Buffers (kilometres, km)" ),
       bootstrapPage(
         div( style="display:inline-block; width: 40%", 
-          numericInput(inputId="bufSpill", label="Circle (radius)", value=10) ),
+          numericInput(inputId="bufSpill", label="Circle (radius)", value=10,
+            min=0) ),
         div( style="display:inline-block; width: 40%",
           numericInput(inputId="bufMap", label="Distance to map edge", 
-            value=12) )
+            value=12, min=1) )
       ),
       
       h3( "Subset spawn index data" ),
@@ -354,6 +355,19 @@ ui <- fluidPage(
         ),
         
         tabPanel( title="Regions", br(), style="width: 350pt",
+          p( HTML("Pacific Herring spawn survey observations have a nested",
+            "hierarchical structure: sampling quadrats are nested within",
+            "transects, transects are nested within spawns, and spawns are",
+            "nested within Locations. For stock assessment purposes, Locations",
+            "are nested within Sections, Sections are nested within",
+            "Statistical Areas, and statistical areas are nested within the",
+            "five major and two minor Stock Assessment Regions (SARs) in",
+            "British Columbia", 
+            "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
+            "(draft spawn index technical report)</a>.") ),
+          p( HTML("[Include some information regarding the difference",
+            "between Major and Minor areas with respect to the spawn index.",
+            "For example, we search more in the Major areas.]") ),
           withSpinner(ui_element=DT::dataTableOutput(outputId="regTab")) ),
         
         tabPanel( title="About", br(), style="width: 350pt",
@@ -432,9 +446,9 @@ server <- function(input, output) {
     res <- spawnSub() %>%
       mutate( Eastings=Eastings/1000, Northings=Northings/1000,
         LocationCode=as.character(LocationCode) ) %>%
-      rename( 'Statistical Area'=StatArea, 'Location code'=LocationCode,
-        'Spawn index (t)'=SpawnIndex, 'Eastings (km)'=Eastings,
-        'Northings (km)'=Northings )
+      rename( SAR=Region, 'Statistical Area'=StatArea, 
+        'Location'=LocationCode, 'Spawn index (t)'=SpawnIndex, 
+        'Eastings (km)'=Eastings, 'Northings (km)'=Northings )
     
     # If grouping by location
     if( "loc" %in% input$summary ) {
@@ -469,9 +483,8 @@ server <- function(input, output) {
       datatable( options=list(lengthChange=FALSE, searching=FALSE,
         paging=FALSE, ordering=FALSE, lengthChange=FALSE, autoWidth=FALSE),
         rownames=FALSE,
-        caption="[Include some information regarding the difference
-        between Major and Minor areas with respect to the spawn index.
-        For example, we search more in the Major areas.]" )
+        caption="There are five major and two minor Stock Assessment Regions
+        (SARs) in British Columbia." )
   )  # End regions
   
   # Make the map
@@ -516,7 +529,7 @@ server <- function(input, output) {
     if( "loc" %in% input$summary ) {
       hMap <- hMap +
         geom_point( data=spawnSub(), aes(colour=SpawnIndex, size=Number),
-          alpha=0.5 ) +
+          alpha=0.75 ) +
         labs( colour="Mean\nspawn\nindex (t)", size="Number\nof spawns" ) +
         scale_size_area( )
     } else {  # End if aggregatign by location, otherwise
