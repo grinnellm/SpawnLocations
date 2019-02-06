@@ -2,26 +2,24 @@
 # 
 # Author:       Matthew H. Grinnell
 # Affiliation:  Pacific Biological Station, Fisheries and Oceans Canada (DFO) 
-# Group:        Offshore Assessment, Aquatic Resources, Research, and Assessment
+# Group:        Stock Assessment and Research, Quantitative Assessment Methods
 # Address:      3190 Hammond Bay Road, Nanaimo, BC, Canada, V9T 6N7
 # Contact:      e-mail: matt.grinnell@dfo-mpo.gc.ca | tel: 250.756.7055
 # Project:      Herring
-# Code name:    Locations.R
+# Code name:    FIND (FIND Is Not Difficult)
 # Version:      1.0
 # Date started: Jan 08, 2019
-# Date edited:  Feb 05, 2019
+# Date edited:  Feb 06, 2019
 # 
 # Overview: 
 # Show herring spawn events within a given distance from a point.
 # 
 # Requirements: 
-# 
+# RStudio, various R packages, herring spawn index data, as well as land and 
+# herring section shapefiles.
 # 
 # Notes: 
 # This is a Shiny web application; run it by clicking the 'Run App' button.
-#
-# References:
-# 
 
 ##### Housekeeping #####
 
@@ -285,8 +283,9 @@ ui <- fluidPage(
       h3( "Event location (decimal degrees)" ),
       # TODO: Allow input in Eastings and Northings?
       bootstrapPage(
+        # Default location is PBS (49.21N, -123.95W)
         div( style="display:inline-block; width: 40%",
-          numericInput(inputId="longitude", label="Longitude", value=-123.96,
+          numericInput(inputId="longitude", label="Longitude", value=-123.95,
             min=floor(min(spawn$Longitude, na.rm=TRUE)),
             max=ceiling(max(spawn$Longitude, na.rm=TRUE))) ),
         div( style="display:inline-block; width: 40%",
@@ -358,8 +357,8 @@ ui <- fluidPage(
           withSpinner(ui_element=DT::dataTableOutput(outputId="regTab")) ),
         
         tabPanel( title="About", br(), style="width: 350pt",
-          p( HTML("Display Pacific Herring spawn index locations around a",
-            "point. For more information on Pafic Herring spawn data, contact",
+          p( HTML("Find Pacific Herring spawn index locations around a point.",
+            "For more information on Pafic Herring spawn data, contact",
             "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
             "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew", 
             "Grinnell</a>, or",
