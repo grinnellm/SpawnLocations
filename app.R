@@ -261,10 +261,9 @@ MakeCircle <- function( center=c(0,0), radius=1, nPts=100 ){
 
 # Format the regions table
 regTab <- regions %>% 
-  rename( 'Region name'=RegionName ) %>%
+  rename( 'SAR name'=RegionName, SAR=Region ) %>%
   mutate( Type=ifelse(Major, "Major", "Minor") ) %>% 
-  rename( 'Region code'=Region ) %>%
-  select( 'Region name', 'Region code', Type )
+  select( SAR, 'SAR name', Type )
 
 ##### User interface #####
 
@@ -360,7 +359,7 @@ ui <- fluidPage(
             "transects, transects are nested within spawns, and spawns are",
             "nested within Locations. For stock assessment purposes, Locations",
             "are nested within Sections, Sections are nested within",
-            "Statistical Areas, and statistical areas are nested within the",
+            "Statistical Areas, and Statistical Areas are nested within the",
             "five major and two minor Stock Assessment Regions (SARs) in",
             "British Columbia", 
             "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
@@ -483,8 +482,8 @@ server <- function(input, output) {
       datatable( options=list(lengthChange=FALSE, searching=FALSE,
         paging=FALSE, ordering=FALSE, lengthChange=FALSE, autoWidth=FALSE),
         rownames=FALSE,
-        caption="There are five major and two minor Stock Assessment Regions
-        (SARs) in British Columbia." )
+        caption="There are five major and two minor Pacific Herring Stock
+Assessment Regions (SARs) in British Columbia." )
   )  # End regions
   
   # Make the map
