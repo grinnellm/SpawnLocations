@@ -11,5 +11,5 @@ The 'spawn index' represents the raw survey data only, and is not scaled by the 
 therefore it is a relative index of spawning biomass [(CSAS 2018)](http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html).
 
 'Incomplete' spawns are included in this analysis;
-they are indicated by grey circles in the map, and NAs in the table.
+they are indicated by grey circles in the map, and empty cells in the table.
 These spawns are rare, and they include spawns that were observed but not surveyed, and spawns that were surveyed but have insufficient data to calculate the spawn index.
