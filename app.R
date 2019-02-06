@@ -23,10 +23,6 @@
 # References:
 # 
 
-# TODO:
-# 1. Include 'incomplete' spawns on these maps -- might require loading and 
-#    processing the raw spawn data, not the data from the data summaries
-
 ##### Housekeeping #####
 
 # General options
@@ -351,9 +347,10 @@ ui <- fluidPage(
         
         tabPanel( title="Regions", br(), style="width: 350pt",
           withSpinner(ui_element=DT::dataTableOutput(outputId="regTab")) ),
-
+        
         tabPanel( title="About", br(), style="width: 350pt",
-          p( HTML("For more information on Pafic Herring spawn data, contact",
+          p( HTML("Display Pacific Herring spawn index locations around a",
+            "point. For more information on Pafic Herring spawn data, contact",
             "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
             "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew", 
             "Grinnell</a>, or",
@@ -361,8 +358,8 @@ ui <- fluidPage(
             "Thompson</a>, DFO Science, Pacific Biological Station.") ),
           p( HTML("To view the source code and report issues, visit our",
             "<a href=https://github.com/grinnellm/SpawnLocations>GitHub",
-            "repository</a>, or contact Matthew Grinnell.")),
-          p( HTML("For details on how to calculate the Pacific Herring spawn",
+            "repository</a>, or contact Matthew Grinnell.",
+            "For details on how to calculate the Pacific Herring spawn",
             "index, read the", 
             "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
             "draft spawn index technical report</a>.") ),
@@ -372,16 +369,17 @@ ui <- fluidPage(
             "pallasii</em>). Image credit:",
             "<a href=http://www.pac.dfo-mpo.gc.ca/>Fisheries and Oceans",
             "Canada</a>.</font>") ),
-          h3( "Note" ),
+          h3( "Notes" ),
           p( HTML("The 'spawn index' represents the raw survey data",
             "only, and is not scaled by the spawn survey scaling parameter",
             "<em>q</em>; therefore it is a relative index of spawning biomass",
             "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS
             /2018/2018_002-eng.html>CSAS 2018</a>).") ),
-          p( "[Something to reflect that 'incomplete' spawns are not included",
-            "here. Incomplete spawns include spawns that were observed but not",
-            "quantified/surveyed, and spawns that lack sufficient data to",
-            "calculate the spawn index.]")
+          p( "'Incomplete' spawns are included in this analysis; they are",
+            "indicated by grey circles in the map, and NAs in the table.",
+            "These spawns are rare, and they include spawns that were observed", 
+            "but not surveyed, and spawns that were surveyed but have", 
+            "insufficient data to calculate the spawn index." )
         )
       )  # End tabs
     )  # End main panel
@@ -449,6 +447,9 @@ server <- function(input, output) {
         formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
           'Northings (km)', 'Longitude', 'Latitude'), digits=3 )  
     }  # End if not grouping by location
+    
+    # TODO: Fix so NAs show up as NA, not blank.
+    # res[is.na(res)] <- "NA"
     
     # Return the table
     return( res )
