@@ -357,7 +357,7 @@ ui <- fluidPage(
             "<a href=mailto:Matthew.Thompson@dfo-mpo.gc.ca@dfo-mpo.gc.ca>Matt",
             "Thompson</a>, DFO Science, Pacific Biological Station.") ),
           p( HTML("To view the source code and report issues, visit our",
-            "<a href=https://github.com/grinnellm/SpawnLocations>GitHub",
+            "<a href=https://github.com/grinnellm/FIND>GitHub",
             "repository</a>, or contact Matthew Grinnell.",
             "For details on how to calculate the Pacific Herring spawn",
             "index, read the", 
@@ -373,8 +373,7 @@ ui <- fluidPage(
           p( HTML("The 'spawn index' represents the raw survey data",
             "only, and is not scaled by the spawn survey scaling parameter",
             "<em>q</em>; therefore it is a relative index of spawning biomass",
-            "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS
-            /2018/2018_002-eng.html>CSAS 2018</a>).") ),
+            "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") ),
           p( "'Incomplete' spawns are included in this analysis; they are",
             "indicated by grey circles in the map, and NAs in the table.",
             "These spawns are rare, and they include spawns that were observed", 
