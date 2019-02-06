@@ -357,11 +357,11 @@ ui <- fluidPage(
           p( HTML("Pacific Herring spawn survey observations have a nested",
             "hierarchical structure: sampling quadrats are nested within",
             "transects, transects are nested within spawns, and spawns are",
-            "nested within Locations. For stock assessment purposes, Locations",
-            "are nested within Sections, Sections are nested within",
-            "Statistical Areas, and Statistical Areas are nested within the",
-            "five major and two minor Stock Assessment Regions (SARs) in",
-            "British Columbia", 
+            "nested within Locations.",
+            "For stock assessment purposes, Locations are nested within",
+            "Sections, Sections are nested within Statistical Areas, and",
+            "Statistical Areas are nested within the five major and two minor",
+            "Stock Assessment Regions (SARs) in British Columbia", 
             "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
             "(draft spawn index technical report)</a>.") ),
           p( HTML("[Include some information regarding the difference",
@@ -370,7 +370,7 @@ ui <- fluidPage(
           withSpinner(ui_element=DT::dataTableOutput(outputId="regTab")) ),
         
         tabPanel( title="About", br(), style="width: 350pt",
-          p( HTML("Find Pacific Herring spawn index locations around a point.",
+          p( HTML("Find Pacific Herring spawn index sites around a point.",
             "For more information on Pafic Herring spawn data, contact",
             "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
             "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew", 
@@ -397,8 +397,9 @@ ui <- fluidPage(
             "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") ),
           p( "'Incomplete' spawns are included in this analysis; they are",
             "indicated by grey circles in the map, and empty cells in the",
-            " table. These spawns are rare, and they include spawns that were", 
-            "observed but not surveyed, and spawns that were surveyed but have", 
+            "table.",
+            "These spawns are rare, and they include spawns that were observed", 
+            "but not surveyed, and spawns that were surveyed but have", 
             "insufficient data to calculate the spawn index." )
         )
       )  # End tabs
