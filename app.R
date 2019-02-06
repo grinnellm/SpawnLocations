@@ -176,6 +176,9 @@ ClipPolys <- function( stocks, land, pt, buf ) {
   xyRatio <- diff(extDF$Eastings) / diff(extDF$Northings)
   # Crop the sections
   secBC <- crop( x=secBC, y=extBuff )
+  # Error if the point is outside the herring sections (study area)
+  if( is.null(secBC) ) stop( "the event is outside the study area.",
+    call.=FALSE )
   # Determine section centroids
   secCent <- gCentroid( spgeom=secBC, byid=TRUE )
   # Convert to data frame
@@ -223,6 +226,8 @@ CropSpawn <- function( dat, yrs, ext, grp ) {  # si
   # Make a data frame
   dat <- data.frame( datSP ) %>%
     as_tibble( )
+  # Error if all the spawn data are cropped
+  if( nrow(dat) < 1 ) stop( "no spawn data in this area.", call.=FALSE )
   # Light wrangling
   dat <- dat %>%
     mutate( Year=as.integer(Year),
@@ -269,7 +274,7 @@ regTab <- regions %>%
 ui <- fluidPage(
   
   # Application title
-  titlePanel( "Pacific Herring spawn index by year and location -- 
+  titlePanel( "FIND Pacific Herring spawn index by year and location -- 
     DRAFT DO NOT USE FOR PLANNING" ),
   
   # Sidebar with input parameters 
@@ -281,9 +286,13 @@ ui <- fluidPage(
       # TODO: Allow input in Eastings and Northings?
       bootstrapPage(
         div( style="display:inline-block; width: 40%",
-          numericInput(inputId="longitude", label="Longitude", value=-123.96) ),
+          numericInput(inputId="longitude", label="Longitude", value=-123.96,
+            min=floor(min(spawn$Longitude, na.rm=TRUE)),
+            max=ceiling(max(spawn$Longitude, na.rm=TRUE))) ),
         div( style="display:inline-block; width: 40%",
-          numericInput(inputId="latitude", label="Latitude", value=49.21) )
+          numericInput(inputId="latitude", label="Latitude", value=49.21,
+            min=floor(min(spawn$Latitude, na.rm=TRUE)),
+            max=ceiling(max(spawn$Latitude, na.rm=TRUE))) )
       ),
       
       h3( "Buffers (kilometres, km)" ),
@@ -375,9 +384,9 @@ ui <- fluidPage(
             "<em>q</em>; therefore it is a relative index of spawning biomass",
             "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).") ),
           p( "'Incomplete' spawns are included in this analysis; they are",
-            "indicated by grey circles in the map, and NAs in the table.",
-            "These spawns are rare, and they include spawns that were observed", 
-            "but not surveyed, and spawns that were surveyed but have", 
+            "indicated by grey circles in the map, and empty cells in the",
+            " table. These spawns are rare, and they include spawns that were", 
+            "observed but not surveyed, and spawns that were surveyed but have", 
             "insufficient data to calculate the spawn index." )
         )
       )  # End tabs
@@ -447,7 +456,7 @@ server <- function(input, output) {
           'Northings (km)', 'Longitude', 'Latitude'), digits=3 )  
     }  # End if not grouping by location
     
-    # TODO: Fix so NAs show up as NA, not blank.
+    # TODO: Fix so NAs show up as NA, not blank
     # res[is.na(res)] <- "NA"
     
     # Return the table
