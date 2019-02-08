@@ -291,8 +291,7 @@ ui <- fluidPage(
         div( style="display:inline-block; width: 40%",
           numericInput(inputId="latitude", label="Latitude", value=49.21,
             min=floor(min(spawn$Latitude, na.rm=TRUE)),
-            max=ceiling(max(spawn$Latitude, na.rm=TRUE)), step=0.1) )
-      ),
+            max=ceiling(max(spawn$Latitude, na.rm=TRUE)), step=0.1) ) ),
       
       h3( "Buffers (kilometres, km)" ),
       bootstrapPage(
@@ -301,8 +300,7 @@ ui <- fluidPage(
             min=0, step=1) ),
         div( style="display:inline-block; width: 40%",
           numericInput(inputId="bufMap", label="Distance to map edge", 
-            value=12, min=1, step=1) )
-      ),
+            value=12, min=1, step=1) ) ),
       
       h3( "Subset spawn index data" ),
       sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
@@ -325,8 +323,7 @@ ui <- fluidPage(
             selected=c("sec")) ),
         div( style="display:inline-block; vertical-align: text-top",
           checkboxGroupInput(inputId="summary", label="Summarise spawns", 
-            choiceNames=c("By Location"), choiceValues=c("loc")) )
-      ),
+            choiceNames=c("By Location"), choiceValues=c("loc")) ) ),
       
       # h3( "View results" ),
       div( style="text-align: center",
@@ -413,8 +410,7 @@ ui <- fluidPage(
                 label="Download map (*.png)")),
             div( style="display:inline-block",
               downloadButton(outputId="downloadData",
-                label="Download data (*.csv)")))
-        ),
+                label="Download data (*.csv)")) ) ),
         
         tabPanel( title="Contact", br(), style="width: 350pt", 
           p( HTML("For more information on Pafic Herring spawn data, contact",
