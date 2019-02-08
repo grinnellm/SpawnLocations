@@ -45,7 +45,7 @@ UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
 # Make packages available
 UsePackages( pkgs=c("tidyverse", "sp", "rgdal", "raster", "rgeos", 
   "scales", "ggforce", "plyr", "viridis", "shiny", "shinycssloaders", "DT",
-  "plotly") )
+  "plotly", "shiny") )
 
 ##### Controls ##### 
 
@@ -340,8 +340,9 @@ ui <- fluidPage(
       tabsetPanel( type="tabs", selected="Map",
         
         tabPanel( title="Map", br(),
-          withSpinner(ui_element=plotOutput(outputId="map", width="100%", 
-            height="700px")) ),
+          withSpinner(ui_element=plotOutput(outputId="map", width="100%",
+            height="700px"))),#, click="mapClick")),
+          # tableOutput(outputId="mapClickPoints") ),
         
         tabPanel( title="Data", br(),
           withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
@@ -364,18 +365,18 @@ ui <- fluidPage(
             "discrete migratory herring stocks, and are based on historical",
             "records of commercial catch and spawning sites.") ),
           p( HTML("There are differences in the amout of effort used to search",
-            "and survey Pacific Herring spawn in the major and minor SARs.",
+            "and survey Pacific Herring spawn in major and minor SARs.",
             "Typically, minor SARs receive less search effort than major SARs",
-            "which could cause more spawns to be inadvertently omitted in the",
+            "which could cause more spawns to be inadvertently omitted in",
             "minor SARs.",
             "In addition, spawn surveyors are more likely to use surface",
             "surveys in minor SARs; surface surveys are thought to be less",
-            "accurate than dive surveys, which are used extensively in the",
-            "major SARs",
+            "accurate than dive surveys which are used extensively in major",
+            "SARs",
             "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
             "(draft spawn index technical report)</a>.",
             "Finally, some spawns are reported to DFO by the public, which is",
-            "less likely in the minor SARs because they are more remote and",
+            "less likely in minor SARs because they are more remote and",
             "difficult to access than major SARs.") ),
           withSpinner(ui_element=DT::dataTableOutput(outputId="regTab")) ),
         
@@ -412,6 +413,7 @@ ui <- fluidPage(
             "These spawns are rare, and they include spawns that were observed", 
             "but not surveyed, and spawns that were surveyed but have", 
             "insufficient data to calculate the spawn index." ) ),
+        
         tabPanel( title="Contact", br(), style="width: 350pt", 
           p( HTML("For more information on Pafic Herring spawn data, contact",
             "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
@@ -495,7 +497,7 @@ server <- function(input, output) {
           'Northings (km)', 'Longitude', 'Latitude'), digits=3 )  
     }  # End if not grouping by location
     
-    # TODO: Fix so NAs show up as NA, not blank
+    # TODO: Fix so NAs show up as NA, not blank -- this aligns things left
     # res[is.na(res)] <- "NA"
     
     # Return the table
@@ -514,7 +516,7 @@ server <- function(input, output) {
   )  # End regions
   
   # Make the map
-  output$map <- renderPlot(res=150, {
+  output$map <- renderPlot( res=150, {
     
     # Ensure map buffer is larger than spill buffer
     validate( need(input$bufSpill <= input$bufMap, 
@@ -572,23 +574,31 @@ server <- function(input, output) {
       coord_equal( ) +
       labs( title=paste("Number of Pacific Herring spawns:", nSpawns ), 
         x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
-      scale_x_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) + 
+      scale_x_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
       scale_y_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
       myTheme
     
-    # Save the map (if download requested)
+    # Save the map (if download requested) -- not sure why this has to be here
     output$downloadMap <- downloadHandler( filename="SpawnMap.png",
-      content=function(file) ggsave( filename=file, plot=hMap, dpi=600, 
+      content=function(file) ggsave( filename=file, plot=hMap, dpi=600,
         height=6.5, width=7 ),
       contentType="image/png" )
     
     # Interactive map
     # TODO: Not working.. https://plot.ly/ggplot2/interactive-tooltip/
-    # hMap <- ggplotly( p=hMap, width=300, height=300 )
+    # hMap <- ggplotly( p=hMap, width=800, height=700, originalData=FALSE )
     
     # Print the map
     return( hMap )
   } )  # End map
+  
+  # # Get spawn info -- also not working
+  # output$mapClickPoints <- renderTable({
+  #   res <- nearPoints( df=spawnSub(), coordinfo=input$mapClick )
+  #   # if( nrow(res) == 0 )
+  #   #   return()
+  #   res
+  # })
   
   # Save data (spawn index; if download requested)
   output$downloadData <- downloadHandler( filename="SpawnData.csv",
