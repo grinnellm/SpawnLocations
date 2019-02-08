@@ -287,21 +287,21 @@ ui <- fluidPage(
         div( style="display:inline-block; width: 40%",
           numericInput(inputId="longitude", label="Longitude", value=-123.95,
             min=floor(min(spawn$Longitude, na.rm=TRUE)),
-            max=ceiling(max(spawn$Longitude, na.rm=TRUE))) ),
+            max=ceiling(max(spawn$Longitude, na.rm=TRUE)), step=0.1) ),
         div( style="display:inline-block; width: 40%",
           numericInput(inputId="latitude", label="Latitude", value=49.21,
             min=floor(min(spawn$Latitude, na.rm=TRUE)),
-            max=ceiling(max(spawn$Latitude, na.rm=TRUE))) )
+            max=ceiling(max(spawn$Latitude, na.rm=TRUE)), step=0.1) )
       ),
       
       h3( "Buffers (kilometres, km)" ),
       bootstrapPage(
         div( style="display:inline-block; width: 40%", 
           numericInput(inputId="bufSpill", label="Circle (radius)", value=10,
-            min=0) ),
+            min=0, step=1) ),
         div( style="display:inline-block; width: 40%",
           numericInput(inputId="bufMap", label="Distance to map edge", 
-            value=12, min=1) )
+            value=12, min=1, step=1) )
       ),
       
       h3( "Subset spawn index data" ),
@@ -346,14 +346,6 @@ ui <- fluidPage(
         
         tabPanel( title="Data", br(),
           withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
-        
-        tabPanel( title="Download", br(), style="width: 350pt",
-          bootstrapPage(
-            div( style="display:inline-block",
-              downloadButton(outputId="downloadMap", label="Download map")),
-            div( style="display:inline-block",
-              downloadButton(outputId="downloadData", label="Download data")))
-        ),
         
         tabPanel( title="Regions", br(), style="width: 350pt",
           p( HTML("For the purposes of fisheries management, Pacific Herring",
@@ -413,6 +405,16 @@ ui <- fluidPage(
             "These spawns are rare, and they include spawns that were observed", 
             "but not surveyed, and spawns that were surveyed but have", 
             "insufficient data to calculate the spawn index." ) ),
+        
+        tabPanel( title="Download", br(), style="width: 350pt",
+          bootstrapPage(
+            div( style="display:inline-block",
+              downloadButton(outputId="downloadMap", 
+                label="Download map (*.png)")),
+            div( style="display:inline-block",
+              downloadButton(outputId="downloadData",
+                label="Download data (*.csv)")))
+        ),
         
         tabPanel( title="Contact", br(), style="width: 350pt", 
           p( HTML("For more information on Pafic Herring spawn data, contact",
