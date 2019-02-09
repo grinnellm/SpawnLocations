@@ -21,6 +21,15 @@
 # Notes: 
 # This is a Shiny web application; run it by clicking the 'Run App' button.
 
+# Some notes on making the map interactive using plotly or clicks, neither of
+# which are working properly:
+#   * plotly works, but the figure lacks some necessary components such as 
+#   geom_label is not understood (for labelling Sections), and it is not able to
+#   have more than one legend (two legends are required when summarising spawns
+#   by Location; one for mean spawn index, and one for number of spawns), and
+#   * clicks don't seem to work, in that no data shows up in the table when a 
+#   point is clicked.
+
 ##### Housekeeping #####
 
 # General options
