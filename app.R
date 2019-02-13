@@ -281,8 +281,8 @@ regTab <- regions %>%
 ui <- fluidPage(
   
   # Application title
-  titlePanel( HTML("Find Pacific Herring spawn index sites by year and", 
-    "Location <b>Draft: do not use for planning</b>") ),
+  titlePanel( HTML("Find Pacific Herring spawn index sites", 
+    "<b>Draft: do not use for planning</b>") ),
   
   # Sidebar with input parameters 
   sidebarLayout(
