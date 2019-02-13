@@ -573,6 +573,7 @@ server <- function(input, output) {
         geom_point( data=spawnSub(), aes(colour=SpawnIndex, size=Number),
           alpha=0.75 ) +
         labs( colour="Mean\nspawn\nindex (t)", size="Number\nof spawns" ) +
+        guides( colour=guide_colourbar(order=1), size=guide_legend(order=2) ) +
         scale_size_area( )
     } else {  # End if aggregatign by location, otherwise
       hMap <- hMap +
