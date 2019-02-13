@@ -9,7 +9,7 @@
 # Code name:    FIND (FIND Is Not Difficult)
 # Version:      1.0
 # Date started: Jan 08, 2019
-# Date edited:  Feb 06, 2019
+# Date edited:  Feb 13, 2019
 # 
 # Overview: 
 # Show herring spawn events within a given distance from a point.
@@ -152,7 +152,6 @@ secPoly <- readOGR( dsn=file.path(locStocks$loc), layer=locStocks$lyr,
   verbose=FALSE )
 
 # Load land polygon
-# TODO: Use ggmap to load a better terrain/satellite map
 landPoly <- readOGR( dsn=file.path(locLand$loc), layer=locLand$lyr, 
   verbose=FALSE )
 
@@ -228,9 +227,12 @@ CropSpawn <- function( dat, yrs, ext, grp ) {  # si
   # Transform
   datSP <- spTransform( x=dat, CRSobj=CRS(crsOut) )
   # Clip to extent
-  # TODO: 'crop' generates a warning re "seq.default(along = cand): partial 
-  # argument match of 'along' to 'along.with'"
+  # TODO: 'crop' gets a warning re "seq.default(along = cand): partial argument
+  # match of 'along' to 'along.with'"
   datSP <- crop( x=datSP, y=ext )
+  # isInside <- gIntersects( datSP, ext, byid=TRUE )  # Kinda works, but missing some
+  # Select points
+  # datSP <- datSP[isInside[1, ], ]
   # Make a data frame
   dat <- data.frame( datSP ) %>%
     as_tibble( )
