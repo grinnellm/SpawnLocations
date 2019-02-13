@@ -87,7 +87,7 @@ geoProj <- "Projection: BC Albers (NAD 1983)"
 locStocks <- list( loc=file.path("Data", "Polygons"), lyr="SectionsIntegrated" )
 
 # Location of the BC land file
-locLand <- list( loc=file.path("Data", "Polygons"), lyr="GSHHS_h_L1_Alb" )
+locLand <- list( loc=file.path("Data", "Polygons"), lyr="GSHHS_f_L1_Clip_Alb" )
 
 # Change default ggplot theme to 'black and white'
 theme_set( theme_bw() )
@@ -401,7 +401,9 @@ ui <- fluidPage(
             "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
             "draft spawn index technical report</a>.") ),
           p( HTML("We chose to use relatively low-resolution land polygons",
-            "(Wessel and Smith 1996) for maps to help maintain a fast script.",
+            "(<a href=https://doi.org/10.1029/96JB00104>Wessel and Smith", 
+            "1996</a>)",
+            "for maps to help maintain a fast script.",
             "Because of this, some small geographic features are not",
             "displayed, and some spawns appear to be in open water or on",
             "land.") ),
@@ -415,13 +417,7 @@ ui <- fluidPage(
             "table.",
             "These spawns are rare, and they include spawns that were observed", 
             "but not surveyed, and spawns that were surveyed but have", 
-            "insufficient data to calculate the spawn index." ),
-          h4( "References" ),
-          p( HTML("Wessel, P. and Smith, W.H.F., 1996. A global,",
-            "self-consistent, hierarchical, high-resolution shoreline",
-            "database. Journal of Geophysical Research, 101(B4): 8741–8743.", 
-            "DOI",
-            "<a href=https://doi.org/10.1029/96JB00104>10.1029/96JB00104</a>.") ) ),
+            "insufficient data to calculate the spawn index." ) ),
         
         tabPanel( title="Download", br(), style="width: 350pt",
           bootstrapPage(
