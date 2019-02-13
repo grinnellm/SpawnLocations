@@ -397,9 +397,13 @@ ui <- fluidPage(
             "the number of spawns, which indicates the number of years that",
             "spawn was observed at a given Location.",
             "For details on how to calculate the Pacific Herring spawn",
-            "index, read the", 
+            "index, read the",
             "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
             "draft spawn index technical report</a>.") ),
+          p( HTML("We chose to use relatively low-resolution land polygons",
+            "(Wessel and Smith 1996) for maps to help maintain a fast script.",
+            "Because of this, some small islands and inlets are not displayed,",
+            "and some spawns appear to be in open water or on land.") ),
           h3( "Notes" ),
           p( HTML("The 'spawn index' represents the raw survey data",
             "only, and is not scaled by the spawn survey scaling parameter",
@@ -410,7 +414,13 @@ ui <- fluidPage(
             "table.",
             "These spawns are rare, and they include spawns that were observed", 
             "but not surveyed, and spawns that were surveyed but have", 
-            "insufficient data to calculate the spawn index." ) ),
+            "insufficient data to calculate the spawn index." ),
+          h4( "References" ),
+          p( HTML("Wessel, P. and Smith, W.H.F., 1996. A global,",
+            "self-consistent, hierarchical, high-resolution shoreline",
+            "database. Journal of Geophysical Research, 101(B4): 8741–8743.", 
+            "DOI",
+            "<a href=https://doi.org/10.1029/96JB00104>10.1029/96JB00104</a>.") ) ),
         
         tabPanel( title="Download", br(), style="width: 350pt",
           bootstrapPage(
@@ -588,7 +598,7 @@ server <- function(input, output) {
     # Save the map (if download requested) -- not sure why this has to be here
     output$downloadMap <- downloadHandler( filename="SpawnMap.png",
       content=function(file) ggsave( filename=file, plot=hMap, dpi=600,
-        height=6.5, width=7 ),
+        height=6, width=7.5 ),
       contentType="image/png" )
     
     # Interactive map
