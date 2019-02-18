@@ -277,21 +277,21 @@ ui <- fluidPage(
       # TODO: Allow input in Eastings and Northings?
       bootstrapPage(
         # Default location is PBS (49.21N, -123.95W)
-        div( style="display:inline-block; width: 40%",
+        div( style="display:inline-block; width:40%",
           numericInput(inputId="longitude", label="Longitude", value=-123.95,
             min=floor(min(spawn$Longitude, na.rm=TRUE)),
             max=ceiling(max(spawn$Longitude, na.rm=TRUE)), step=0.1) ),
-        div( style="display:inline-block; width: 40%",
+        div( style="display:inline-block; width:40%",
           numericInput(inputId="latitude", label="Latitude", value=49.21,
             min=floor(min(spawn$Latitude, na.rm=TRUE)),
             max=ceiling(max(spawn$Latitude, na.rm=TRUE)), step=0.1) ) ),
       
       h3( "Buffers (kilometres, km)" ),
       bootstrapPage(
-        div( style="display:inline-block; width: 40%", 
+        div( style="display:inline-block; width:40%", 
           numericInput(inputId="bufSpill", label="Circle (radius)", value=10,
             min=0, step=1) ),
-        div( style="display:inline-block; width: 40%",
+        div( style="display:inline-block; width:40%",
           numericInput(inputId="bufMap", label="Distance to map edge", 
             value=12, min=1, step=1) ) ),
       
@@ -301,21 +301,21 @@ ui <- fluidPage(
       
       h3( "Display features" ),
       bootstrapPage(
-        div( style="display:inline-block; vertical-align: text-top",
+        div( style="display:inline-block; vertical-align:text-top",
           checkboxGroupInput(inputId="location", label="Event", 
             choiceNames=c("Point"), choiceValues=c("pt"), selected=c("pt")) ),
         # Add horizontal padding on this 'div' to make white space
-        div( style="display:inline-block; vertical-align: text-top;
+        div( style="display:inline-block; vertical-align:text-top;
           padding: 0px 12px",
           checkboxGroupInput(inputId="polys", label="Polygons", 
             choiceNames=c("Sections"), choiceValues=c("sec"), 
             selected=c("sec")) ),
-        div( style="display:inline-block; vertical-align: text-top",
+        div( style="display:inline-block; vertical-align:text-top",
           checkboxGroupInput(inputId="summary", label="Summarise spawns", 
             choiceNames=c("By Location"), choiceValues=c("loc")) ) ),
       
       # h3( "View results" ),
-      div( style="text-align: center",
+      div( style="text-align:center",
         submitButton("Update", icon("refresh")) )
       
     ),  # End sidebar panel
@@ -333,9 +333,9 @@ ui <- fluidPage(
         tabPanel( title="Table", br(),
           withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
         
-        tabPanel( title="Regions", br(), style="width: 777pt",
+        tabPanel( title="Regions", br(),
           bootstrapPage(
-            div( style="display:inline-block; width: 45%; vertical-align: text-top",
+            div( style="display:inline-block; width:350pt; vertical-align:text-top",
               p( HTML("For the purposes of fisheries management, Pacific",
                 "Herring stocks in British Columbia are managed as five major", 
                 "and two minor Stock Assessment Areas (SARs).",
@@ -360,8 +360,8 @@ ui <- fluidPage(
                 "Finally, some spawns are reported to DFO by the public, which",
                 "is less common in minor SARs because they tend to be more",
                 "remote and difficult to access than major SARs.") )),
-            div( style="display:inline-block; width: 45%; vertical-align: text-top",
-              img( src='BC.png', style="width: 100%" ),
+            div( style="display:inline-block; width:45%; vertical-align:text-top",
+              img( src='BC.png', style="width:100%" ),
               p( HTML("<font color='grey'>Boundaries for the Pacific Herring",
                 "stock assessment regions (SARs) in British Columbia.",
                 "The major SARs are Haida Gwaii (HG), Prince Rupert District",
@@ -370,7 +370,7 @@ ui <- fluidPage(
                 "The minor SARs are Area 27 (A27) and Area 2 West (A2W).",
                 "Units: kilometres (km).</a>.</font>") ) ) ) ),
         
-        tabPanel( title="About", br(), style="width: 350pt",
+        tabPanel( title="About", br(), style="width:350pt",
           p( HTML("Pacific Herring spawn survey observations have a nested",
             "hierarchical structure: sampling quadrats are nested within",
             "transects, transects are nested within spawns, and spawns are",
@@ -432,7 +432,7 @@ ui <- fluidPage(
               downloadButton(outputId="downloadLand",
                 label="Download land (*.csv)"))) ),
         
-        tabPanel( title="Contact", br(), style="width: 350pt", 
+        tabPanel( title="Contact", br(), style="width:350pt", 
           p( HTML("For more information on Pafic Herring spawn data, contact",
             "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
             "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matthew", 
@@ -443,7 +443,7 @@ ui <- fluidPage(
             "<a href=https://github.com/grinnellm/FIND>GitHub",
             "repository</a>, or contact Matthew Grinnell.") ),
           br(),
-          img( src='HerringDFO.jpg', style="width: 100%" ),
+          img( src='HerringDFO.jpg', style="width:100%" ),
           p( HTML("<font color='grey'>Pacific Herring (<em>Clupea",
             "pallasii</em>). Image credit:",
             "<a href=http://www.pac.dfo-mpo.gc.ca/>Fisheries and Oceans",
