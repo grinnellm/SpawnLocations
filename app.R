@@ -411,14 +411,23 @@ ui <- fluidPage(
             "but not surveyed, and spawns that were surveyed but have", 
             "insufficient data to calculate the spawn index." ) ),
         
-        tabPanel( title="Download", br(), style="width: 350pt",
+        tabPanel( title="Download", style="width: 350pt",
           bootstrapPage(
+            h3( "Spawn data" ),
             div( style="display:inline-block",
               downloadButton(outputId="downloadFigure", 
                 label="Download figure (*.png)")),
             div( style="display:inline-block",
               downloadButton(outputId="downloadTable",
-                label="Download table (*.csv)")) ) ),
+                label="Download table (*.csv)")) ),
+          bootstrapPage(
+            h3( "Shapefiles (polygons)" ),
+            div( style="display:inline-block",
+              downloadButton(outputId="downloadSections",
+                label="Download herring sections (*.csv)")),
+            div( style="display:inline-block",
+              downloadButton(outputId="downloadLand",
+                label="Download land (*.csv)"))) ),
         
         tabPanel( title="Contact", br(), style="width: 350pt", 
           p( HTML("For more information on Pafic Herring spawn data, contact",
@@ -590,7 +599,17 @@ server <- function(input, output) {
   output$downloadTable <- downloadHandler( filename="SpawnData.csv",
     content=function(file) write_csv( x=spawnSub(), path=file ),
     contentType="text/csv" )
-
+  
+  # Save section polygons
+  output$downloadSections <- downloadHandler( filename="SectionPolygons.csv",
+    content=function(file) write_csv( x=shapesSub()$secDF, path=file ),
+    contentType="text/csv" )
+  
+  # Save land polygons
+  output$downloadLand <- downloadHandler( filename="LandPolygons.csv",
+    content=function(file) write_csv( x=shapesSub()$landDF, path=file ),
+    contentType="text/csv" )
+  
 }  # End server
 
 ##### App #####
