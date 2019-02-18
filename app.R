@@ -299,7 +299,7 @@ ui <- fluidPage(
       sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
         max=max(spawn$Year), value=range(spawn$Year), sep="" ),
       
-      h3( "Map features" ),
+      h3( "Display features" ),
       bootstrapPage(
         div( style="display:inline-block; vertical-align: text-top",
           checkboxGroupInput(inputId="location", label="Event", 
@@ -411,9 +411,12 @@ ui <- fluidPage(
             "but not surveyed, and spawns that were surveyed but have", 
             "insufficient data to calculate the spawn index." ) ),
         
-        tabPanel( title="Download", style="width: 350pt",
+        tabPanel( title="Download", br(), style="width: 350pt",
+          p( HTML("We provide geographic data in the following", 
+            "<a href=http://spatialreference.org/ref/epsg/nad83-bc-albers/>", 
+            paste(geoProj, ".", sep=""), "</a>") ),
           bootstrapPage(
-            h3( "Spawn data" ),
+            h3( "Spawn sites" ),
             div( style="display:inline-block",
               downloadButton(outputId="downloadFigure", 
                 label="Download figure (*.png)")),
@@ -421,7 +424,7 @@ ui <- fluidPage(
               downloadButton(outputId="downloadTable",
                 label="Download table (*.csv)")) ),
           bootstrapPage(
-            h3( "Shapefiles (polygons)" ),
+            h3( "Polygons" ),
             div( style="display:inline-block",
               downloadButton(outputId="downloadSections",
                 label="Download herring sections (*.csv)")),
@@ -519,7 +522,7 @@ server <- function(input, output) {
     return( res )
   } )  # End data
   
-  # Make the map
+  # Make the figure (map)
   output$map <- renderPlot( res=150, {
     
     # Ensure map buffer is larger than spill buffer
@@ -600,7 +603,7 @@ server <- function(input, output) {
     content=function(file) write_csv( x=spawnSub(), path=file ),
     contentType="text/csv" )
   
-  # Save section polygons
+  # Save herring section polygons
   output$downloadSections <- downloadHandler( filename="SectionPolygons.csv",
     content=function(file) write_csv( x=shapesSub()$secDF, path=file ),
     contentType="text/csv" )
