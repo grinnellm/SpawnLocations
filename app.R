@@ -323,14 +323,14 @@ ui <- fluidPage(
     # Show a plot of the generated distribution
     mainPanel( width=9,
       # Start tabs
-      tabsetPanel( type="tabs", selected="Map",
+      tabsetPanel( type="tabs", selected="Figure",
         
-        tabPanel( title="Map", br(),
+        tabPanel( title="Figure", br(),
           withSpinner(ui_element=plotOutput(outputId="map", width="100%",
             height="700px"))),#, click="mapClick")),
         # tableOutput(outputId="mapClickPoints") ),
         
-        tabPanel( title="Data", br(),
+        tabPanel( title="Table", br(),
           withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
         
         tabPanel( title="Regions", br(), style="width: 777pt",
@@ -368,7 +368,7 @@ ui <- fluidPage(
                 "(PRD), Central Coast (CC), Strait of Georgia (SoG), and West",
                 "Coast of Vancouver Island (WCVI).",
                 "The minor SARs are Area 27 (A27) and Area 2 West (A2W).",
-                "Units: kilometres (km).</a>.</font>") ) ) )),
+                "Units: kilometres (km).</a>.</font>") ) ) ) ),
         
         tabPanel( title="About", br(), style="width: 350pt",
           p( HTML("Pacific Herring spawn survey observations have a nested",
