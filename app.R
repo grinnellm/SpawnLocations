@@ -218,7 +218,8 @@ CropSpawn <- function( dat, yrs, ext, grp ) {
   # TODO: 'crop' gets a warning re "seq.default(along = cand): partial argument
   # match of 'along' to 'along.with'"
   datSP <- crop( x=datSP, y=ext )
-  # isInside <- gIntersects( datSP, ext, byid=TRUE )  # Kinda works, but missing some
+  # isInside <- gIntersects( datSP, ext, byid=TRUE )  # Kinda works, but missing
+  # some
   # Select points
   # datSP <- datSP[isInside[1, ], ]
   # Make a data frame
@@ -335,7 +336,8 @@ ui <- fluidPage(
         
         tabPanel( title="Regions", br(),
           bootstrapPage(
-            div( style="display:inline-block; width:350pt; vertical-align:text-top",
+            div( style="display:inline-block; width:350pt;
+              vertical-align:text-top",
               p( HTML("For the purposes of fisheries management, Pacific",
                 "Herring stocks in British Columbia are managed as five major", 
                 "and two minor Stock Assessment Areas (SARs).",
@@ -360,7 +362,8 @@ ui <- fluidPage(
                 "Finally, some spawns are reported to DFO by the public, which",
                 "is less common in minor SARs because they tend to be more",
                 "remote and difficult to access than major SARs.") )),
-            div( style="display:inline-block; width:45%; vertical-align:text-top",
+            div( style="display:inline-block; width:350pt;
+              vertical-align:text-top",
               img( src='BC.png', style="width:100%" ),
               p( HTML("<font color='grey'>Boundaries for the Pacific Herring",
                 "stock assessment regions (SARs) in British Columbia.",
@@ -535,7 +538,8 @@ server <- function(input, output) {
     
     # Plot the area (default map)
     hMap <- ggplot( data=shapesSub()$landDF, aes(x=Eastings, y=Northings) ) +
-      geom_polygon( data=shapesSub()$landDF, aes(group=group), fill="lightgrey" )
+      geom_polygon( data=shapesSub()$landDF, aes(group=group),
+        fill="lightgrey" )
     
     # If showing section lines and labels
     if( "sec" %in% input$polys ) {
