@@ -109,18 +109,6 @@ source( file=file.path( "..", "HerringFunctions", "Functions.R") )
 
 ##### Data #####
 
-# Cross-walk table for SAR to region and region name
-regions <- read_csv( file=
-    "Region, RegionName, Major
-  HG, Haida Gwaii, TRUE
-  PRD, Prince Rupert District, TRUE
-  CC, Central Coast, TRUE
-  SoG, Strait of Georgia, TRUE
-  WCVI, West Coast of Vancouver Island, TRUE
-  A27, Area 27, FALSE
-  A2W, Area 2 West, FALSE",
-  col_types=cols() )
-
 # Load spawn data, and aggregate by location code
 spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
   group_by( Year, Region, StatArea, Section, LocationCode ) %>%
@@ -271,12 +259,6 @@ MakeCircle <- function( center=c(0,0), radius=1, nPts=100 ){
   return( tibble(Eastings=xx, Northings=yy) )
 }  # End MakeCircle function
 
-# Format the regions table
-regTab <- regions %>% 
-  rename( 'SAR name'=RegionName, SAR=Region ) %>%
-  mutate( Type=ifelse(Major, "Major", "Minor") ) %>% 
-  select( SAR, 'SAR name', Type )
-
 ##### User interface #####
 
 # Define UI for application that draws a histogram
@@ -375,7 +357,14 @@ ui <- fluidPage(
             "Finally, some spawns are reported to DFO by the public, which is",
             "less common in minor SARs because they tend to be more remote and",
             "difficult to access than major SARs.") ),
-          withSpinner(ui_element=DT::dataTableOutput(outputId="regTab")) ),
+          img( src='BC.png', style="width: 100%" ),
+          p( HTML("<font color='grey'>Boundaries for the Pacific Herring stock",
+            "assessment regions (SARs) in British Columbia.",
+            "The major SARs are Haida Gwaii (HG), Prince Rupert District",
+            "(PRD), Central Coast (CC), Strait of Georgia (SoG), and West",
+            "Coast of Vancouver Island (WCVI).",
+            "The minor SARs are Area 27 (A27) and Area 2 West (A2W).",
+            "Units: kilometres (km).</a>.</font>") ) ),
         
         tabPanel( title="About", br(), style="width: 350pt",
           p( HTML("Pacific Herring spawn survey observations have a nested",
@@ -516,17 +505,6 @@ server <- function(input, output) {
     # Return the table
     return( res )
   } )  # End data
-  
-  # Regions table
-  output$regTab <- DT::renderDataTable(
-    # Format options for table
-    regTab %>%
-      datatable( options=list(lengthChange=FALSE, searching=FALSE,
-        paging=FALSE, ordering=FALSE, lengthChange=FALSE, autoWidth=FALSE),
-        rownames=FALSE,
-        caption="There are five major and two minor Pacific Herring Stock
-                Assessment Regions (SARs) in British Columbia." )
-  )  # End regions
   
   # Make the map
   output$map <- renderPlot( res=150, {
