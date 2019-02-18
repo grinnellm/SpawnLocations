@@ -414,11 +414,11 @@ ui <- fluidPage(
         tabPanel( title="Download", br(), style="width: 350pt",
           bootstrapPage(
             div( style="display:inline-block",
-              downloadButton(outputId="downloadMap", 
-                label="Download map (*.png)")),
+              downloadButton(outputId="downloadFigure", 
+                label="Download figure (*.png)")),
             div( style="display:inline-block",
-              downloadButton(outputId="downloadData",
-                label="Download data (*.csv)")) ) ),
+              downloadButton(outputId="downloadTable",
+                label="Download table (*.csv)")) ) ),
         
         tabPanel( title="Contact", br(), style="width: 350pt", 
           p( HTML("For more information on Pafic Herring spawn data, contact",
@@ -565,7 +565,7 @@ server <- function(input, output) {
       myTheme
     
     # Save the map (if download requested) -- not sure why this has to be here
-    output$downloadMap <- downloadHandler( filename="SpawnMap.png",
+    output$downloadFigure <- downloadHandler( filename="SpawnMap.png",
       content=function(file) ggsave( filename=file, plot=hMap, dpi=600,
         height=6, width=7.5 ),
       contentType="image/png" )
@@ -587,10 +587,10 @@ server <- function(input, output) {
   # })
   
   # Save data (spawn index; if download requested)
-  output$downloadData <- downloadHandler( filename="SpawnData.csv",
+  output$downloadTable <- downloadHandler( filename="SpawnData.csv",
     content=function(file) write_csv( x=spawnSub(), path=file ),
     contentType="text/csv" )
-  
+
 }  # End server
 
 ##### App #####
