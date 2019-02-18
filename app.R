@@ -216,10 +216,10 @@ ClipPolys <- function( stocks, land, pt, buf ) {
 }  # End ClipPolys function
 
 # Function to crop (spatially) spawn
-CropSpawn <- function( dat, yrs, ext, grp ) {  # si
+CropSpawn <- function( dat, yrs, ext, grp ) {
   # Filter spawn index
   dat <- dat %>%
-    filter( Year>=yrs[1], Year<=yrs[2] )#, SpawnIndex>=si[1], SpawnIndex<=si[2])
+    filter( Year>=yrs[1], Year<=yrs[2] )
   # Convert to a spatial object
   coordinates( dat ) <- ~ Eastings+Northings
   # Give the projection
@@ -316,11 +316,7 @@ ui <- fluidPage(
       h3( "Subset spawn index data" ),
       sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
         max=max(spawn$Year), value=range(spawn$Year), sep="" ),
-      # sliderInput( inputId="siRange", label="Spawn index (tonnes, t)", 
-      #   min=floor(min(spawn$SpawnIndex, na.rm=TRUE)), 
-      #   max=ceiling(max(spawn$SpawnIndex, na.rm=TRUE)), 
-      #   value=range(spawn$SpawnIndex, na.rm=TRUE) ),
-      
+
       h3( "Map features" ),
       bootstrapPage(
         div( style="display:inline-block; vertical-align: text-top",
@@ -476,8 +472,8 @@ server <- function(input, output) {
   
   # Get spawn data
   spawnSub <- reactive( 
-    CropSpawn( dat=spawn, yrs=input$yrRange, #si=input$siRange,
-      ext=shapesSub()$extBuff, grp=input$summary )
+    CropSpawn( dat=spawn, yrs=input$yrRange, ext=shapesSub()$extBuff,
+      grp=input$summary )
   )
   
   # Get the data
