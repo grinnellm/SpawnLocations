@@ -364,8 +364,9 @@ ui <- fluidPage(
             "SAR boundaries attempt to capture the habitat range of relatively",
             "discrete migratory herring stocks, and are based on historical",
             "records of commercial catch and spawning sites.") ),
-          p( HTML("There are differences in the amout of effort used to search",
-            "and survey Pacific Herring spawn in major and minor SARs.",
+          p( HTML("There are differences between major and minor SARs",
+            "regarding the amout of effort used to search and survey Pacific",
+            "Herring spawn.",
             "Typically, minor SARs receive less search effort than major SARs",
             "which could cause more spawns to be inadvertently omitted in",
             "minor SARs.",
@@ -376,7 +377,7 @@ ui <- fluidPage(
             "<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>",
             "(draft spawn index technical report)</a>.",
             "Finally, some spawns are reported to DFO by the public, which is",
-            "less likely in minor SARs because they are more remote and",
+            "less common in minor SARs because they tend to be more remote and",
             "difficult to access than major SARs.") ),
           withSpinner(ui_element=DT::dataTableOutput(outputId="regTab")) ),
         
@@ -538,15 +539,6 @@ server <- function(input, output) {
     validate( need(input$bufSpill <= input$bufMap, 
       "Error: spill buffer can not exceed map bufer.") )
     
-    # If grouping by location
-    if( "loc" %in% input$summary ) {
-      # Calculate the number of spawns: sum of Number
-      nSpawns <- format( sum(spawnSub()$Number), big.mark=",")
-    } else {  # End if grouping by location, otherwise
-      # Calculate the number of spawns: number of rows
-      nSpawns <- format( nrow(spawnSub()), big.mark="," )  
-    }  # End if not grouping by location
-    
     # Ensure there are spawn locations to show
     validate( need(nrow(spawnSub()) >= 1, 
       "Error: no spawns match these criteria.") )
@@ -589,8 +581,7 @@ server <- function(input, output) {
       geom_path( data=circDF(), colour="red", size=0.5 ) +
       scale_colour_viridis( na.value="black", labels=comma ) +
       coord_equal( ) +
-      labs( title=paste("Number of Pacific Herring spawns:", nSpawns ), 
-        x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
+      labs( x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
       scale_x_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
       scale_y_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
       myTheme
