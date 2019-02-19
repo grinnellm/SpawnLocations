@@ -2,7 +2,7 @@
 
 Find Pacific Herring spawn index sites around a point.
 The default option is to summarise spawns by year and Location in tonnes (t).
-Users can view spawns on a map, view the raw data, as well as download the map and raw data.
+Users can view spawns as a figure and as a table, both of which can be downloaded.
 For more information on Pafic Herring spawn data, contact
 [Jaclyn Cleary](mailto:Jaclyn.Cleary@dfo-mpo.gc.ca),
 [Matt Grinnell](mailto:Matthew.Grinnell@dfo-mpo.gc.ca), or
