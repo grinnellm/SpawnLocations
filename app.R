@@ -108,9 +108,9 @@ source( file=file.path( "..", "HerringFunctions", "Functions.R") )
 
 # Get used packages (for session info)
 GetPackages <- function( ) {
-  # Get list of used packages
+  # Get list of loaded packages
   myPkgs <- names( sessionInfo()$otherPkgs )
-  # Load and wrangle packages
+  # Get and wrangle packages
   res <- session_info( )$packages %>%
     as_tibble( ) %>%
     select( package, loadedversion, source ) %>%
@@ -452,10 +452,7 @@ ui <- fluidPage(
             "Grinnell</a>, or",
             "<a href=mailto:Matthew.Thompson@dfo-mpo.gc.ca@dfo-mpo.gc.ca>Matt",
             "Thompson</a>,",
-            "DFO Science, Pacific Biological Station.",
-            "To view the source code and report issues, visit our",
-            "<a href=https://github.com/grinnellm/FIND>GitHub",
-            "repository</a>, or contact Matt Grinnell.") ),
+            "DFO Science, Pacific Biological Station.") ),
           br(),
           img( src='HerringDFO.jpg', style="width:100%" ),
           p( HTML("<font color='grey'>Pacific Herring (<em>Clupea",
@@ -467,6 +464,11 @@ ui <- fluidPage(
           p( HTML("The <b>FIND</b> app was built using",
             "<a href=https://shiny.rstudio.com/>Shiny</a> inside",
             "<a href=https://www.rstudio.com/>RStudio</a>.",
+            "To view the source code and report issues, visit our",
+            "<a href=https://github.com/grinnellm/FIND>GitHub",
+            "repository</a>, or contact",
+            "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matt", 
+            "Grinnell</a>.",
             "This version was built with", R.version.string,
             "and the following packages.")),
           withSpinner(ui_element=DT::dataTableOutput(outputId="packages")) )
