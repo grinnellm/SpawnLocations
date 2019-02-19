@@ -52,9 +52,8 @@ UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
 }  # End UsePackages function
 
 # Make packages available
-UsePackages( pkgs=c("tidyverse", "sp", "rgdal", "raster", "rgeos", 
-  "scales", "ggforce", "plyr", "viridis", "shiny", "shinycssloaders", "DT",
-  "plotly", "shiny") )
+UsePackages( pkgs=c("tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", 
+  "viridis", "scales", "DT") )
 
 ##### Controls ##### 
 
@@ -106,6 +105,21 @@ myTheme <- theme(
 
 # Load helper functions
 source( file=file.path( "..", "HerringFunctions", "Functions.R") )
+
+# Get used packages (for session info)
+GetPackages <- function( ) {
+  # Get list of used packages
+  myPkgs <- names( sessionInfo()$otherPkgs )
+  # Load and wrangle packages
+  res <- session_info( )$packages %>%
+    as_tibble( ) %>%
+    select( package, loadedversion, source ) %>%
+    rename( Package=package, Version=loadedversion, Source=source ) %>%
+    filter( Package%in%myPkgs ) %>%
+    arrange( Package )
+  # Return the table
+  return( res )
+}  # End GetPackages function
 
 ##### Data #####
 
@@ -277,9 +291,9 @@ ui <- fluidPage(
       h3( "Event location (decimal degrees)" ),
       # TODO: Allow input in Eastings and Northings?
       bootstrapPage(
-        # Default location is PBS (49.21N, -123.95W)
+        # Default location is PBS (49.21N, -123.96W)
         div( style="display:inline-block; width:40%",
-          numericInput(inputId="longitude", label="Longitude", value=-123.95,
+          numericInput(inputId="longitude", label="Longitude", value=-123.96,
             min=floor(min(spawn$Longitude, na.rm=TRUE)),
             max=ceiling(max(spawn$Longitude, na.rm=TRUE)), step=0.01) ),
         div( style="display:inline-block; width:40%",
@@ -372,7 +386,7 @@ ui <- fluidPage(
                 "The minor SARs are Area 27 (A27) and Area 2 West (A2W).",
                 "Units: kilometres (km).</font>") ) ) ) ),
         
-        tabPanel( title="About", br(), style="width:350pt",
+        tabPanel( title="Information", br(), style="width:350pt",
           p( HTML("Pacific Herring spawn survey observations have a nested",
             "hierarchical structure: sampling quadrats are nested within",
             "transects, transects are nested within spawns, and spawns are",
@@ -447,7 +461,16 @@ ui <- fluidPage(
           p( HTML("<font color='grey'>Pacific Herring (<em>Clupea",
             "pallasii</em>). Image credit:",
             "<a href=http://www.pac.dfo-mpo.gc.ca/>Fisheries and Oceans",
-            "Canada</a>.</font>") ) )
+            "Canada</a>.</font>") ) ),
+        
+        tabPanel( title="About", br(), style="width:350pt",
+          p( HTML("The <b>FIND</b> app was built using",
+            "<a href=https://shiny.rstudio.com/>Shiny</a> inside",
+            "<a href=https://www.rstudio.com/>RStudio</a>.",
+            "This version was built with", R.version.string,
+            "and the following packages.")),
+          withSpinner(ui_element=DT::dataTableOutput(outputId="packages")) )
+        
       )  # End tabs
     )  # End main panel
   )  # End sidebar layout
@@ -457,6 +480,11 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  
+  # Get package info
+  packInfo <- reactive( 
+    GetPackages()
+  )
   
   # Get the spill location
   spill <- reactive( 
@@ -613,6 +641,14 @@ server <- function(input, output) {
   output$downloadLand <- downloadHandler( filename="LandPolygons.csv",
     content=function(file) write_csv( x=shapesSub()$landDF, path=file ),
     contentType="text/csv" )
+  
+  # Package info
+  output$packages <- DT::renderDataTable( {
+    # Get package info
+    res <- packInfo() %>%
+      datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
+        pageLength=15, searching=FALSE, ordering=FALSE) )
+  } )
   
 }  # End server
 
