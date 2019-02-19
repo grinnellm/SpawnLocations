@@ -281,11 +281,11 @@ ui <- fluidPage(
         div( style="display:inline-block; width:40%",
           numericInput(inputId="longitude", label="Longitude", value=-123.95,
             min=floor(min(spawn$Longitude, na.rm=TRUE)),
-            max=ceiling(max(spawn$Longitude, na.rm=TRUE)), step=0.1) ),
+            max=ceiling(max(spawn$Longitude, na.rm=TRUE)), step=0.01) ),
         div( style="display:inline-block; width:40%",
           numericInput(inputId="latitude", label="Latitude", value=49.21,
             min=floor(min(spawn$Latitude, na.rm=TRUE)),
-            max=ceiling(max(spawn$Latitude, na.rm=TRUE)), step=0.1) ) ),
+            max=ceiling(max(spawn$Latitude, na.rm=TRUE)), step=0.01) ) ),
       
       h3( "Buffers (kilometres, km)" ),
       bootstrapPage(
@@ -394,8 +394,7 @@ ui <- fluidPage(
             "<em>q</em>; therefore it is a relative index of spawning biomass",
             "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).",
             "Grinnell et al. (<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>In prep.</a>)",
-            "has details on how we calculate the Pacific Herring spawn",
-            "index.")),
+            "describes how we calculate the Pacific Herring spawn index.") ),
           p( "'Incomplete' spawns are included in this analysis; they are",
             "indicated by grey circles in the figure, and empty cells in the",
             "table.",
