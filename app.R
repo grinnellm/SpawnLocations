@@ -466,9 +466,7 @@ ui <- fluidPage(
             "<a href=https://www.rstudio.com/>RStudio</a>.",
             "To view the source code and report issues, visit our",
             "<a href=https://github.com/grinnellm/FIND>GitHub",
-            "repository</a>, or contact",
-            "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matt", 
-            "Grinnell</a>.",
+            "repository</a>.",
             "This version was built with", R.version.string,
             "and the following packages.")),
           withSpinner(ui_element=DT::dataTableOutput(outputId="packages")) )
