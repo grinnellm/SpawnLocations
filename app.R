@@ -101,10 +101,37 @@ myTheme <- theme(
   legend.background=element_rect(fill="transparent"),
   plot.margin=unit(c(0.1, 0.6, 0.1, 0.1), "lines") )
 
-##### Functions #####
+##### External #####
 
 # Load helper functions
 source( file=file.path( "..", "HerringFunctions", "Functions.R") )
+
+##### Data #####
+
+# Load spawn data, and aggregate by location code
+spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
+  group_by( Year, Region, StatArea, Section, LocationCode ) %>%
+  summarise( Eastings=unique(Eastings), Northings=unique(Northings),
+    Longitude=unique(Longitude), Latitude=unique(Latitude),
+    SpawnIndex=SumNA(c(SurfSI, MacroSI, UnderSI)) ) %>%
+  ungroup( ) %>%
+  filter( !is.na(Eastings), !is.na(Northings) ) %>%
+  select( Year, Region, StatArea, Section, LocationCode, Eastings,
+    Northings, Longitude, Latitude, SpawnIndex )
+
+# Range of longitude and latitude in spawn data
+rangeSI <- list( Long=round(range(spawn$Longitude, na.rm=TRUE), digits=2),
+  Lat=round(range(spawn$Latitude, na.rm=TRUE), digits=2) )
+
+# Load the Section shapefile (has Statistical Areas and Regions)
+secPoly <- readOGR( dsn=file.path(locStocks$loc), layer=locStocks$lyr, 
+  verbose=FALSE )
+
+# Load land polygon
+landPoly <- readOGR( dsn=file.path(locLand$loc), layer=locLand$lyr, 
+  verbose=FALSE )
+
+##### Functions #####
 
 # Get used packages (for session info)
 GetPackages <- function( ) {
@@ -121,21 +148,16 @@ GetPackages <- function( ) {
   return( res )
 }  # End GetPackages function
 
-##### Data #####
-
-# Load spawn data, and aggregate by location code
-spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
-  group_by( Year, Region, StatArea, Section, LocationCode ) %>%
-  summarise( Eastings=unique(Eastings), Northings=unique(Northings),
-    Longitude=unique(Longitude), Latitude=unique(Latitude),
-    SpawnIndex=SumNA(c(SurfSI, MacroSI, UnderSI)) ) %>%
-  ungroup( ) %>%
-  filter( !is.na(Eastings), !is.na(Northings) ) %>%
-  select( Year, Region, StatArea, Section, LocationCode, Eastings,
-    Northings, Longitude, Latitude, SpawnIndex )
-
 # Convert location to Albers
 ConvLocation <- function( xy ) {
+  # Ensure longitude is within range of spawns
+  if( xy[1] < rangeSI$Long[1] | xy[1] > rangeSI$Long[2] ) 
+    stop( "longitude must be between ", paste(rangeSI$Long, collapse=" and "), 
+      ".", sep="", call.=FALSE )
+  # Ensure latitude is within range of spawns
+  if( xy[2] < rangeSI$Lat[1] | xy[2] > rangeSI$Lat[2] ) 
+    stop( "latitude must be between ", paste(rangeSI$Lat, collapse=" and "), 
+      ".", sep="", call.=FALSE )
   # Make a matrix
   xyMat <- matrix( xy, ncol=2 )
   # Convert to spatial points
@@ -148,14 +170,6 @@ ConvLocation <- function( xy ) {
   # Return the points
   return( list(xySP=xySP, xyDF=xyDF) )
 }  # End ConvLocation function
-
-# Load the Section shapefile (has Statistical Areas and Regions)
-secPoly <- readOGR( dsn=file.path(locStocks$loc), layer=locStocks$lyr, 
-  verbose=FALSE )
-
-# Load land polygon
-landPoly <- readOGR( dsn=file.path(locLand$loc), layer=locLand$lyr, 
-  verbose=FALSE )
 
 # Function to wrangle shapefiles
 ClipPolys <- function( stocks, land, pt, buf ) {
@@ -302,12 +316,10 @@ ui <- fluidPage(
         # Default location is PBS (49.21N, -123.96W)
         div( style="display:inline-block; width:40%",
           numericInput(inputId="longitude", label="Longitude", value=-123.96,
-            min=floor(min(spawn$Longitude, na.rm=TRUE)),
-            max=ceiling(max(spawn$Longitude, na.rm=TRUE)), step=0.01) ),
+            min=rangeSI$Long[1], max=rangeSI$Long[2], step=0.01) ),
         div( style="display:inline-block; width:40%",
           numericInput(inputId="latitude", label="Latitude", value=49.21,
-            min=floor(min(spawn$Latitude, na.rm=TRUE)),
-            max=ceiling(max(spawn$Latitude, na.rm=TRUE)), step=0.01) ) ),
+            min=rangeSI$Lat[1], max=rangeSI$Lat[2], step=0.01) ) ),
       
       h2( "Buffers (kilometres, km)" ),
       bootstrapPage(
