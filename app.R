@@ -120,7 +120,8 @@ spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
     Northings, Longitude, Latitude, SpawnIndex )
 
 # Range of longitude and latitude in spawn data
-rangeSI <- list( Long=round(range(spawn$Longitude, na.rm=TRUE), digits=2),
+rangeSI <- list( 
+  Long=round(range(spawn$Longitude, na.rm=TRUE), digits=2),
   Lat=round(range(spawn$Latitude, na.rm=TRUE), digits=2) )
 
 # Load the Section shapefile (has Statistical Areas and Regions)
@@ -152,11 +153,11 @@ GetPackages <- function( ) {
 ConvLocation <- function( xy ) {
   # Ensure longitude is within range of spawns
   if( xy[1] < rangeSI$Long[1] | xy[1] > rangeSI$Long[2] ) 
-    stop( "longitude must be between ", paste(rangeSI$Long, collapse=" and "), 
+    stop( "Longitude must be between ", paste(rangeSI$Long, collapse=" and "), 
       ".", sep="", call.=FALSE )
   # Ensure latitude is within range of spawns
   if( xy[2] < rangeSI$Lat[1] | xy[2] > rangeSI$Lat[2] ) 
-    stop( "latitude must be between ", paste(rangeSI$Lat, collapse=" and "), 
+    stop( "Latitude must be between ", paste(rangeSI$Lat, collapse=" and "), 
       ".", sep="", call.=FALSE )
   # Make a matrix
   xyMat <- matrix( xy, ncol=2 )
@@ -173,6 +174,9 @@ ConvLocation <- function( xy ) {
 
 # Function to wrangle shapefiles
 ClipPolys <- function( stocks, land, pt, buf ) {
+  # Stop if buffer is negative
+  if( buf < 0 )
+    stop( "Buffer must be non-negative.", call.=FALSE )
   # Function to perform some light wrangling
   UpdateSections <- function( dat ) {
     # Some light wrangling
@@ -200,7 +204,7 @@ ClipPolys <- function( stocks, land, pt, buf ) {
   # Crop the sections
   secBC <- crop( x=secBC, y=extBuff )
   # Error if the point is outside the herring sections (study area)
-  if( is.null(secBC) ) stop( "the event is outside the study area.",
+  if( is.null(secBC) ) stop( "The event is outside the study area.",
     call.=FALSE )
   # Determine section centroids
   secCent <- gCentroid( spgeom=secBC, byid=TRUE )
@@ -254,7 +258,7 @@ CropSpawn <- function( dat, yrs, ext, grp ) {
   dat <- data.frame( datSP ) %>%
     as_tibble( )
   # Error if all the spawn data are cropped
-  if( nrow(dat) < 1 ) stop( "no spawn data in this area.", call.=FALSE )
+  if( nrow(dat) < 1 ) stop( "No spawn data in this area.", call.=FALSE )
   # Light wrangling
   dat <- dat %>%
     mutate( Year=as.integer(Year),
@@ -278,6 +282,9 @@ CropSpawn <- function( dat, yrs, ext, grp ) {
 
 # Draw a circle
 MakeCircle <- function( center=c(0,0), radius=1, nPts=100 ){
+  # Stop if radius is negative
+  if( radius < 0 )
+    stop( "Radius must be non-negative.", call.=FALSE )
   # Vector of points
   tt <- seq( from=0, to=2*pi, length.out=nPts )
   # X values (math!)
@@ -463,7 +470,8 @@ ui <- fluidPage(
             "to enable a responsive analysis.",
             "However, the coarse land polygons omit some geographic features",
             "which causes some spawns to be displayed in open water or on",
-            "land.") ) ),
+            "land.",
+            "Do not use these maps for navigation.") ) ),
         
         tabPanel( title="Contact", br(), style="width:350pt", 
           p( HTML("For more information on Pafic Herring spawn data, contact",
