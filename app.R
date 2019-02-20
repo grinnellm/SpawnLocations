@@ -286,15 +286,17 @@ ui <- fluidPage(
   # Sidebar with input parameters t
   sidebarLayout(
     # Sidebar (input etc)
-    sidebarPanel( width=3,
+    sidebarPanel( width=4,
+      
+      h1( "FIND" ),
       
       p( HTML("<b>FIND</b> is an app that finds Pacific Herring spawn index",
         "sites around a point.",
-        "Please read the details in the tabs.",
-        "<font color='red'>Note: this version is a draft and should not be",
-        "used for planning.</font>") ),
+        "Please read the details in the tabs.") ),
+      h3( HTML("<font color='red'>This version is a draft; do not",
+        "use for planning.</font>") ),
       
-      h3( "Event location (decimal degrees)" ),
+      h2( "Event location (decimal degrees)" ),
       # TODO: Allow input in Eastings and Northings?
       bootstrapPage(
         # Default location is PBS (49.21N, -123.96W)
@@ -307,20 +309,20 @@ ui <- fluidPage(
             min=floor(min(spawn$Latitude, na.rm=TRUE)),
             max=ceiling(max(spawn$Latitude, na.rm=TRUE)), step=0.01) ) ),
       
-      h3( "Buffers (kilometres, km)" ),
+      h2( "Buffers (kilometres, km)" ),
       bootstrapPage(
         div( style="display:inline-block; width:40%", 
-          numericInput(inputId="bufSpill", label="Circle (radius)", value=10,
+          numericInput(inputId="bufSpill", label="Circle (radius)", value=8,
             min=0, step=1) ),
         div( style="display:inline-block; width:40%",
           numericInput(inputId="bufMap", label="Distance to map edge", 
-            value=12, min=1, step=1) ) ),
+            value=10, min=1, step=1) ) ),
       
-      h3( "Subset spawn index data" ),
+      h2( "Subset spawn index data" ),
       sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
         max=max(spawn$Year), value=range(spawn$Year), sep="" ),
       
-      h3( "Display features" ),
+      h2( "Display features" ),
       bootstrapPage(
         div( style="display:inline-block; vertical-align:text-top",
           checkboxGroupInput(inputId="location", label="Event", 
@@ -335,24 +337,45 @@ ui <- fluidPage(
           checkboxGroupInput(inputId="summary", label="Summarise spawns", 
             choiceNames=c("By Location"), choiceValues=c("loc")) ) ),
       
-      # h3( "View results" ),
+      # h2( "View results" ),
       div( style="text-align:center",
         submitButton("Update", icon("refresh")) )
       
     ),  # End sidebar panel
     
     # Show a plot of the generated distribution
-    mainPanel( width=9,
+    mainPanel( width=8,
       # Start tabs
       tabsetPanel( type="tabs", selected="Figure",
         
-        tabPanel( title="Figure", br(),
+        tabPanel( title="Figure", br(),# style="width:750pt",
           withSpinner(ui_element=plotOutput(outputId="map", width="100%",
             height="700px"))),#, click="mapClick")),
         # tableOutput(outputId="mapClickPoints") ),
         
         tabPanel( title="Table", br(),
           withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
+        
+        tabPanel( title="Download", br(), style="width:350pt",
+          p( HTML("We provide geographic data in the following", 
+            "<a href=http://spatialreference.org/ref/epsg/nad83-bc-albers/>", 
+            paste(geoProj, ".", sep=""), "</a>") ),
+          bootstrapPage(
+            h2( "Spawn sites" ),
+            div( style="display:inline-block",
+              downloadButton(outputId="downloadFigure", 
+                label="Download figure (*.png)")),
+            div( style="display:inline-block",
+              downloadButton(outputId="downloadTable",
+                label="Download table (*.csv)")) ),
+          bootstrapPage(
+            h2( "Polygons" ),
+            div( style="display:inline-block",
+              downloadButton(outputId="downloadSections",
+                label="Download herring sections (*.csv)")),
+            div( style="display:inline-block",
+              downloadButton(outputId="downloadLand",
+                label="Download land (*.csv)"))) ),
         
         tabPanel( title="Regions", br(),
           bootstrapPage(
@@ -405,7 +428,7 @@ ui <- fluidPage(
           p( HTML("By default, spawns are summarised by year and Location in",
             "tonnes (t).",
             "Alternatively, users can choose to summarise spawns by Location",
-            "(i.e., aggregate spawns over years).",
+            "only (i.e., aggregate spawns over years).",
             "In this case, spawns are described by the mean spawn index, and",
             "the number of spawns, which indicates the number of years that",
             "spawn was observed at a given Location.",
@@ -429,27 +452,6 @@ ui <- fluidPage(
             "However, the coarse land polygons omit some geographic features",
             "which causes some spawns to be displayed in open water or on",
             "land.") ) ),
-        
-        tabPanel( title="Download", br(), style="width: 350pt",
-          p( HTML("We provide geographic data in the following", 
-            "<a href=http://spatialreference.org/ref/epsg/nad83-bc-albers/>", 
-            paste(geoProj, ".", sep=""), "</a>") ),
-          bootstrapPage(
-            h3( "Spawn sites" ),
-            div( style="display:inline-block",
-              downloadButton(outputId="downloadFigure", 
-                label="Download figure (*.png)")),
-            div( style="display:inline-block",
-              downloadButton(outputId="downloadTable",
-                label="Download table (*.csv)")) ),
-          bootstrapPage(
-            h3( "Polygons" ),
-            div( style="display:inline-block",
-              downloadButton(outputId="downloadSections",
-                label="Download herring sections (*.csv)")),
-            div( style="display:inline-block",
-              downloadButton(outputId="downloadLand",
-                label="Download land (*.csv)"))) ),
         
         tabPanel( title="Contact", br(), style="width:350pt", 
           p( HTML("For more information on Pafic Herring spawn data, contact",
@@ -605,7 +607,7 @@ server <- function(input, output) {
     
     # Add map layers
     hMap <- hMap +
-      geom_path( data=circDF(), colour="red", size=0.5 ) +
+      geom_path( data=circDF(), colour="red", size=0.25 ) +
       scale_colour_viridis( na.value="black", labels=comma ) +
       coord_equal( ) +
       labs( x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
