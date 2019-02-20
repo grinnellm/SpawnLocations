@@ -9,7 +9,7 @@
 # Code name:    FIND (FIND Is Not Difficult)
 # Version:      1.0
 # Date started: Jan 08, 2019
-# Date edited:  Feb 13, 2019
+# Date edited:  Feb 19, 2019
 # 
 # Overview: 
 # Show herring spawn events within a given distance from a point.
@@ -280,13 +280,19 @@ MakeCircle <- function( center=c(0,0), radius=1, nPts=100 ){
 ui <- fluidPage(
   
   # Application title
-  titlePanel( HTML("Find Pacific Herring spawn index sites", 
-    "<b>Draft: do not use for planning</b>") ),
+  titlePanel( title="Find Pacific Herring spawn index sites", 
+    windowTitle="FIND" ),
   
-  # Sidebar with input parameters 
+  # Sidebar with input parameters t
   sidebarLayout(
     # Sidebar (input etc)
     sidebarPanel( width=3,
+      
+      p( HTML("<b>FIND</b> is an app that finds Pacific Herring spawn index",
+        "sites around a point.",
+        "Please read the details in the tabs.",
+        "<font color='red'>Note: this version is a draft and should not be",
+        "used for planning.</font>") ),
       
       h3( "Event location (decimal degrees)" ),
       # TODO: Allow input in Eastings and Northings?
@@ -461,13 +467,15 @@ ui <- fluidPage(
             "Canada</a>.</font>") ) ),
         
         tabPanel( title="About", br(), style="width:350pt",
-          p( HTML("The <b>FIND</b> app was built using",
+          p( HTML("<b>FIND</b> (FIND Is Not Difficult) was built using",
             "<a href=https://shiny.rstudio.com/>Shiny</a> inside",
             "<a href=https://www.rstudio.com/>RStudio</a>.",
-            "To view the source code and report issues, visit our",
-            "<a href=https://github.com/grinnellm/FIND>GitHub",
-            "repository</a>.",
-            "This version was built with", R.version.string,
+            "View the source code and report issues on our",
+            "<a href=https://github.com/grinnellm/FIND>GitHub repository</a>.",
+            "This version",
+            # paste("(", Sys.Date(), ")", sep=""),
+            "was built with",
+            R.version.string,
             "and the following packages.")),
           withSpinner(ui_element=DT::dataTableOutput(outputId="packages")) )
         
