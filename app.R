@@ -310,9 +310,7 @@ ui <- fluidPage(
     sidebarPanel( width=4,
       
       h1( "FIND" ),
-      
-      p( HTML("<b>FIND</b> is an app that finds Pacific Herring spawn index",
-        "sites around a point.",
+      p( HTML("Find Pacific Herring spawn index sites around a point.",
         "Please read the details in the tabs.") ),
       h3( HTML("<font color='red'>This version is a draft; do not",
         "use for planning.</font>") ),
@@ -341,17 +339,18 @@ ui <- fluidPage(
       sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
         max=max(spawn$Year), value=range(spawn$Year), sep="" ),
       
-      h2( "Display features" ),
+      h2( "Display features and summaries" ),
       bootstrapPage(
         div( style="display:inline-block; vertical-align:text-top",
           checkboxGroupInput(inputId="location", label="Event", 
-            choiceNames=c("Point"), choiceValues=c("pt"), selected=c("pt")) ),
+            choiceNames=c("Point", "Circle"), choiceValues=c("pt", "circ"), 
+            selected=c("pt", "circ")) ),
         # Add horizontal padding on this 'div' to make white space
         div( style="display:inline-block; vertical-align:text-top;
           padding: 0px 12px",
           checkboxGroupInput(inputId="polys", label="Polygons", 
-            choiceNames=c("Sections"), choiceValues=c("sec"), 
-            selected=c("sec")) ),
+            choiceNames=c("Sections", "Labels"), choiceValues=c("sec", "lab"), 
+            selected=c("sec", "lab")) ),
         div( style="display:inline-block; vertical-align:text-top",
           checkboxGroupInput(inputId="summary", label="Summarise spawns", 
             choiceNames=c("By Location"), choiceValues=c("loc")) ) ),
@@ -596,19 +595,30 @@ server <- function(input, output) {
       geom_polygon( data=shapesSub()$landDF, aes(group=group),
         fill="lightgrey" )
     
-    # If showing section lines and labels
+    # If showing sections
     if( "sec" %in% input$polys ) {
       hMap <- hMap + 
         geom_path( data=shapesSub()$secDF, aes(group=Section), size=0.25,
-          colour="black" ) +
-        geom_label( data=shapesSub()$secCentDF, alpha=0.5, aes(label=Section) )
+          colour="black" )
     }  # End if showing sections
+    
+    # If showing sections labels
+    if( "lab" %in% input$polys & "sec" %in% input$polys ) {
+      hMap <- hMap + 
+        geom_label( data=shapesSub()$secCentDF, alpha=0.5, aes(label=Section) )
+    }  # End if showing labels
     
     # If showing the point location
     if( "pt" %in% input$location ) {
       hMap <- hMap + 
         geom_point( data=spill()$xyDF, colour="red", shape=42, size=8 )
     }  # End if showing the point location
+    
+    # If showing the circle
+    if( "circ" %in% input$location ) {
+      hMap <- hMap + 
+        geom_path( data=circDF(), colour="red", size=0.25 )
+    }  # End if showing the circle
     
     # If aggregating by location
     if( "loc" %in% input$summary ) {
@@ -627,7 +637,6 @@ server <- function(input, output) {
     
     # Add map layers
     hMap <- hMap +
-      geom_path( data=circDF(), colour="red", size=0.25 ) +
       scale_colour_viridis( na.value="black", labels=comma ) +
       coord_equal( ) +
       labs( x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
