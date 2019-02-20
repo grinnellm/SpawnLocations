@@ -339,6 +339,7 @@ ui <- fluidPage(
       sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
         max=max(spawn$Year), value=range(spawn$Year), sep="" ),
       
+      # TODO: This should be two sections: one for Display; one for summaries
       h2( "Display features and summaries" ),
       bootstrapPage(
         div( style="display:inline-block; vertical-align:text-top",
@@ -508,7 +509,7 @@ ui <- fluidPage(
 ##### Server #####
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function( input, output ) {
   
   # Get package info
   packInfo <- reactive( 
@@ -635,12 +636,21 @@ server <- function(input, output) {
         labs( colour="Spawn\nindex (t)" )
     }  # End if not aggregating by location
     
+    # Working on a way to add second axes with Longitude and Latitude
+    # fun <- Vectorize(function( x, dat=spawnSub() ) {
+    #   res <- dat %>%
+    #     select( Longitude ) 
+    #   # res <- x/2000 + sqrt(x/2000)
+    #   return( res )
+    # })
+    
     # Add map layers
     hMap <- hMap +
       scale_colour_viridis( na.value="black", labels=comma ) +
       coord_equal( ) +
       labs( x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
       scale_x_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
+      # sec.axis=sec_axis(trans=~fun(x=.))
       scale_y_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
       myTheme
     
