@@ -319,42 +319,44 @@ ui <- fluidPage(
       # TODO: Allow input in Eastings and Northings?
       bootstrapPage(
         # Default location is PBS (49.21N, -123.96W)
-        div( style="display:inline-block; width:40%",
+        div( style="display:inline-block; width:49%",
           numericInput(inputId="longitude", label="Longitude", value=-123.96,
             min=rangeSI$Long[1], max=rangeSI$Long[2], step=0.01) ),
-        div( style="display:inline-block; width:40%",
+        div( style="display:inline-block; width:49%",
           numericInput(inputId="latitude", label="Latitude", value=49.21,
             min=rangeSI$Lat[1], max=rangeSI$Lat[2], step=0.01) ) ),
       
       h2( "Buffers (kilometres, km)" ),
       bootstrapPage(
-        div( style="display:inline-block; width:40%", 
+        div( style="display:inline-block; width:49%", 
           numericInput(inputId="bufSpill", label="Circle (radius)", value=8,
             min=0, step=1) ),
-        div( style="display:inline-block; width:40%",
+        div( style="display:inline-block; width:49%",
           numericInput(inputId="bufMap", label="Distance to map edge", 
             value=10, min=1, step=1) ) ),
       
-      h2( "Subset spawn index data" ),
+      h2( "Subset spawns" ),
       sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
         max=max(spawn$Year), value=range(spawn$Year), sep="" ),
       
-      # TODO: This should be two sections: one for Display; one for summaries
-      h2( "Display features and summaries" ),
       bootstrapPage(
-        div( style="display:inline-block; vertical-align:text-top",
-          checkboxGroupInput(inputId="location", label="Event", 
-            choiceNames=c("Point", "Circle"), choiceValues=c("pt", "circ"), 
-            selected=c("pt", "circ")) ),
-        # Add horizontal padding on this 'div' to make white space
-        div( style="display:inline-block; vertical-align:text-top;
+        div( style="display:inline-block; width:44%",
+          h2( "Display features" ),
+          div( style="display:inline-block; vertical-align:text-top",
+            checkboxGroupInput(inputId="location", label="Event", 
+              choiceNames=c("Point", "Circle"), choiceValues=c("pt", "circ"), 
+              selected=c("pt", "circ")) ),
+          # Add horizontal padding on this 'div' to make white space
+          div( style="display:inline-block; vertical-align:text-top;
           padding: 0px 12px",
-          checkboxGroupInput(inputId="polys", label="Polygons", 
-            choiceNames=c("Sections", "Labels"), choiceValues=c("sec", "lab"), 
-            selected=c("sec", "lab")) ),
-        div( style="display:inline-block; vertical-align:text-top",
-          checkboxGroupInput(inputId="summary", label="Summarise spawns", 
-            choiceNames=c("By Location"), choiceValues=c("loc")) ) ),
+            checkboxGroupInput(inputId="polys", label="Polygons", 
+              choiceNames=c("Sections", "Labels"), choiceValues=c("sec", "lab"), 
+              selected=c("sec", "lab")) ) ),
+        div( style="display:inline-block; width:54%",
+          h2( "Summarise spawns" ),
+          div( style="display:inline-block; vertical-align:text-top",
+            checkboxGroupInput(inputId="summary", label="Aggregate", 
+              choiceNames=c("By Location"), choiceValues=c("loc")) ) ) ),
       
       # h2( "View results" ),
       div( style="text-align:center",
