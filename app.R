@@ -9,7 +9,7 @@
 # Code name:    FIND (FIND Is Not Difficult)
 # Version:      1.0
 # Date started: Jan 08, 2019
-# Date edited:  Feb 19, 2019
+# Date edited:  Feb 22, 2019
 # 
 # Overview: 
 # Show herring spawn events within a given distance from a point.
@@ -23,11 +23,11 @@
 
 # Some notes on making the map interactive using plotly or clicks, neither of
 # which are working properly:
-#   * plotly works, but the figure lacks some necessary components such as 
+#   1) plotly works, but the figure lacks some necessary components such as 
 #   geom_label is not understood (for labelling Sections), and it is not able to
 #   have more than one legend (two legends are required when summarising spawns
 #   by Location; one for mean spawn index, and one for number of spawns), and
-#   * clicks don't seem to work, in that no data shows up in the table when a 
+#   2) clicks don't seem to work, in that no data shows up in the table when a 
 #   point is clicked.
 
 ##### Housekeeping #####
@@ -60,7 +60,7 @@ UsePackages( pkgs=c("tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders",
 # Saved csv datafile (from Spawn.R)
 spawnLoc <- file.path( "Data", "SpawnRaw.csv" )
 
-# Input coordinate reference system (spill)
+# Input coordinate reference system (point location; spill)
 crsSpill <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 
 # Input coordinate reference system (herring sections)
@@ -310,7 +310,9 @@ ui <- fluidPage(
       h3( HTML("<font color='red'>This version is a draft; do not",
         "use for planning.</font>") ),
       
-      h2( "Event location (decimal degrees)" ),
+      h2( HTML("Event location", 
+        "<a href=http://spatialreference.org/ref/sr-org/14/>(decimal",
+        "degrees)</a>") ),
       # TODO: Allow input in Eastings and Northings?
       bootstrapPage(
         # Default location is PBS (49.21N, -123.96W)
@@ -541,7 +543,7 @@ server <- function( input, output ) {
     
     # Ensure there are spawn locations to show
     validate( need(nrow(spawnSub()) >= 1, 
-      "Error: no spawns match these criteria.") )
+      "Error: No spawns match these criteria.") )
     
     # Light wrangling
     res <- spawnSub() %>%
@@ -582,15 +584,11 @@ server <- function( input, output ) {
     
     # Ensure map buffer is larger than spill buffer
     validate( need(input$bufSpill <= input$bufMap, 
-      "Error: spill buffer can not exceed map bufer.") )
-    
-    # TODO: Ensure polygons are selected if showing labels
-    # validate( need(), 
-    #   "Error: enable section polygons to show labels.") 
+      "Error: Spill buffer can not exceed map bufer.") )
     
     # Ensure there are spawn locations to show
     validate( need(nrow(spawnSub()) >= 1, 
-      "Error: no spawns match these criteria.") )
+      "Error: No spawns match these criteria.") )
     
     # Plot the area (default map)
     hMap <- ggplot( data=shapesSub()$landDF, aes(x=Eastings, y=Northings) ) +
@@ -600,30 +598,38 @@ server <- function( input, output ) {
     # If showing sections
     if( "sec" %in% input$polys ) {
       hMap <- hMap + 
+        # Update the map
         geom_path( data=shapesSub()$secDF, aes(group=Section), size=0.25,
           colour="black" )
     }  # End if showing sections
     
     # If showing sections labels
-    if( "lab" %in% input$polys & "sec" %in% input$polys ) {
+    if( "lab" %in% input$polys ) {
+      # Ensure polygons are present
+      validate( need("sec" %in% input$polys,
+        "Error: Enable section polygons to show labels.") )
+      # Update the map
       hMap <- hMap + 
         geom_label( data=shapesSub()$secCentDF, alpha=0.5, aes(label=Section) )
     }  # End if showing labels
     
     # If showing the point location
     if( "pt" %in% input$location ) {
+      # Update the map
       hMap <- hMap + 
         geom_point( data=spill()$xyDF, colour="red", shape=42, size=8 )
     }  # End if showing the point location
     
     # If showing the circle
     if( "circ" %in% input$location ) {
+      # Update the map
       hMap <- hMap + 
         geom_path( data=circDF(), colour="red", size=0.25 )
     }  # End if showing the circle
     
     # If aggregating by location
     if( "loc" %in% input$summary ) {
+      # Update the map
       hMap <- hMap +
         geom_point( data=spawnSub(), aes(colour=SpawnIndex, size=Number),
           alpha=0.75 ) +
@@ -631,6 +637,7 @@ server <- function( input, output ) {
         guides( colour=guide_colourbar(order=1), size=guide_legend(order=2) ) +
         scale_size_area( breaks=pretty(x=spawnSub()$Number) )
     } else {  # End if aggregatign by location, otherwise
+      # Update the map
       hMap <- hMap +
         geom_point( data=spawnSub(), aes(colour=SpawnIndex), size=4, 
           alpha=0.5 ) +
