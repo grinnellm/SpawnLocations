@@ -101,11 +101,6 @@ myTheme <- theme(
   legend.background=element_rect(fill="transparent"),
   plot.margin=unit(c(0.1, 0.6, 0.1, 0.1), "lines") )
 
-##### External #####
-
-# Load helper functions
-source( file=file.path( "..", "HerringFunctions", "Functions.R") )
-
 ##### Data #####
 
 # Load spawn data, and aggregate by location code
@@ -113,7 +108,7 @@ spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
   group_by( Year, Region, StatArea, Section, LocationCode ) %>%
   summarise( Eastings=unique(Eastings), Northings=unique(Northings),
     Longitude=unique(Longitude), Latitude=unique(Latitude),
-    SpawnIndex=SumNA(c(SurfSI, MacroSI, UnderSI)) ) %>%
+    SpawnIndex=sum(c(SurfSI, MacroSI, UnderSI), na.rm=TRUE) ) %>%
   ungroup( ) %>%
   filter( !is.na(Eastings), !is.na(Northings) ) %>%
   select( Year, Region, StatArea, Section, LocationCode, Eastings,
@@ -588,6 +583,10 @@ server <- function( input, output ) {
     # Ensure map buffer is larger than spill buffer
     validate( need(input$bufSpill <= input$bufMap, 
       "Error: spill buffer can not exceed map bufer.") )
+    
+    # TODO: Ensure polygons are selected if showing labels
+    # validate( need(), 
+    #   "Error: enable section polygons to show labels.") 
     
     # Ensure there are spawn locations to show
     validate( need(nrow(spawnSub()) >= 1, 
