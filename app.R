@@ -108,11 +108,19 @@ spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
   group_by( Year, Region, StatArea, Section, LocationCode ) %>%
   summarise( Eastings=unique(Eastings), Northings=unique(Northings),
     Longitude=unique(Longitude), Latitude=unique(Latitude),
-    SpawnIndex=sum(c(SurfSI, MacroSI, UnderSI), na.rm=TRUE) ) %>%
+    SpawnIndex=sum(c(SurfSI, MacroSI, UnderSI), na.rm=TRUE),
+    Survey=unique(Survey) ) %>%
   ungroup( ) %>%
   filter( !is.na(Eastings), !is.na(Northings) ) %>%
   select( Year, Region, StatArea, Section, LocationCode, Eastings,
-    Northings, Longitude, Latitude, SpawnIndex )
+    Northings, Longitude, Latitude, SpawnIndex, Survey )
+
+# Get survey time periods
+qPeriods <- spawn %>%
+  mutate( Survey=factor(Survey, levels=c("Surface", "Dive")) ) %>%
+  group_by( Survey ) %>%
+  summarise( Start=min(Year), End=max(Year) ) %>%
+  ungroup( )
 
 # Range of longitude and latitude in spawn data
 rangeSI <- list( 
@@ -419,8 +427,8 @@ ui <- fluidPage(
                 "accurate than dive surveys which are used extensively in",
                 "major SARs",
                 "(<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>Grinnell et al. In prep.</a>).",
-                "Finally, some spawns are reported to DFO by the public, which",
-                "is less common in minor SARs because they tend to be more",
+                "Finally, some spawns are reported by the public, which is",
+                "less common in minor SARs because they tend to be more",
                 "remote and difficult to access than major SARs.") )),
             div( style="display:inline-block; width:350pt;
               vertical-align:text-top",
@@ -454,6 +462,11 @@ ui <- fluidPage(
             "only, and is not scaled by the spawn survey scaling parameter",
             "<em>q</em>; therefore it is a relative index of spawning biomass",
             "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>).",
+            "In addition, note that the spawn index has two distinct periods",
+            "defined by the dominant survey method: surface",
+            paste("(", qPeriods$Start[1], " to ", qPeriods$End[1], "),", sep=""),
+            "and dive surveys",
+            paste("(", qPeriods$Start[2], " to ", qPeriods$End[2], ").", sep=""),
             "Grinnell et al. (<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>In prep.</a>)",
             "describes how we calculate the Pacific Herring spawn index.") ),
           p( "'Incomplete' spawns are included in this analysis; they are",
