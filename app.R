@@ -19,7 +19,8 @@
 # herring section shapefiles.
 # 
 # Notes: 
-# This is a Shiny web application; run it by clicking the 'Run App' button.
+# This is a Shiny web application; run it by clicking the 'Run App' button in
+# RStudio.
 
 # Some notes on making the map interactive using plotly or clicks, neither of
 # which are working properly:
@@ -29,6 +30,13 @@
 #   by Location; one for mean spawn index, and one for number of spawns), and
 #   2) clicks don't seem to work, in that no data shows up in the table when a 
 #   point is clicked.
+
+# TODOs
+# 1. Add an option to view the map in better detail (i.e., using stamenmaps)
+#   require( ggmap )
+#   na_bbox <- c( left=-124.1, bottom=49.125, right=-123.825, top=49.3 )
+#   na_map <- get_stamenmap( na_bbox, zoom=12, maptype="terrain" )
+#   ggmap( na_map )
 
 ##### Housekeeping #####
 
