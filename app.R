@@ -53,7 +53,7 @@ UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
 
 # Make packages available
 UsePackages( pkgs=c("tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", 
-  "viridis", "scales", "DT") )
+  "viridis", "scales", "DT", "maptools") )
 
 ##### Controls ##### 
 
