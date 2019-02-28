@@ -22,22 +22,6 @@
 # This is a Shiny web application; run it by clicking the 'Run App' button in
 # RStudio.
 
-# Some notes on making the map interactive using plotly or clicks, neither of
-# which are working properly:
-#   1) plotly works, but the figure lacks some necessary components such as 
-#   geom_label is not understood (for labelling Sections), and it is not able to
-#   have more than one legend (two legends are required when summarising spawns
-#   by Location; one for mean spawn index, and one for number of spawns), and
-#   2) clicks don't seem to work, in that no data shows up in the table when a 
-#   point is clicked.
-
-# TODOs
-# 1. Add an option to view the map in better detail (i.e., using stamenmaps)
-#   require( ggmap )
-#   na_bbox <- c( left=-124.1, bottom=49.125, right=-123.825, top=49.3 )
-#   na_map <- get_stamenmap( na_bbox, zoom=12, maptype="terrain" )
-#   ggmap( na_map )
-
 ##### Housekeeping #####
 
 # General options
@@ -258,13 +242,7 @@ CropSpawn <- function( dat, yrs, ext, grp ) {
   # Transform
   datSP <- spTransform( x=dat, CRSobj=CRS(crsOut) )
   # Clip to extent
-  # TODO: 'crop' gets a warning re "seq.default(along = cand): partial argument
-  # match of 'along' to 'along.with'"
   datSP <- crop( x=datSP, y=ext )
-  # isInside <- gIntersects( datSP, ext, byid=TRUE )  # Kinda works, but missing
-  # some
-  # Select points
-  # datSP <- datSP[isInside[1, ], ]
   # Make a data frame
   dat <- data.frame( datSP ) %>%
     as_tibble( )
@@ -329,7 +307,6 @@ ui <- fluidPage(
       h2( HTML("Event location", 
         "<a href=http://spatialreference.org/ref/sr-org/14/>(decimal",
         "degrees)</a>") ),
-      # TODO: Allow input in Eastings and Northings?
       bootstrapPage(
         # Default location is PBS (49.21N, -123.96W)
         div( style="display:inline-block; width:49%",
@@ -384,8 +361,7 @@ ui <- fluidPage(
         
         tabPanel( title="Figure", br(),# style="width:750pt",
           withSpinner(ui_element=plotOutput(outputId="map", width="100%",
-            height="700px"))),#, click="mapClick")),
-        # tableOutput(outputId="mapClickPoints") ),
+            height="700px"))),
         
         tabPanel( title="Table", br(),
           withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
@@ -592,10 +568,6 @@ server <- function( input, output ) {
         formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
           'Northings (km)', 'Longitude', 'Latitude'), digits=3 )  
     }  # End if not grouping by location
-    
-    # TODO: Fix so NAs show up as NA, not blank -- this aligns things left
-    # res[is.na(res)] <- "NA"
-    
     # Return the table
     return( res )
   } )  # End data
@@ -665,7 +637,7 @@ server <- function( input, output ) {
         labs( colour="Spawn\nindex (t)" )
     }  # End if not aggregating by location
     
-    # Working on a way to add second axes with Longitude and Latitude
+    # TODO Working on a way to add second axes with Longitude and Latitude
     # fun <- Vectorize(function( x, dat=spawnSub() ) {
     #   res <- dat %>%
     #     select( Longitude ) 
@@ -689,21 +661,9 @@ server <- function( input, output ) {
         height=6, width=7.5 ),
       contentType="image/png" )
     
-    # Interactive map
-    # TODO: Not working.. https://plot.ly/ggplot2/interactive-tooltip/
-    # hMap <- ggplotly( p=hMap, width=800, height=700, originalData=FALSE )
-    
     # Print the map
     return( hMap )
   } )  # End map
-  
-  # # Get spawn info -- also not working
-  # output$mapClickPoints <- renderTable({
-  #   res <- nearPoints( df=spawnSub(), coordinfo=input$mapClick )
-  #   # if( nrow(res) == 0 )
-  #   #   return()
-  #   res
-  # })
   
   # Save data (spawn index; if download requested)
   output$downloadTable <- downloadHandler( filename="SpawnData.csv",
