@@ -45,7 +45,7 @@ UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
 
 # Make packages available
 UsePackages( pkgs=c("tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", 
-  "viridis", "scales", "DT", "maptools") )
+  "viridis", "scales", "DT", "maptools", "shinyjs") )
 
 ##### Controls ##### 
 
@@ -289,6 +289,9 @@ MakeCircle <- function( center=c(0,0), radius=1, nPts=100 ){
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
+  # Allow reset of inputs
+  useShinyjs(),
+  
   # Application title
   titlePanel( title="Find Pacific Herring spawn index sites", 
     windowTitle="FIND" ),
@@ -350,7 +353,8 @@ ui <- fluidPage(
       
       # h2( "View results" ),
       div( style="text-align:center",
-        submitButton("Update", icon("refresh")) )
+        submitButton("Update", icon("refresh")),
+        actionButton("resetAll", "Reset all") )
       
     ),  # End sidebar panel
     
@@ -653,6 +657,8 @@ server <- function( input, output ) {
       scale_x_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
       # sec.axis=sec_axis(trans=~fun(x=.))
       scale_y_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
+      expand_limits( x=shapesSub()$extDF$Eastings,
+        y=shapesSub()$extDF$Northings ) +
       myTheme
     
     # Save the map (if download requested) -- not sure why this has to be here
@@ -687,6 +693,11 @@ server <- function( input, output ) {
       datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
         pageLength=15, searching=FALSE, ordering=FALSE) )
   } )
+  
+  # Reset all inputs
+  observeEvent( input$resetAll, {
+    reset( "form" )
+  })
   
 }  # End server
 
