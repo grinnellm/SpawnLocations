@@ -397,7 +397,7 @@ ui <- fluidPage(
               vertical-align:text-top",
               p( HTML("For the purposes of fisheries management, Pacific",
                 "Herring stocks in British Columbia are managed as five major", 
-                "and two minor Stock Assessment Areas (SARs).",
+                "and two minor Stock Assessment Areas (SARs; see Figure).",
                 "The terms 'major' and 'minor' are used to describe relative",
                 "differences in the geographic and biomass scales represented.",
                 "SAR boundaries attempt to capture the habitat range of",
