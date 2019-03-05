@@ -45,7 +45,7 @@ UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
 
 # Make packages available
 UsePackages( pkgs=c("tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", 
-  "viridis", "scales", "DT", "maptools", "shinyjs") )
+  "viridis", "scales", "DT", "maptools") )  # "shinyjs"
 
 ##### Controls ##### 
 
@@ -353,8 +353,8 @@ ui <- fluidPage(
       
       # h2( "View results" ),
       div( style="text-align:center",
-        submitButton("Update", icon("refresh")),
-        actionButton("resetAll", "Reset all") )
+        submitButton("Update", icon("refresh")) )
+      # actionButton("resetAll", "Reset all")
       
     ),  # End sidebar panel
     
@@ -694,10 +694,8 @@ server <- function( input, output ) {
         pageLength=15, searching=FALSE, ordering=FALSE) )
   } )
   
-  # Reset all inputs
-  observeEvent( input$resetAll, {
-    reset( "form" )
-  })
+  # # Reset all inputs
+  # observeEvent( input$resetAll, reset("form") )
   
 }  # End server
 
