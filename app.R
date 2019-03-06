@@ -289,8 +289,8 @@ MakeCircle <- function( center=c(0,0), radius=1, nPts=100 ){
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
-  # Allow reset of inputs
-  useShinyjs(),
+  # # Allow reset of inputs
+  # useShinyjs(),
   
   # Application title
   titlePanel( title="Find Pacific Herring spawn index sites", 
