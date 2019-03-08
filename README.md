@@ -16,3 +16,7 @@ Note that the 'spawn index' represents the raw survey data only,
 and is not scaled by the spawn survey scaling parameter *q*
 ([CSAS 2018](http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html));
 therefore it is a relative index of spawning biomass.
+
+## Running the app
+
+**FIND** (FIND Is Not Difficult) is a Shiny app

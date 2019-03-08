@@ -104,7 +104,7 @@ spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
     Survey=unique(Survey) ) %>%
   ungroup( ) %>%
   filter( !is.na(Eastings), !is.na(Northings) ) %>%
-  select( Year, Region, StatArea, Section, LocationCode, Eastings,
+  dplyr::select( Year, Region, StatArea, Section, LocationCode, Eastings,
     Northings, Longitude, Latitude, SpawnIndex, Survey )
 
 # Get survey time periods
@@ -136,7 +136,7 @@ GetPackages <- function( ) {
   # Get and wrangle packages
   res <- session_info( )$packages %>%
     as_tibble( ) %>%
-    select( package, loadedversion, source ) %>%
+    dplyr::select( package, loadedversion, source ) %>%
     rename( Package=package, Version=loadedversion, Source=source ) %>%
     filter( Package%in%myPkgs ) %>%
     arrange( Package )
@@ -178,7 +178,7 @@ ClipPolys <- function( stocks, land, pt, buf ) {
     dat@data <- dat@data %>%
       mutate( StatArea=as.character(StatArea), 
         Section=as.character(Section) ) %>%
-      select( SAR, StatArea, Section )
+      dplyr::select( SAR, StatArea, Section )
     # Get results
     res <- dat
     # Return updated sections
@@ -253,7 +253,7 @@ CropSpawn <- function( dat, yrs, ext, grp ) {
     mutate( Year=as.integer(Year),
       StatArea=formatC(StatArea, width=2, format="d", flag="0"),
       Section=formatC(Section, width=3, format="d", flag="0") ) %>%
-    select( Year, Region, StatArea, Section, LocationCode, Eastings, Northings,
+    dplyr::select( Year, Region, StatArea, Section, LocationCode, Eastings, Northings,
       Longitude, Latitude, SpawnIndex ) %>%
     arrange( Year, Region, StatArea, Section, LocationCode )
   # Summarise spawns by location
