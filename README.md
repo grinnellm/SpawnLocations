@@ -24,5 +24,5 @@ Once the "shiny" package is installed, launch **FIND** in one of two ways:
 
 1. Clone or download the [FIND](https://github.com/grinnellm/FIND) repository from **GitHub**, and either 
 	* Click "Run App" in [RStudio](https://www.rstudio.com/), or
-	* Run the following command in **R** `runApp()`, or
-2. Run the following command in **R** `shiny::runGitHub("grinnellm/FIND")`.
+	* Run the following command in **R** `runApp( )`, or
+2. Run the following command in **R** `shiny::runGitHub( repo="FIND", username="grinnellm" )`.
