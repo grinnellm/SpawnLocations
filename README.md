@@ -22,10 +22,10 @@ therefore it is a relative index of spawning biomass.
 **FIND** (FIND Is Not Difficult) is a [Shiny](https://shiny.rstudio.com/) app.
 Launch the app in a few simple steps.
 First, install [RStudio](https://www.rstudio.com/) or [R](https://www.r-project.org/).
-Second, install the **R** package `shiny`.
+Second, install the **R** package "shiny" `install.packages( pkgs="shiny" )`.
 Finally, launch **FIND** in one of two ways:
 
 1. Clone or download the [FIND](https://github.com/grinnellm/FIND) repository from **GitHub**, and either 
 	* Click "Run App" in **RStudio**, or
-	* Run the following command `runApp( )`, or
-2. Run the following command `shiny::runGitHub( repo="FIND", username="grinnellm" )`.
+	* Run the following command in the **R** console `shiny::runApp( )`, or
+2. Run the following command in the **R** console `shiny::runGitHub( repo="FIND", username="grinnellm" )`.
