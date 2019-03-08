@@ -7,7 +7,7 @@ Users can view spawns as a figure and as a table, both of which can be downloade
 For more information on Pafic Herring spawn data, contact
 [Jaclyn Cleary](mailto:Jaclyn.Cleary@dfo-mpo.gc.ca),
 [Matt Grinnell](mailto:Matthew.Grinnell@dfo-mpo.gc.ca), or
-[Matt Thompson](mailto:Matthew.Thompson@dfo-mpo.gc.ca@dfo-mpo.gc.ca),
+[Matt Thompson](mailto:Matthew.Thompson@dfo-mpo.gc.ca),
 DFO Science, Pacific Biological Station.
 Grinnell et al.
 ([In prep.](https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf))
@@ -17,12 +17,14 @@ and is not scaled by the spawn survey scaling parameter *q*
 ([CSAS 2018](http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html));
 therefore it is a relative index of spawning biomass.
 
-## Running the app
+## Launch the app
 
 **FIND** (FIND Is Not Difficult) is a [Shiny](https://shiny.rstudio.com/) app.
-Once the "shiny" package is installed, launch **FIND** in one of two ways:
+First, install [RStudio](https://www.rstudio.com/) or [R](https://www.r-project.org/).
+Next, install the **R** package `shiny`.
+Then, launch **FIND** in one of two ways:
 
 1. Clone or download the [FIND](https://github.com/grinnellm/FIND) repository from **GitHub**, and either 
-	* Click "Run App" in [RStudio](https://www.rstudio.com/), or
-	* Run the following command in **R** `runApp( )`, or
-2. Run the following command in **R** `shiny::runGitHub( repo="FIND", username="grinnellm" )`.
+	* Click "Run App" in **RStudio**, or
+	* Run the following command `runApp( )`, or
+2. Run the following command `shiny::runGitHub( repo="FIND", username="grinnellm" )`.
