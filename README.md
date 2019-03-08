@@ -19,4 +19,8 @@ therefore it is a relative index of spawning biomass.
 
 ## Running the app
 
-**FIND** (FIND Is Not Difficult) is a Shiny app
+**FIND** (FIND Is Not Difficult) is a [Shiny](https://shiny.rstudio.com/) app.
+Launch the app in one of two ways:
+
+1. Clone or download the repository from **GitHub**, and click "Run App" in [RStudio](https://www.rstudio.com/), or
+2. Run the following command in **R** `shiny::runGitHub("grinnellm/FIND")`.
