@@ -716,8 +716,8 @@ server <- function( input, output ) {
     df <- nearPoints( df=spawnSub(), coordinfo=input$plotClick, 
       threshold=10 )
     # Custom text if no records
-    noRecords <- paste( "No points selected.", 
-      "Click point and then click 'Update' to show details.")
+    noRecords <- paste( "No points selected:", 
+      "click a point and then click 'Update' to show details.")
     # Wrangle into a pretty data table
     res <- WrangleDT( dat=df, input=input$summary, optPageLen=-1,
       optDom="ti", optNoData=noRecords )
