@@ -363,7 +363,7 @@ ui <- fluidPage(
       # Start tabs
       tabsetPanel( type="tabs", selected="Figure",
         
-        tabPanel( title="Figure", br(),# style="width:750pt",
+        tabPanel( title="Figure", br(),
           withSpinner(ui_element=plotOutput(outputId="map", width="100%",
             height="650px", click="plotClick")),
           DT::dataTableOutput(outputId="spawnClick")),
@@ -731,7 +731,7 @@ server <- function( input, output ) {
         rename( 'Number of spawns'=Number, 
           'Mean spawn index (t)'='Spawn index (t)' ) %>%
         datatable( options=list(lengthChange=FALSE, pageLength=-1,
-          searching=FALSE, ordering=FALSE, paging=FALSE,
+          searching=FALSE, ordering=FALSE, paging=FALSE, dom="t",
           language=list(zeroRecords=noRecords)) ) %>%
         formatRound( columns=c('Mean spawn index (t)', 'Eastings (km)',
           'Northings (km)', 'Longitude', 'Latitude'), digits=3 )
@@ -739,7 +739,7 @@ server <- function( input, output ) {
       # Format
       res <- res %>%
         datatable( options=list(lengthChange=FALSE, pageLength=-1,
-          searching=FALSE, ordering=FALSE, paging=FALSE,
+          searching=FALSE, ordering=FALSE, paging=FALSE, dom="t",
           language=list(zeroRecords=noRecords)) ) %>%
         formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
           'Northings (km)', 'Longitude', 'Latitude'), digits=3 )  
