@@ -366,9 +366,7 @@ ui <- fluidPage(
         tabPanel( title="Figure", br(),# style="width:750pt",
           withSpinner(ui_element=plotOutput(outputId="map", width="100%",
             height="650px", click="plotClick")),
-          p( "Click a point on the map (and then click 'Update') to see
-            details:" ),
-          tableOutput(outputId="spawnClick")),
+          DT::dataTableOutput(outputId="spawnClick")),
         
         tabPanel( title="Table", br(),
           withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
@@ -699,17 +697,57 @@ server <- function( input, output ) {
   } )
   
   # Use mouse location to select points
-  output$spawnClick <- renderTable( {
+  output$spawnClick <- renderDataTable( {
     # Select point closest to the point
+    # res <- nearPoints( df=spawnSub(), coordinfo=input$plotClick, 
+    #   threshold=10 ) %>%
+    #   rename( SAR=Region ) %>%
+    #   mutate( LocationCode=as.integer(LocationCode),
+    #     Eastings=format(Eastings/1000, big.mark=","), 
+    #     Northings=format(Northings/1000, big.mark=","),
+    #     SpawnIndex=format(SpawnIndex, big.mark=",") ) %>%
+    #   data.frame( )
+    # # Alternate value to show if there are no rows
+    # if( nrow(res) == 0 )
+    #   res <- paste( "No points selected.",
+    #     "Click a point on the map and then click 'Update' to see details." )
+    # # Return the data or a message
+    # return( res )
+    
     res <- nearPoints( df=spawnSub(), coordinfo=input$plotClick, 
       threshold=10 ) %>%
-      rename( SAR=Region ) %>%
-      mutate( Eastings=Eastings/1000, Northings=Northings/1000 ) %>%
-      data.frame( )
-    # Alternate value to show if there are no rows
-    if( nrow(res) == 0 )  res <- "No points selected."
-    # Return the data or a message
-    return( res )
+      mutate( Eastings=Eastings/1000, Northings=Northings/1000,
+        LocationCode=as.character(LocationCode) ) %>%
+      rename( SAR=Region, 'Statistical Area'=StatArea, 
+        'Location'=LocationCode, 'Spawn index (t)'=SpawnIndex, 
+        'Eastings (km)'=Eastings, 'Northings (km)'=Northings )
+    # Custom text if no records
+    noRecords <- paste( "No points selected.", 
+      "Click point and then click 'Update' to show details.")
+    # If grouping by location
+    if( "loc" %in% input$summary ) {
+      # Rename and format
+      res <- res %>%
+        rename( 'Number of spawns'=Number, 
+          'Mean spawn index (t)'='Spawn index (t)' ) %>%
+        datatable( options=list(lengthChange=FALSE, pageLength=-1,
+          searching=FALSE, ordering=FALSE, paging=FALSE,
+          language=list(zeroRecords=noRecords)) ) %>%
+        formatRound( columns=c('Mean spawn index (t)', 'Eastings (km)',
+          'Northings (km)', 'Longitude', 'Latitude'), digits=3 )
+    } else {  # End if grouping by location, otherwise
+      # Format
+      res <- res %>%
+        datatable( options=list(lengthChange=FALSE, pageLength=-1,
+          searching=FALSE, ordering=FALSE, paging=FALSE,
+          language=list(zeroRecords=noRecords)) ) %>%
+        formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
+          'Northings (km)', 'Longitude', 'Latitude'), digits=3 )  
+    }  # End if not grouping by location
+    # Return the table
+    return( res )    
+    
+    
   } )
   
   # # Reset all inputs
