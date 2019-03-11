@@ -284,6 +284,39 @@ MakeCircle <- function( center=c(0,0), radius=1, nPts=100 ){
   return( tibble(Eastings=xx, Northings=yy) )
 }  # End MakeCircle function
 
+# Wrangle to data table
+WrangleDT <- function( dat, input, optPageLen, optDom, optNoData ) {
+  # Modify names and values for nicer printing
+  res <- dat %>%
+    mutate( Eastings=Eastings/1000, Northings=Northings/1000,
+      LocationCode=as.character(LocationCode) ) %>%
+    rename( SAR=Region, 'Statistical Area'=StatArea, 
+      'Location'=LocationCode, 'Spawn index (t)'=SpawnIndex, 
+      'Eastings (km)'=Eastings, 'Northings (km)'=Northings )
+  # If grouping by location
+  if( "loc" %in% input ) {
+    # Rename and format
+    res <- res %>%
+      rename( 'Number of spawns'=Number, 
+        'Mean spawn index (t)'='Spawn index (t)' ) %>%
+      datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
+        pageLength=optPageLen, searching=FALSE, ordering=FALSE,
+        dom=optDom, language=list(zeroRecords=optNoData)) ) %>%
+      formatRound( columns=c('Mean spawn index (t)', 'Eastings (km)',
+        'Northings (km)', 'Longitude', 'Latitude'), digits=3 )
+  } else {  # End if grouping by location, otherwise
+    # Format
+    res <- res %>%
+      datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
+        pageLength=optPageLen, searching=FALSE, ordering=FALSE,
+        dom=optDom, language=list(zeroRecords=optNoData)) ) %>%
+      formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
+        'Northings (km)', 'Longitude', 'Latitude'), digits=3 )  
+  }  # End if not grouping by location
+  # Return the data
+  return( res )
+}  # End WrangleDT function
+
 ##### User interface #####
 
 # Define UI for application that draws a histogram
@@ -548,32 +581,13 @@ server <- function( input, output ) {
     validate( need(nrow(spawnSub()) >= 1, 
       "Error: No spawns match these criteria.") )
     
-    # Light wrangling
-    res <- spawnSub() %>%
-      mutate( Eastings=Eastings/1000, Northings=Northings/1000,
-        LocationCode=as.character(LocationCode) ) %>%
-      rename( SAR=Region, 'Statistical Area'=StatArea, 
-        'Location'=LocationCode, 'Spawn index (t)'=SpawnIndex, 
-        'Eastings (km)'=Eastings, 'Northings (km)'=Northings )
+    # Get the data
+    df <- spawnSub()
     
-    # If grouping by location
-    if( "loc" %in% input$summary ) {
-      # Rename and format
-      res <- res %>%
-        rename( 'Number of spawns'=Number, 
-          'Mean spawn index (t)'='Spawn index (t)' ) %>%
-        datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
-          pageLength=15, searching=FALSE, ordering=FALSE) ) %>%
-        formatRound( columns=c('Mean spawn index (t)', 'Eastings (km)',
-          'Northings (km)', 'Longitude', 'Latitude'), digits=3 )
-    } else {  # End if grouping by location, otherwise
-      # Format
-      res <- res %>%
-        datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
-          pageLength=15, searching=FALSE, ordering=FALSE) ) %>%
-        formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
-          'Northings (km)', 'Longitude', 'Latitude'), digits=3 )  
-    }  # End if not grouping by location
+    # Wrangle into a pretty data table
+    res <- WrangleDT( dat=df, input=input$summary, optPageLen=15,
+      optDom="ltip", optNoData="No data available in table" )
+    
     # Return the table
     return( res )
   } )  # End data
@@ -699,55 +713,16 @@ server <- function( input, output ) {
   # Use mouse location to select points
   output$spawnClick <- renderDataTable( {
     # Select point closest to the point
-    # res <- nearPoints( df=spawnSub(), coordinfo=input$plotClick, 
-    #   threshold=10 ) %>%
-    #   rename( SAR=Region ) %>%
-    #   mutate( LocationCode=as.integer(LocationCode),
-    #     Eastings=format(Eastings/1000, big.mark=","), 
-    #     Northings=format(Northings/1000, big.mark=","),
-    #     SpawnIndex=format(SpawnIndex, big.mark=",") ) %>%
-    #   data.frame( )
-    # # Alternate value to show if there are no rows
-    # if( nrow(res) == 0 )
-    #   res <- paste( "No points selected.",
-    #     "Click a point on the map and then click 'Update' to see details." )
-    # # Return the data or a message
-    # return( res )
-    
-    res <- nearPoints( df=spawnSub(), coordinfo=input$plotClick, 
-      threshold=10 ) %>%
-      mutate( Eastings=Eastings/1000, Northings=Northings/1000,
-        LocationCode=as.character(LocationCode) ) %>%
-      rename( SAR=Region, 'Statistical Area'=StatArea, 
-        'Location'=LocationCode, 'Spawn index (t)'=SpawnIndex, 
-        'Eastings (km)'=Eastings, 'Northings (km)'=Northings )
+    df <- nearPoints( df=spawnSub(), coordinfo=input$plotClick, 
+      threshold=10 )
     # Custom text if no records
     noRecords <- paste( "No points selected.", 
       "Click point and then click 'Update' to show details.")
-    # If grouping by location
-    if( "loc" %in% input$summary ) {
-      # Rename and format
-      res <- res %>%
-        rename( 'Number of spawns'=Number, 
-          'Mean spawn index (t)'='Spawn index (t)' ) %>%
-        datatable( options=list(lengthChange=FALSE, pageLength=-1,
-          searching=FALSE, ordering=FALSE, paging=FALSE, dom="t",
-          language=list(zeroRecords=noRecords)) ) %>%
-        formatRound( columns=c('Mean spawn index (t)', 'Eastings (km)',
-          'Northings (km)', 'Longitude', 'Latitude'), digits=3 )
-    } else {  # End if grouping by location, otherwise
-      # Format
-      res <- res %>%
-        datatable( options=list(lengthChange=FALSE, pageLength=-1,
-          searching=FALSE, ordering=FALSE, paging=FALSE, dom="t",
-          language=list(zeroRecords=noRecords)) ) %>%
-        formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
-          'Northings (km)', 'Longitude', 'Latitude'), digits=3 )  
-    }  # End if not grouping by location
+    # Wrangle into a pretty data table
+    res <- WrangleDT( dat=df, input=input$summary, optPageLen=-1,
+      optDom="ti", optNoData=noRecords )
     # Return the table
     return( res )    
-    
-    
   } )
   
   # # Reset all inputs
