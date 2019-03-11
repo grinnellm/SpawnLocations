@@ -365,7 +365,10 @@ ui <- fluidPage(
         
         tabPanel( title="Figure", br(),# style="width:750pt",
           withSpinner(ui_element=plotOutput(outputId="map", width="100%",
-            height="700px"))),
+            height="650px", click="plotClick")),
+          p( "Click a point on the map (and then click 'Update') to see
+            details:" ),
+          tableOutput(outputId="spawnClick")),
         
         tabPanel( title="Table", br(),
           withSpinner(ui_element=DT::dataTableOutput(outputId="dat")) ),
@@ -475,7 +478,7 @@ ui <- fluidPage(
             "Do not use these maps for navigation.") ) ),
         
         tabPanel( title="Contact", br(), style="width:350pt", 
-          p( HTML("For more information on Pafic Herring spawn data, contact",
+          p( HTML("For more information on Pacific Herring spawn data, contact",
             "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
             "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matt", 
             "Grinnell</a>, or",
@@ -693,6 +696,20 @@ server <- function( input, output ) {
     res <- packInfo() %>%
       datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
         pageLength=15, searching=FALSE, ordering=FALSE) )
+  } )
+  
+  # Use mouse location to select points
+  output$spawnClick <- renderTable( {
+    # Select point closest to the point
+    res <- nearPoints( df=spawnSub(), coordinfo=input$plotClick, 
+      threshold=10 ) %>%
+      rename( SAR=Region ) %>%
+      mutate( Eastings=Eastings/1000, Northings=Northings/1000 ) %>%
+      data.frame( )
+    # Alternate value to show if there are no rows
+    if( nrow(res) == 0 )  res <- "No points selected."
+    # Return the data or a message
+    return( res )
   } )
   
   # # Reset all inputs
