@@ -326,7 +326,7 @@ ui <- fluidPage(
   # useShinyjs(),
   
   # Application title
-  titlePanel( title="Find Pacific Herring spawn index sites", 
+  titlePanel( title="Find Pacific Herring spawn sites", 
     windowTitle="FIND" ),
   
   # Sidebar with input parameters t
@@ -335,7 +335,7 @@ ui <- fluidPage(
     sidebarPanel( width=4,
       
       h1( "FIND" ),
-      p( HTML("Find Pacific Herring spawn index sites around a point.",
+      p( HTML("Find Pacific Herring spawn sites around a point.",
         "Please read the details in the tabs.") ),
       h3( HTML("<font color='red'>This version is a draft; do not",
         "use for planning.</font>") ),

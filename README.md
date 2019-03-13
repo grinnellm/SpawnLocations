@@ -1,7 +1,7 @@
-# Find Pacific Herring spawn index sites
+# Find Pacific Herring spawn sites
 
-Find Pacific Herring spawn index sites around a point.
-By default, spawns are summarised by year and Location in tonnes (t).
+Find Pacific Herring spawn sites around a point.
+By default, the spawn index is summarised by year and Location in tonnes (t).
 Alternatively, users can choose to summarise spawns by Location only (i.e., aggregate spawns over years).
 Users can view spawns as a figure and as a table, both of which can be downloaded.
 For more information on Pacific Herring spawn data, contact
