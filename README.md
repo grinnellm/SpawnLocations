@@ -23,9 +23,9 @@ therefore it is a relative index of spawning biomass.
 Launch the app in a few simple steps.
 First, install [RStudio](https://www.rstudio.com/) or [R](https://www.r-project.org/).
 Second, install the **R** package "shiny" `install.packages( pkgs="shiny" )`.
-Finally, launch **FIND** in one of two ways:
+Finally, launch **FIND** in one of two ways (note that the first option is the simplest):
 
-1. Clone or download the [FIND](https://github.com/grinnellm/FIND) repository from **GitHub**, and either 
+1. Run the following command in the **R** console `shiny::runGitHub( repo="FIND", username="grinnellm" )`, or
+2. Clone or download the [FIND](https://github.com/grinnellm/FIND) repository from **GitHub**, and then either 
 	* Click "Run App" in **RStudio**, or
-	* Run the following command in the **R** console `shiny::runApp( )`, or
-2. Run the following command in the **R** console `shiny::runGitHub( repo="FIND", username="grinnellm" )`.
+	* Run the following command in the **R** console `shiny::runApp( )`.
