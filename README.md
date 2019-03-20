@@ -1,7 +1,7 @@
 # Find Pacific Herring spawn sites
 
 Find Pacific Herring spawn sites around a point.
-By default, the spawn index is summarised by year and Location in tonnes (t).
+By default, the spawn index is summarised by year and Location in tonnes.
 Alternatively, users can choose to summarise spawns by Location only (i.e., aggregate spawns over years).
 Users can view spawns as a figure and as a table, both of which can be downloaded.
 For more information on Pacific Herring spawn data, contact
@@ -23,7 +23,7 @@ therefore it is a relative index of spawning biomass.
 Launch the app in a few simple steps.
 First, install [RStudio](https://www.rstudio.com/) or [R](https://www.r-project.org/).
 Second, install the **R** package "shiny" `install.packages( pkgs="shiny" )`.
-Finally, launch **FIND** in one of two ways (note that the first option is the simplest):
+Finally, launch **FIND** in one of two ways (the first option is easier):
 
 1. Run the following command in the **R** console `shiny::runGitHub( repo="FIND", username="grinnellm" )`, or
 2. Clone or download the [FIND](https://github.com/grinnellm/FIND) repository from **GitHub**, and then either 
