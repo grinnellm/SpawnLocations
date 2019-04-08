@@ -362,8 +362,16 @@ ui <- fluidPage(
             value=10, min=1, step=1) ) ),
       
       h2( "Subset spawns" ),
-      sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
-        max=max(spawn$Year), value=range(spawn$Year), sep="" ),
+      bootstrapPage(
+        #div( style="display:inline-block; width:100%; vertical-align:text-top",
+          sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
+            max=max(spawn$Year), value=range(spawn$Year), sep="" ) #)
+        # div( style="display:inline-block; width:24%; vertical-align:text-top;
+        #   padding: 0px 12px",
+        #   selectInput(inputId="areas", label="Region", 
+        #     choices=unique(spawn$Region), multiple=TRUE,
+        #     selected=unique(spawn$Region)) )
+      ),
       
       bootstrapPage(
         div( style="display:inline-block; width:44%",
