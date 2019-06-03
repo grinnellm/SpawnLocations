@@ -702,7 +702,7 @@ server <- function( input, output ) {
     # Save the map (if download requested) -- not sure why this has to be here
     output$downloadFigure <- downloadHandler( filename="SpawnMap.png",
       content=function(file) ggsave( filename=file, plot=hMap, dpi=600,
-        height=6, width=7.5 ),
+        height=7, width=7.5 ),
       contentType="image/png" )
     
     # Print the map
