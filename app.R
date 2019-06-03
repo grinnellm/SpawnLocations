@@ -392,9 +392,10 @@ ui <- fluidPage(
           div( style="display:inline-block; vertical-align:text-top;
           padding: 0px 12px",
             checkboxGroupInput(inputId="polys", label="Polygons", 
-              choiceNames=c("Regions", "Sections", "Labels"),
-              choiceValues=c("reg", "sec", "lab"),
-              selected=c("reg", "sec", "lab")) ) ),
+              choiceNames=c("SAR boundaries", "Section boundaries",
+                "Section labels"),
+              choiceValues=c("reg", "sec", "sLab"),
+              selected=c("sec", "sLab")) ) ),
         div( style="display:inline-block; width:54%",
           h2( "Summarise spawns" ),
           div( style="display:inline-block; vertical-align:text-top",
@@ -570,11 +571,11 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function( input, output ) {
   
-  # On startup, show modal (draft)
+  # Show modeal dialogue on startup - requires a click to proceed
   showModal(
     modalDialog( title="Disclaimer",
       HTML("This version is a draft; do not use for planning.",
-      "In addition, note that spawns outside SAR boundaries are currently",
+      "In addition, note that spawn sites outside SAR boundaries are currently",
       "excluded (see Issue #10).") )
   )
   
@@ -649,7 +650,7 @@ server <- function( input, output ) {
     }  # End if showing sections
     
     # If showing sections labels
-    if( "lab" %in% input$polys ) {
+    if( "sLab" %in% input$polys ) {
       # Ensure polygons are present
       validate( need("sec" %in% input$polys,
         "Error: Enable section polygons to show labels.") )
