@@ -680,11 +680,18 @@ server <- function( input, output ) {
     #   return( res )
     # })
     
+    # Get number of unique years
+    nYrs <- length( unique(input$yrRange) )
+    
+    # Get unique years
+    uYrs <- paste( unique(input$yrRange), collapse=" to " )
+    
     # Add map layers
     hMap <- hMap +
       scale_colour_viridis( na.value="black", labels=comma ) +
       coord_equal( ) +
-      labs( x="Eastings (km)", y="Northings (km)", caption=geoProj ) +
+      labs( x="Eastings (km)", y="Northings (km)", caption=geoProj, 
+        title=paste("Year", ifelse(nYrs>1, "s", ""), ": ", uYrs, sep="") ) +
       scale_x_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
       # sec.axis=sec_axis(trans=~fun(x=.))
       scale_y_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
