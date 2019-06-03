@@ -347,8 +347,6 @@ ui <- fluidPage(
       h1( "FIND" ),
       p( HTML("Find Pacific Herring spawn sites around a point.",
         "Please read the details in the tabs.") ),
-      h3( HTML("<font color='red'>This version is a draft; do not",
-        "use for planning.</font>") ),
       
       h2( HTML("Event location", 
         "<a href=http://spatialreference.org/ref/sr-org/14/>(decimal",
@@ -374,8 +372,8 @@ ui <- fluidPage(
       h2( "Subset spawns" ),
       bootstrapPage(
         #div( style="display:inline-block; width:100%; vertical-align:text-top",
-          sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
-            max=max(spawn$Year), value=range(spawn$Year), sep="" ) #)
+        sliderInput( inputId="yrRange", label="Years", min=min(spawn$Year), 
+          max=max(spawn$Year), value=range(spawn$Year), sep="" ) #)
         # div( style="display:inline-block; width:24%; vertical-align:text-top;
         #   padding: 0px 12px",
         #   selectInput(inputId="areas", label="Region", 
@@ -571,6 +569,10 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function( input, output ) {
+  
+  # On startup, show modal (draft)
+  showModal( modalDialog("This version is a draft; do not use for planning.",
+    title="Disclaimer") )
   
   # Get package info
   packInfo <- reactive( 
