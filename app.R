@@ -571,8 +571,12 @@ ui <- fluidPage(
 server <- function( input, output ) {
   
   # On startup, show modal (draft)
-  showModal( modalDialog("This version is a draft; do not use for planning.",
-    title="Disclaimer") )
+  showModal(
+    modalDialog( title="Disclaimer",
+      HTML("This version is a draft; do not use for planning.",
+      "In addition, note that spawns outside SAR boundaries are currently",
+      "excluded (see Issue #10).") )
+  )
   
   # Get package info
   packInfo <- reactive( 
