@@ -181,6 +181,8 @@ ClipPolys <- function( stocks, land, pt, buf ) {
       dplyr::select( SAR, StatArea, Section )
     # Get results
     res <- dat
+    # Remove the non-SAR areas
+    res <- dat[dat$SAR != -1, ]
     # Return updated sections
     return( res )
   }  # End UpdateSections function
@@ -188,7 +190,7 @@ ClipPolys <- function( stocks, land, pt, buf ) {
   secBC <- UpdateSections( dat=stocks )
   # Project to BC
   secBC <- spTransform( x=secBC, CRSobj=CRS(crsOut) )
-  # Get a buffer around the region(s) in question
+  # Get a buffer around the point in question
   buff <- gBuffer( spgeom=pt, width=buf, byid=FALSE )
   # Calculate the extent
   extBuff <- bbox( buff )
@@ -223,9 +225,16 @@ ClipPolys <- function( stocks, land, pt, buf ) {
     fortify( region="id" ) %>%
     rename( Eastings=long, Northings=lat ) %>%
     as_tibble( )
+  # Dissolve to region
+  regSPDF <- aggregate( x=secBC, by=list(Temp=secBC$SAR), FUN=unique )
+  # Convert to data frame and select region(s) in question
+  regDF <- regSPDF %>%
+    fortify( region="SAR" ) %>%
+    rename( Eastings=long, Northings=lat, Region=group ) %>%
+    as_tibble( )
   # Build a list to return
   res <- list( secDF=secDF, secCentDF=secCentDF, landDF=landDF, extDF=extDF, 
-    extBuff=extBuff, xyRatio=xyRatio )
+    extBuff=extBuff, xyRatio=xyRatio, regDF=regDF )
   # Return info
   return( res )
 }  # End ClipPolys function
@@ -385,8 +394,9 @@ ui <- fluidPage(
           div( style="display:inline-block; vertical-align:text-top;
           padding: 0px 12px",
             checkboxGroupInput(inputId="polys", label="Polygons", 
-              choiceNames=c("Sections", "Labels"), choiceValues=c("sec", "lab"), 
-              selected=c("sec", "lab")) ) ),
+              choiceNames=c("Regions", "Sections", "Labels"),
+              choiceValues=c("reg", "sec", "lab"),
+              selected=c("reg", "sec", "lab")) ) ),
         div( style="display:inline-block; width:54%",
           h2( "Summarise spawns" ),
           div( style="display:inline-block; vertical-align:text-top",
@@ -626,8 +636,8 @@ server <- function( input, output ) {
     
     # If showing sections
     if( "sec" %in% input$polys ) {
+      # Update the map
       hMap <- hMap + 
-        # Update the map
         geom_path( data=shapesSub()$secDF, aes(group=Section), size=0.25,
           colour="black" )
     }  # End if showing sections
@@ -641,6 +651,14 @@ server <- function( input, output ) {
       hMap <- hMap + 
         geom_label( data=shapesSub()$secCentDF, alpha=0.5, aes(label=Section) )
     }  # End if showing labels
+    
+    # If showing SAR boudaries
+    if( "reg" %in% input$polys ) {
+      # Update the map
+      hMap <- hMap + 
+        geom_path( data=shapesSub()$regDF, aes(group=Region), size=0.5,
+          colour="black" )
+    }  # End if showing SARs
     
     # If showing the point location
     if( "pt" %in% input$location ) {
