@@ -97,15 +97,15 @@ myTheme <- theme(
 
 # Load spawn data, and aggregate by location code
 spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
-  group_by( Year, Region, StatArea, Section, LocationCode ) %>%
+  group_by( Year, Region, StatArea, Section, LocationCode, LocationName ) %>%
   summarise( Eastings=unique(Eastings), Northings=unique(Northings),
     Longitude=unique(Longitude), Latitude=unique(Latitude),
     SpawnIndex=sum(c(SurfSI, MacroSI, UnderSI), na.rm=TRUE),
     Survey=unique(Survey) ) %>%
   ungroup( ) %>%
   filter( !is.na(Eastings), !is.na(Northings) ) %>%
-  dplyr::select( Year, Region, StatArea, Section, LocationCode, Eastings,
-    Northings, Longitude, Latitude, SpawnIndex, Survey )
+  dplyr::select( Year, Region, StatArea, Section, LocationCode, LocationName,
+    Eastings, Northings, Longitude, Latitude, SpawnIndex, Survey )
 
 # Get survey time periods
 qPeriods <- spawn %>%
@@ -253,13 +253,13 @@ CropSpawn <- function( dat, yrs, ext, grp ) {
     mutate( Year=as.integer(Year),
       StatArea=formatC(StatArea, width=2, format="d", flag="0"),
       Section=formatC(Section, width=3, format="d", flag="0") ) %>%
-    dplyr::select( Year, Region, StatArea, Section, LocationCode, Eastings, Northings,
-      Longitude, Latitude, SpawnIndex ) %>%
+    dplyr::select( Year, Region, StatArea, Section, LocationCode, LocationName,
+      Eastings, Northings, Longitude, Latitude, SpawnIndex ) %>%
     arrange( Year, Region, StatArea, Section, LocationCode )
   # Summarise spawns by location
   if( "loc" %in% grp ) {
     dat <- dat %>%
-      group_by( Region, StatArea, Section, LocationCode, Eastings, 
+      group_by( Region, StatArea, Section, LocationCode, LocationName, Eastings, 
         Northings, Longitude, Latitude ) %>%
       summarise( SpawnIndex=mean(SpawnIndex, na.rm=TRUE), Number=n() ) %>%
       ungroup( ) %>%
@@ -291,8 +291,9 @@ WrangleDT <- function( dat, input, optPageLen, optDom, optNoData ) {
     mutate( Eastings=Eastings/1000, Northings=Northings/1000,
       LocationCode=as.character(LocationCode) ) %>%
     rename( SAR=Region, 'Statistical Area'=StatArea, 
-      'Location'=LocationCode, 'Spawn index (t)'=SpawnIndex, 
-      'Eastings (km)'=Eastings, 'Northings (km)'=Northings )
+      'Location Code'=LocationCode, 'Location Name'=LocationName, 
+      'Spawn index (t)'=SpawnIndex, 'Eastings (km)'=Eastings,
+      'Northings (km)'=Northings )
   # If grouping by location
   if( "loc" %in% input ) {
     # Rename and format
