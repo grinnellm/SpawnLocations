@@ -352,7 +352,8 @@ ui <- fluidPage(
         "<a href=http://spatialreference.org/ref/sr-org/14/>(decimal",
         "degrees)</a>") ),
       bootstrapPage(
-        # Default location is PBS (49.21N, -123.96W)
+        # Default location is PBS (49.21N, -123.96W); whole coast is -127.5N
+        # and 52.125W with a 450km buffer
         div( style="display:inline-block; width:49%",
           numericInput(inputId="longitude", label="Longitude", value=-123.96,
             min=rangeSI$Long[1], max=rangeSI$Long[2], step=0.01) ),
@@ -469,7 +470,8 @@ ui <- fluidPage(
                 "(<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>Grinnell et al. In prep.</a>).",
                 "Finally, some spawns are reported by the public, which is",
                 "less common in minor SARs because they tend to be more",
-                "remote and difficult to access than major SARs.") ),
+                "remote and difficult to access than major SARs.",
+                "Areas outside SAR boundaries receieve even less effort.") ),
               p( "Note that this analysis does not include spawns that occur",
                 "outside SAR boundaries." ) ),
             div( style="display:inline-block; width:350pt;
@@ -574,9 +576,7 @@ server <- function( input, output ) {
   # Show modeal dialogue on startup - requires a click to proceed
   showModal(
     modalDialog( title="Disclaimer",
-      HTML("This version is a draft; do not use for planning.",
-      "In addition, note that spawn sites outside SAR boundaries are currently",
-      "excluded (see Issue #10).") )
+      HTML("This version is a draft; do not use for planning.") )
   )
   
   # Get package info
