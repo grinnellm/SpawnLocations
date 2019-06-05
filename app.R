@@ -310,16 +310,16 @@ WrangleDT <- function( dat, input, optPageLen, optDom, optNoData ) {
       rename( 'Number of spawns'=Number, 
         'Mean spawn index (t)'='Spawn index (t)' ) %>%
       datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
-        pageLength=optPageLen, searching=FALSE, ordering=FALSE,
-        dom=optDom, language=list(zeroRecords=optNoData)) ) %>%
+        pageLength=optPageLen, dom=optDom, 
+        language=list(zeroRecords=optNoData)) ) %>%
       formatRound( columns=c('Mean spawn index (t)', 'Eastings (km)',
         'Northings (km)', 'Longitude', 'Latitude'), digits=3 )
   } else {  # End if grouping by location, otherwise
     # Format
     res <- res %>%
       datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
-        pageLength=optPageLen, searching=FALSE, ordering=FALSE,
-        dom=optDom, language=list(zeroRecords=optNoData)) ) %>%
+        pageLength=optPageLen, dom=optDom, 
+        language=list(zeroRecords=optNoData)) ) %>%
       formatRound( columns=c('Spawn index (t)', 'Eastings (km)',
         'Northings (km)', 'Longitude', 'Latitude'), digits=3 )  
   }  # End if not grouping by location
@@ -619,7 +619,7 @@ server <- function( input, output ) {
     
     # Wrangle into a pretty data table
     res <- WrangleDT( dat=df, input=input$summary, optPageLen=15,
-      optDom="ltip", optNoData="No data available in table" )
+      optDom="lftip", optNoData="No data available in table" )
     
     # Return the table
     return( res )
@@ -755,7 +755,7 @@ server <- function( input, output ) {
     # Get package info
     res <- packInfo() %>%
       datatable( options=list(lengthMenu=list(c(15, -1), list('15', 'All')), 
-        pageLength=15, searching=FALSE, ordering=FALSE) )
+        pageLength=15) )
   } )
   
   # Use mouse location to select points
@@ -768,7 +768,7 @@ server <- function( input, output ) {
       "click a point and then click 'Update' to view details.")
     # Wrangle into a pretty data table
     res <- WrangleDT( dat=df, input=input$summary, optPageLen=-1,
-      optDom="ti", optNoData=noRecords )
+      optDom="lftip", optNoData=noRecords )
     # Return the table
     return( res )    
   } )
