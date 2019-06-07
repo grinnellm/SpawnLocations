@@ -12,8 +12,7 @@ DFO Science, Pacific Biological Station.
 Grinnell et al.
 ([In prep.](https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf))
 has details on how we calculate the Pacific Herring spawn index.
-Note that the 'spawn index' represents the raw survey data only,
-and is not scaled by the spawn survey scaling parameter *q*
+Note that the 'spawn index' is not scaled by the spawn survey scaling parameter *q*
 ([CSAS 2018](http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html));
 therefore it is a relative index of spawning biomass.
 
