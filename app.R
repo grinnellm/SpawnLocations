@@ -425,9 +425,9 @@ ui <- fluidPage(
         
         tabPanel( title="Information", br(),
           bootstrapPage(
-            div( style="display:inline-block; width:350pt;
+            div( style="display:inline-block; width:400pt;
               vertical-align:text-top",
-              p( HTML("In this analysis, spawns are summarised by year and",
+              p( HTML("In this analysis, we summarise spawns by year and",
                 "Location in tonnes (t).",
                 "Alternatively, users can choose to summarise spawns by",
                 "Location only (i.e., aggregate spawns over years).",
@@ -455,7 +455,7 @@ ui <- fluidPage(
                 "observations are nested within transects,",
                 "transects are nested within spawns, and",
                 "spawns are nested within Locations",
-                "(<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>Grinnell et al. In prep.</a>)",
+                "(<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>Grinnell et al. In prep.</a>).",
                 "For stock assessment purposes,",
                 "Locations are nested within Sections,",
                 "Sections are nested within Statistical Areas, and",
@@ -508,7 +508,7 @@ ui <- fluidPage(
                 "the absence of spawn index data does not necessarily indicate",
                 "the absence of spawn.</li>",
                 "</ul>") ) ),
-            div( style="display:inline-block; width:350pt;
+            div( style="display:inline-block; width:400pt;
               vertical-align:text-top",
               img( src='BC.png', style="width:100%" ),
               p( HTML("<font color='grey'>Boundaries for Pacific Herring",
@@ -519,7 +519,7 @@ ui <- fluidPage(
                 "The minor SARs are Area 27 (A27) and Area 2 West (A2W).",
                 "Units: kilometres (km).</font>") ) ) ) ),
         
-        tabPanel( title="Download", br(), style="width:350pt",
+        tabPanel( title="Download", br(), style="width:400pt",
           p( HTML("We provide geographic data in the following", 
             "<a href=http://spatialreference.org/ref/epsg/nad83-bc-albers/>", 
             paste(geoProj, ".", sep=""), "</a>") ),
@@ -540,7 +540,7 @@ ui <- fluidPage(
               downloadButton(outputId="downloadLand",
                 label="Download land (*.csv)"))) ),
         
-        tabPanel( title="Contact", br(), style="width:350pt", 
+        tabPanel( title="Contact", br(), style="width:400pt", 
           p( HTML("For more information on Pacific Herring spawn data, contact",
             "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,", 
             "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matt", 
@@ -555,7 +555,7 @@ ui <- fluidPage(
             "<a href=http://www.pac.dfo-mpo.gc.ca/>Fisheries and Oceans",
             "Canada</a>.</font>") ) ),
         
-        tabPanel( title="About", br(), style="width:350pt",
+        tabPanel( title="About", br(), style="width:400pt",
           p( HTML("<b>FIND</b> (FIND Is Not Difficult) was built using",
             "<a href=https://shiny.rstudio.com/>Shiny</a> inside",
             "<a href=https://www.rstudio.com/>RStudio</a>.",
