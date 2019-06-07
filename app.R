@@ -93,41 +93,31 @@ myTheme <- theme(
   legend.background=element_rect(fill="transparent"),
   plot.margin=unit(c(0.1, 0.6, 0.1, 0.1), "lines") )
 
-##### Data #####
-
-# Load spawn data, and aggregate by location code
-spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
-  group_by( Year, Region, StatArea, Section, LocationCode, LocationName ) %>%
-  summarise( Eastings=unique(Eastings), Northings=unique(Northings),
-    Longitude=unique(Longitude), Latitude=unique(Latitude),
-    SpawnIndex=sum(c(SurfSI, MacroSI, UnderSI), na.rm=TRUE),
-    Survey=unique(Survey) ) %>%
-  ungroup( ) %>%
-  filter( !is.na(Eastings), !is.na(Northings) ) %>%
-  dplyr::select( Year, Region, StatArea, Section, LocationCode, LocationName,
-    Eastings, Northings, Longitude, Latitude, SpawnIndex, Survey )
-
-# Get survey time periods
-qPeriods <- spawn %>%
-  mutate( Survey=factor(Survey, levels=c("Surface", "Dive")) ) %>%
-  group_by( Survey ) %>%
-  summarise( Start=min(Year), End=max(Year) ) %>%
-  ungroup( )
-
-# Range of longitude and latitude in spawn data
-rangeSI <- list( 
-  Long=round(range(spawn$Longitude, na.rm=TRUE), digits=2),
-  Lat=round(range(spawn$Latitude, na.rm=TRUE), digits=2) )
-
-# Load the Section shapefile (has Statistical Areas and Regions)
-secPoly <- readOGR( dsn=file.path(locStocks$loc), layer=locStocks$lyr, 
-  verbose=FALSE )
-
-# Load land polygon
-landPoly <- readOGR( dsn=file.path(locLand$loc), layer=locLand$lyr, 
-  verbose=FALSE )
-
 ##### Functions #####
+
+# Calculate sum if there are non-NA values, return NA if all values are NA
+SumNA <- function( x, omitNA=TRUE ) {
+  # An alternate version to sum(x, na.rm=TRUE), which returns 0 if x is all NA.
+  # This version retuns NA if x is all NA, otherwise it returns the sum. 
+  # If all NA, NA; otherwise, sum
+  ifelse( all(is.na(x)), 
+    res <- NA, 
+    res <- sum(x, na.rm=omitNA) )
+  # Return the result 
+  return( res )
+}  # End SumNA function
+
+# Calculate mean if there are non-NA values, return NA if all values are NA
+MeanNA <- function( x, omitNA=TRUE ) {
+  # An alternate version to mean(x, na.rm=TRUE), which returns 0 if x is all NA.
+  # This version retuns NA if x is all NA, otherwise it returns the mean.
+  # If all NA, NA; otherwise, mean
+  ifelse( all(is.na(x)), 
+    res <- NA, 
+    res <- mean(x, na.rm=omitNA) )
+  # Return the result 
+  return( res )
+}  # End MeanNA function
 
 # Get used packages (for session info)
 GetPackages <- function( ) {
@@ -270,7 +260,7 @@ CropSpawn <- function( dat, yrs, ext, grp ) {
     dat <- dat %>%
       group_by( Region, StatArea, Section, LocationCode, LocationName, Eastings, 
         Northings, Longitude, Latitude ) %>%
-      summarise( SpawnIndex=mean(SpawnIndex, na.rm=TRUE), Number=n() ) %>%
+      summarise( SpawnIndex=MeanNA(SpawnIndex), Number=n() ) %>%
       ungroup( ) %>%
       mutate( Number=as.integer(Number) )
   }  # End if summarising by location
@@ -326,6 +316,40 @@ WrangleDT <- function( dat, input, optPageLen, optDom, optNoData ) {
   # Return the data
   return( res )
 }  # End WrangleDT function
+
+##### Data #####
+
+# Load spawn data, and aggregate by location code
+spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
+  group_by( Year, Region, StatArea, Section, LocationCode, LocationName ) %>%
+  summarise( Eastings=unique(Eastings), Northings=unique(Northings),
+    Longitude=unique(Longitude), Latitude=unique(Latitude),
+    SpawnIndex=SumNA(c(SurfSI, MacroSI, UnderSI)),
+    Survey=unique(Survey) ) %>%
+  ungroup( ) %>%
+  filter( !is.na(Eastings), !is.na(Northings) ) %>%
+  dplyr::select( Year, Region, StatArea, Section, LocationCode, LocationName,
+    Eastings, Northings, Longitude, Latitude, SpawnIndex, Survey )
+
+# Get survey time periods
+qPeriods <- spawn %>%
+  mutate( Survey=factor(Survey, levels=c("Surface", "Dive")) ) %>%
+  group_by( Survey ) %>%
+  summarise( Start=min(Year), End=max(Year) ) %>%
+  ungroup( )
+
+# Range of longitude and latitude in spawn data
+rangeSI <- list( 
+  Long=round(range(spawn$Longitude, na.rm=TRUE), digits=2),
+  Lat=round(range(spawn$Latitude, na.rm=TRUE), digits=2) )
+
+# Load the Section shapefile (has Statistical Areas and Regions)
+secPoly <- readOGR( dsn=file.path(locStocks$loc), layer=locStocks$lyr, 
+  verbose=FALSE )
+
+# Load land polygon
+landPoly <- readOGR( dsn=file.path(locLand$loc), layer=locLand$lyr, 
+  verbose=FALSE )
 
 ##### User interface #####
 
