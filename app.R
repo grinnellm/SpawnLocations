@@ -43,9 +43,9 @@ UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
   }  # End i loop over package names
 }  # End UsePackages function
 
-# Make packages available
+# Make packages available ("shinyjs" "plotly")
 UsePackages( pkgs=c("tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", 
-  "viridis", "scales", "DT", "maptools", "shiny") )  # "shinyjs" "plotly"
+  "viridis", "scales", "DT", "maptools", "shiny", "ggrepel") )
 
 ##### Controls ##### 
 
@@ -403,7 +403,7 @@ ui <- fluidPage(
       ),
       
       bootstrapPage(
-        div( style="display:inline-block; width:44%",
+        div( style="display:inline-block; width:74%",
           h2( "Display features" ),
           div( style="display:inline-block; vertical-align:text-top",
             checkboxGroupInput(inputId="location", label="Event", 
@@ -416,9 +416,12 @@ ui <- fluidPage(
               choiceNames=c("SAR boundaries", "Section boundaries",
                 "Section labels"),
               choiceValues=c("reg", "sec", "sLab"),
-              selected=c("sec", "sLab")) ) ),
-        div( style="display:inline-block; width:54%",
-          h2( "Summarise spawns" ),
+              selected=c("sec", "sLab")) ),
+          div( style="display:inline-block; vertical-align:text-top",
+            checkboxGroupInput(inputId="sDisplay", label="Spawns", 
+              choiceNames=c("Location names"), choiceValues=c("lNames")) ) ),
+        div( style="display:inline-block; width:24%",
+          h2( "Spawns" ),
           div( style="display:inline-block; vertical-align:text-top",
             checkboxGroupInput(inputId="summary", label="Aggregate", 
               choiceNames=c("By Location"), choiceValues=c("loc")) ) ) ),
@@ -737,6 +740,18 @@ server <- function( input, output ) {
           alpha=0.5 ) +
         labs( colour="Spawn\nindex (t)" )
     }  # End if not aggregating by location
+    
+    # If showing location names
+    if( "lNames" %in% input$sDisplay ) {
+      # Get unique locations
+      uSpawns <- spawnSub() %>%
+        select( Eastings, Northings, LocationName ) %>%
+        distinct( )
+      # Show location names
+      hMap <- hMap + 
+        geom_text_repel( data=uSpawns, mapping=aes(label=LocationName), size=2 )
+    }  # End if showing location names
+    
     
     # TODO Working on a way to add second axes with Longitude and Latitude
     # fun <- Vectorize(function( x, dat=spawnSub() ) {
