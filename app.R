@@ -372,8 +372,8 @@ ui <- fluidPage(
         "<a href=http://spatialreference.org/ref/sr-org/14/>(decimal",
         "degrees)</a>") ),
       bootstrapPage(
-        # Default location is PBS (49.21N, -123.96W); whole coast is -127.5N
-        # and 52.125W with a 450km buffer
+        # Default location is PBS (49.21 N, -123.96 W); whole coast is -127.5 N
+        # and 52.125 W with a 450 km buffer
         div( style="display:inline-block; width:49%",
           numericInput(inputId="longitude", label="Longitude", value=-123.96,
             min=rangeSI$Long[1], max=rangeSI$Long[2], step=0.01) ),
@@ -437,7 +437,8 @@ ui <- fluidPage(
         
         tabPanel( title="Figure", br(),
           withSpinner(ui_element=plotOutput(outputId="map", width="100%",
-            height="650px", click="plotClick")),
+            height="650px", click="plotClick", 
+            hover=hoverOpts(id="plotHover", delayType="debounce"))),
           DT::dataTableOutput(outputId="spawnClick")),
         
         tabPanel( title="Table", br(),
@@ -797,7 +798,7 @@ server <- function( input, output ) {
         pageLength=15) )
   } )
   
-  # Use mouse location to select points
+  # Use mouse click to select points
   output$spawnClick <- renderDataTable( {
     # Select point closest to the point
     df <- nearPoints( df=spawnSub(), coordinfo=input$plotClick, 
@@ -812,6 +813,20 @@ server <- function( input, output ) {
     return( res )    
   } )
   
+  # # Use mouse hover to select points (fewer details)
+  # output$spawnHover <- renderPrint( {
+  #   if( !is.null(input$plotHover) ) {
+  #     hover=input$plotHover
+  #     dist <- sqrt((hover$x-spawn$Eastings)^2+(hover$y-spawn$Northings)^2)
+  #     # cat("Location")
+  #     if(min(dist) < 3)
+  #       spawn$LocationName[which.min(dist)]
+  #     
+  #   }
+  # }
+  # )
+ 
+    
   # # Reset all inputs
   # observeEvent( input$resetAll, reset("form") )
   
