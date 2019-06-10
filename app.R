@@ -360,17 +360,13 @@ ui <- fluidPage(
   # useShinyjs(),
   
   # Application title
-  titlePanel( title="Find Pacific Herring spawn sites", 
+  titlePanel( title="Find Pacific Herring spawn sites around a point", 
     windowTitle="FIND" ),
   
-  # Sidebar with input parameters t
+  # Sidebar with input parameters
   sidebarLayout(
     # Sidebar (input etc)
     sidebarPanel( width=4,
-      
-      h1( "FIND" ),
-      p( HTML("Find Pacific Herring spawn sites around a point.",
-        "Please read the details in the tabs.") ),
       
       h2( HTML("Event location", 
         "<a href=http://spatialreference.org/ref/sr-org/14/>(decimal",
@@ -605,7 +601,11 @@ server <- function( input, output ) {
   # Show modeal dialogue on startup - requires a click to proceed
   showModal(
     modalDialog( title="Disclaimer",
-      HTML("This version is a draft; do not use for planning.") )
+      HTML("<b>This is a draft; do not use this data for planning or",
+        "analyses.</b>",
+        "Read the details in the tabs and supporting documents (i.e., links).",
+        "Please contact the authors if you have any questions, or if you",
+        "plan to use this data.") )
   )
   
   # Get package info
