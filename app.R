@@ -45,7 +45,7 @@ UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
 
 # Make packages available ("shinyjs" "plotly")
 UsePackages( pkgs=c("tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", 
-  "viridis", "scales", "DT", "maptools", "shiny", "ggrepel") )
+  "viridis", "scales", "DT", "maptools", "shiny", "ggrepel", "shinyBS") )
 
 ##### Controls ##### 
 
@@ -403,7 +403,7 @@ ui <- fluidPage(
       ),
       
       bootstrapPage(
-        div( style="display:inline-block; width:74%",
+        div( style="display:inline-block; width:71%",
           h2( "Display features" ),
           div( style="display:inline-block; vertical-align:text-top",
             checkboxGroupInput(inputId="location", label="Event", 
@@ -420,7 +420,7 @@ ui <- fluidPage(
           div( style="display:inline-block; vertical-align:text-top",
             checkboxGroupInput(inputId="sDisplay", label="Spawns", 
               choiceNames=c("Location names"), choiceValues=c("lNames")) ) ),
-        div( style="display:inline-block; width:24%",
+        div( style="display:inline-block; width:27%",
           h2( "Spawns" ),
           div( style="display:inline-block; vertical-align:text-top",
             checkboxGroupInput(inputId="summary", label="Aggregate", 
