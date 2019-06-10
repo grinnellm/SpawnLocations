@@ -45,7 +45,7 @@ UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
 
 # Make packages available ("shinyjs" "plotly")
 UsePackages( pkgs=c("tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", 
-  "viridis", "scales", "DT", "maptools", "shiny", "ggrepel", "shinyBS") )
+  "viridis", "scales", "DT", "maptools", "shiny", "ggrepel") )
 
 ##### Controls ##### 
 
@@ -403,12 +403,14 @@ ui <- fluidPage(
       ),
       
       bootstrapPage(
-        div( style="display:inline-block; width:71%",
+        div( style="display:inline-block; width:64%",
           h2( "Display features" ),
           div( style="display:inline-block; vertical-align:text-top",
             checkboxGroupInput(inputId="location", label="Event", 
               choiceNames=c("Point", "Circle"), choiceValues=c("pt", "circ"), 
-              selected=c("pt", "circ")) ),
+              selected=c("pt", "circ")),
+            checkboxGroupInput(inputId="sDisplay", label="Spawns", 
+              choiceNames=c("Location names"), choiceValues=c("lNames"))),
           # Add horizontal padding on this 'div' to make white space
           div( style="display:inline-block; vertical-align:text-top;
           padding: 0px 12px",
@@ -416,11 +418,8 @@ ui <- fluidPage(
               choiceNames=c("SAR boundaries", "Section boundaries",
                 "Section labels"),
               choiceValues=c("reg", "sec", "sLab"),
-              selected=c("sec", "sLab")) ),
-          div( style="display:inline-block; vertical-align:text-top",
-            checkboxGroupInput(inputId="sDisplay", label="Spawns", 
-              choiceNames=c("Location names"), choiceValues=c("lNames")) ) ),
-        div( style="display:inline-block; width:27%",
+              selected=c("sec", "sLab")) ) ),
+        div( style="display:inline-block; width:34%",
           h2( "Spawns" ),
           div( style="display:inline-block; vertical-align:text-top",
             checkboxGroupInput(inputId="summary", label="Aggregate", 
