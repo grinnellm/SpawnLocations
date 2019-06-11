@@ -45,7 +45,7 @@ UsePackages <- function( pkgs, locn="https://cran.rstudio.com/" ) {
 
 # Make packages available ("shinyjs" "plotly")
 UsePackages( pkgs=c("tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", 
-  "viridis", "scales", "DT", "maptools", "shiny", "ggrepel") )
+  "viridis", "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial") )
 
 ##### Controls ##### 
 
@@ -375,10 +375,10 @@ ui <- fluidPage(
         # Default location is PBS (49.21 N, -123.96 W); whole coast is -127.5 N
         # and 52.125 W with a 450 km buffer
         div( style="display:inline-block; width:49%",
-          numericInput(inputId="longitude", label="Longitude", value=-123.96,
+          numericInput(inputId="longitude", label="Longitude", value=-124.3,
             min=rangeSI$Long[1], max=rangeSI$Long[2], step=0.01) ),
         div( style="display:inline-block; width:49%",
-          numericInput(inputId="latitude", label="Latitude", value=49.21,
+          numericInput(inputId="latitude", label="Latitude", value=49.51,
             min=rangeSI$Lat[1], max=rangeSI$Lat[2], step=0.01) ) ),
       
       h2( "Buffers (kilometres, km)" ),
@@ -604,11 +604,10 @@ server <- function( input, output ) {
   # Show modeal dialogue on startup - requires a click to proceed
   showModal(
     modalDialog( title="Disclaimer",
-      HTML("<b>This is a draft; do not use this data for planning or",
+      HTML("<b>This is a draft; do not use these data for planning or",
         "analyses.</b>",
         "Read the details in the tabs and supporting documents (i.e., links).",
-        "Please contact the authors if you have any questions, or if you",
-        "plan to use this data.") )
+        "Please contact the authors if you have any questions.") )
   )
   
   # Get package info
@@ -748,7 +747,8 @@ server <- function( input, output ) {
         distinct( )
       # Show location names
       hMap <- hMap + 
-        geom_text_repel( data=uSpawns, mapping=aes(label=LocationName), size=2 )
+        geom_text_repel( data=uSpawns, mapping=aes(label=LocationName), size=2,
+          box.padding=unit(0.5, "lines"), segment.colour="darkgrey" )
     }  # End if showing location names
     
     
@@ -777,6 +777,7 @@ server <- function( input, output ) {
       scale_y_continuous( labels=function(x) comma(x/1000), expand=c(0, 0) ) +
       expand_limits( x=shapesSub()$extDF$Eastings,
         y=shapesSub()$extDF$Northings ) +
+      # annotation_north_arrow( location="tl", style=north_arrow_nautical() ) +
       myTheme
     
     # Save the map (if download requested) -- not sure why this has to be here
@@ -818,8 +819,8 @@ server <- function( input, output ) {
     df <- nearPoints( df=spawnSub(), coordinfo=input$plotClick, 
       threshold=10 )
     # Custom text if no records
-    noRecords <- paste( "No points selected;", 
-      "click a point and then click 'Update' to view details.")
+    noRecords <- paste( "No spawns selected;", 
+      "click on a point and then click 'Update' to view details.")
     # Wrangle into a pretty data table
     res <- WrangleDT( dat=df, input=input$summary, optPageLen=-1,
       optDom="lftip", optNoData=noRecords )
