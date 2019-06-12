@@ -361,8 +361,7 @@ ui <- fluidPage(
   # useShinyjs(),
   
   # Application title
-  titlePanel( title="Find Pacific Herring spawn sites around a point", 
-    windowTitle="FIND" ),
+  titlePanel( title="Find Pacific Herring spawn sites", windowTitle="FIND" ),
   
   # Sidebar with input parameters
   sidebarLayout(
