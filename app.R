@@ -171,8 +171,6 @@ ClipPolys <- function( stocks, land, pt, buf ) {
       dplyr::select( SAR, StatArea, Section )
     # Get results
     res <- dat
-    # Remove the non-SAR areas
-    res <- dat[dat$SAR != -1, ]
     # Return updated sections
     return( res )
   }  # End UpdateSections function
@@ -216,8 +214,11 @@ ClipPolys <- function( stocks, land, pt, buf ) {
     rename( Eastings=long, Northings=lat ) %>%
     as_tibble( )
   # Dissolve to region
-  regSPDF <- aggregate( x=secBC, by=list(Temp=secBC$SAR), FUN=unique )
-  # Convert to data frame and select region(s) in question
+  regSPDF <- aggregate( x=secBC, by=list(Temp=secBC$SAR), FUN=unique,
+    dissolve=TRUE )
+  # Remove non-SAR areas
+  regSPDF <- regSPDF[regSPDF@data$SAR != -1, ]
+  # Convert to data frame
   regDF <- regSPDF %>%
     fortify( region="SAR" ) %>%
     rename( Eastings=long, Northings=lat, Region=group ) %>%
@@ -375,10 +376,10 @@ ui <- fluidPage(
         # Default location is PBS (49.21 N, -123.96 W); whole coast is -127.5 N
         # and 52.125 W with a 450 km buffer
         div( style="display:inline-block; width:49%",
-          numericInput(inputId="longitude", label="Longitude", value=-124.3,
+          numericInput(inputId="longitude", label="Longitude", value=-123.96,
             min=rangeSI$Long[1], max=rangeSI$Long[2], step=0.01) ),
         div( style="display:inline-block; width:49%",
-          numericInput(inputId="latitude", label="Latitude", value=49.51,
+          numericInput(inputId="latitude", label="Latitude", value=49.21,
             min=rangeSI$Lat[1], max=rangeSI$Lat[2], step=0.01) ) ),
       
       h2( "Buffers (kilometres, km)" ),
