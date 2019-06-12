@@ -370,8 +370,8 @@ ui <- fluidPage(
     sidebarPanel( width=4,
       
       h2( HTML("Event location", 
-        "<a href=http://spatialreference.org/ref/sr-org/14/>(decimal",
-        "degrees)</a>") ),
+        "(<a href=http://spatialreference.org/ref/sr-org/14/>decimal",
+        "degrees</a>)") ),
       bootstrapPage(
         # Default location is PBS (49.21 N, -123.96 W); whole coast is -127.5 N
         # and 52.125 W with a 450 km buffer
@@ -695,7 +695,7 @@ server <- function( input, output ) {
     if( "reg" %in% input$polys ) {
       # Update the map
       hMap <- hMap + 
-        geom_path( data=shapesSub()$regDF, aes(group=Region), size=0.5,
+        geom_path( data=shapesSub()$regDF, aes(group=Region), size=1,
           colour="black" )
     }  # End if showing SARs
     
