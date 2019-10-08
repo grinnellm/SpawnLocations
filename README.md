@@ -6,7 +6,7 @@ Alternatively, users can choose to summarise spawns by Location only (i.e., aggr
 Users can view spawns as a figure and as a table, both of which can be downloaded.
 For more information on Pacific Herring spawn data, contact
 [Jaclyn Cleary](mailto:Jaclyn.Cleary@dfo-mpo.gc.ca),
-[Matt Grinnell](mailto:Matthew.Grinnell@dfo-mpo.gc.ca), or
+[Matthew Grinnell](mailto:Matthew.Grinnell@dfo-mpo.gc.ca), or
 [Matt Thompson](mailto:Matthew.Thompson@dfo-mpo.gc.ca),
 DFO Science, Pacific Biological Station.
 Grinnell et al.
