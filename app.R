@@ -254,7 +254,7 @@ CropSpawn <- function( dat, yrs, ext, grp ) {
       StatArea=formatC(StatArea, width=2, format="d", flag="0"),
       Section=formatC(Section, width=3, format="d", flag="0") ) %>%
     dplyr::select( Year, Region, StatArea, Section, LocationCode, LocationName,
-      Eastings, Northings, Longitude, Latitude, SpawnIndex ) %>%
+      Start, End, Eastings, Northings, Longitude, Latitude, SpawnIndex ) %>%
     arrange( Year, Region, StatArea, Section, LocationCode )
   # Summarise spawns by location
   if( "loc" %in% grp ) {
@@ -323,14 +323,15 @@ WrangleDT <- function( dat, input, optPageLen, optDom, optNoData ) {
 # Load spawn data, and aggregate by location code
 spawn <- read_csv( file=spawnLoc, col_types=cols(), guess_max=10000 ) %>%
   group_by( Year, Region, StatArea, Section, LocationCode, LocationName ) %>%
-  summarise( Eastings=unique(Eastings), Northings=unique(Northings),
-    Longitude=unique(Longitude), Latitude=unique(Latitude),
-    SpawnIndex=SumNA(c(SurfSI, MacroSI, UnderSI)),
-    Survey=unique(Survey) ) %>%
+  summarise( Start=min(Start), End=max(End),
+             Eastings=unique(Eastings), Northings=unique(Northings),
+             Longitude=unique(Longitude), Latitude=unique(Latitude),
+             SpawnIndex=SumNA(c(SurfSI, MacroSI, UnderSI)),
+             Survey=unique(Survey) ) %>%
   ungroup( ) %>%
   filter( !is.na(Eastings), !is.na(Northings) ) %>%
   dplyr::select( Year, Region, StatArea, Section, LocationCode, LocationName,
-    Eastings, Northings, Longitude, Latitude, SpawnIndex, Survey )
+    Start, End, Eastings, Northings, Longitude, Latitude, SpawnIndex, Survey )
 
 # Get survey time periods
 qPeriods <- spawn %>%
