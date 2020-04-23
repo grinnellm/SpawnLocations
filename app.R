@@ -292,7 +292,7 @@ CropSpawn <- function(dat, yrs, ext, grp) {
         Northings, Longitude, Latitude
       ) %>%
       summarise(
-        Start = min(Start), End = max(End),
+        Start = min(Start, na.rm = TRUE), End = max(End, na.rm = TRUE),
         SpawnIndex = MeanNA(SpawnIndex), Number = n()
       ) %>%
       ungroup() %>%
@@ -301,8 +301,8 @@ CropSpawn <- function(dat, yrs, ext, grp) {
     # Format dates: month day
     dat <- dat %>%
       mutate(
-        Start = format(as.Date(paste(Start, Year), format="%j %Y"), "%b %d"),
-        End = format(as.Date(paste(End, Year), format="%j %Y"), "%b %d")
+        Start = format(as.Date(paste(Start, Year), format = "%j %Y"), "%b %d"),
+        End = format(as.Date(paste(End, Year), format = "%j %Y"), "%b %d")
       )
   }
   # Return the data
