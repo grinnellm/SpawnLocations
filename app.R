@@ -301,8 +301,8 @@ CropSpawn <- function(dat, yrs, ext, grp) {
     # Format dates: month day
     dat <- dat %>%
       mutate(
-        Start = as.Date(paste(Start, Year), format="%j %Y"),
-        End = format(strptime(End, format = "%j"), format = "%b %d")
+        Start = format(as.Date(paste(Start, Year), format="%j %Y"), "%b %d"),
+        End = format(as.Date(paste(End, Year), format="%j %Y"), "%b %d")
       )
   }
   # Return the data
