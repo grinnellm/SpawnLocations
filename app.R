@@ -48,7 +48,7 @@ UsePackages <- function(pkgs, locn = "https://cran.rstudio.com/") {
 # Make packages available ("shinyjs" "plotly")
 UsePackages(pkgs = c(
   "tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", "viridis",
-  "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial"
+  "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial", "lubridate"
 ))
 
 ##### Controls #####
@@ -281,7 +281,7 @@ CropSpawn <- function(dat, yrs, ext, grp) {
     ) %>%
     dplyr::select(
       Year, Region, StatArea, Section, LocationCode, LocationName,
-      Start, End, Eastings, Northings, Longitude, Latitude, SpawnIndex
+      Eastings, Northings, Longitude, Latitude, Start, End, SpawnIndex
     ) %>%
     arrange(Year, Region, StatArea, Section, LocationCode)
   # Summarise spawns by location
@@ -291,10 +291,14 @@ CropSpawn <- function(dat, yrs, ext, grp) {
         Region, StatArea, Section, LocationCode, LocationName, Eastings,
         Northings, Longitude, Latitude
       ) %>%
-      summarise(SpawnIndex = MeanNA(SpawnIndex), Number = n()) %>%
+      summarise(Start = min(Start), End = max(End),
+                SpawnIndex = MeanNA(SpawnIndex), Number = n()) %>%
       ungroup() %>%
       mutate(Number = as.integer(Number))
   } # End if summarising by location
+  # Format dates: month day (they are all 1900)
+  dat <- dat %>%
+    mutate(Start = format(Start, "%b %d"), End = format(End, "%b %d"))
   # Return the data
   return(dat)
 } # End CropSpawn function
@@ -367,6 +371,8 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
 
 # Load spawn data, and aggregate by location code
 spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
+  mutate(Start=ymd(format(Start, "1900-%m-%d"), quiet = TRUE),
+         End=ymd(format(End, "1900-%m-%d"), quiet = TRUE)) %>%
   group_by(Year, Region, StatArea, Section, LocationCode, LocationName) %>%
   summarise(
     Start = min(Start), End = max(End),
