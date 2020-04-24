@@ -48,7 +48,7 @@ UsePackages <- function(pkgs, locn = "https://cran.rstudio.com/") {
 # Make packages available ("shinyjs" "plotly")
 UsePackages(pkgs = c(
   "tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", "viridis",
-  "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial", "lubridate"
+  "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial", "lubridate", "sf"
 ))
 
 ##### Controls #####
@@ -79,14 +79,10 @@ crsOut <- "+proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000
 geoProj <- "Projection: BC Albers (NAD 1983)"
 
 # Location of the BC stocks shapefiles
-locStocks <- list(
-  loc = file.path("Data", "Polygons"), lyr = "SectionsIntegrated"
-)
+locStocks <- file.path("Data", "Polygons", "HerringSections.shp")
 
 # Location of the BC land file
-locLand <- list(
-  loc = file.path("Data", "Polygons"), lyr = "GSHHS_f_L1_Clip_Alb"
-)
+locLand <- file.path("Data", "Polygons", "GSHHS_f_L1_Clip.shp") 
 
 # Change default ggplot theme to 'black and white'
 theme_set(theme_bw())
@@ -407,7 +403,10 @@ spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
     Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber,
     Start, End, Eastings, Northings, Longitude, Latitude, Length, Width, 
     Method, SpawnIndex, Survey
-  )
+  ) #%>%
+  # st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
+  # st_transform( 3347 ) %>%
+  # as_Spatial()
 
 # Get survey time periods
 qPeriods <- spawn %>%
@@ -423,14 +422,14 @@ rangeSI <- list(
 )
 
 # Load the Section shapefile (has Statistical Areas and Regions)
-secPoly <- readOGR(
-  dsn = file.path(locStocks$loc), layer = locStocks$lyr, verbose = FALSE
-)
+secPoly <- st_read(locStocks, quiet = TRUE) %>%
+  st_transform( crs=3005 ) %>%
+  as_Spatial()
 
 # Load land polygon
-landPoly <- readOGR(
-  dsn = file.path(locLand$loc), layer = locLand$lyr, verbose = FALSE
-)
+landPoly <- st_read(locLand, quiet = TRUE) %>%
+  st_transform( crs=3005 ) %>%
+  as_Spatial()
 
 ##### User interface #####
 
