@@ -297,20 +297,17 @@ CropSpawn <- function(dat, yrs, ext, grp) {
         Longitude = unique(Longitude), Latitude = unique(Latitude),
         Start = min(Start, na.rm = TRUE), End = max(End, na.rm = TRUE),
         Length = SumNA(Length), Width=MeanNA(Width),
+        Method = ifelse(length(unique(Method)) > 1, "Various", Method),
         SpawnIndex = MeanNA(SpawnIndex)
       ) %>%
       ungroup() %>%
-      mutate(
-        Number = as.integer(Number),
-        Length = as.integer(round(Length)), Width = as.integer(round(Width))
-        )
+      mutate(Number = as.integer(Number))
   } else { # End if summarising by location, otherwise
     # Format dates: month day
     dat <- dat %>%
       mutate(
         Start = format(as.Date(paste(Start, Year), format = "%j %Y"), "%b %d"),
-        End = format(as.Date(paste(End, Year), format = "%j %Y"), "%b %d"),
-        Length = as.integer(round(Length)), Width = as.integer(round(Width))
+        End = format(as.Date(paste(End, Year), format = "%j %Y"), "%b %d")
       )
   }
   # Return the data
@@ -344,8 +341,7 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
     rename(
       SAR = Region, "Statistical Area" = StatArea,
       "Location Code" = LocationCode, "Location Name" = LocationName,
-      "Spawn index (t)" = SpawnIndex,
-      "Length (m)" = Length, 
+      "Spawn index (t)" = SpawnIndex, "Length (m)" = Length, 
       "Eastings (km)" = Eastings, "Northings (km)" = Northings
     )
   # If grouping by location
@@ -365,7 +361,8 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
       formatRound(columns = c(
         "Mean spawn index (t)", "Eastings (km)", "Northings (km)",
         "Longitude", "Latitude"
-      ), digits = 3)
+      ), digits = 3) %>%
+      formatRound(columns = c("Length (m)", "Mean width (m)"), digits = 0)
   } else { # End if grouping by location, otherwise
     # Format
     res <- res %>%
@@ -381,7 +378,8 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
       formatRound(columns = c(
         "Spawn index (t)", "Eastings (km)", "Northings (km)", "Longitude",
         "Latitude"
-      ), digits = 3)
+      ), digits = 3) %>%
+      formatRound(columns = c("Length (m)", "Width (m)"), digits = 0)
   } # End if not grouping by location
   # Return the data
   return(res)
@@ -588,12 +586,13 @@ ui <- fluidPage(
               vertical-align:text-top",
               p(HTML(
                 "In this analysis, we summarise spawns by year and",
-                "Location in tonnes (t).",
+                "spawn number in tonnes (t).",
+                "We also indicate spawn start and end dates, length and width",
+                "in metres (m), as well as the survey method.",
                 "Alternatively, users can choose to summarise spawns by",
-                "Location only (i.e., aggregate spawns over years).",
-                "In this case, spawns are described by the mean spawn index,",
-                "and the number of spawns, which indicates the number of years",
-                "that spawn was observed at a given Location."
+                "Location (i.e., aggregate spawns over years and spawn",
+                "numbers).",
+                "In this case, spawns are described by the mean spawn index."
               )),
               p(
                 "'Incomplete' spawns are included in this analysis; they are",
