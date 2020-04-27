@@ -439,14 +439,14 @@ ui <- fluidPage(
     # Sidebar (input etc)
     sidebarPanel(
       width = 4,
-
-      h2(HTML(
-        "Event",
-        "(<a href=http://spatialreference.org/ref/sr-org/14/>WGS 1984</a>)"
-      )),
+      
       bootstrapPage(
         # Default location is PBS (49.21 N, -123.96 W); whole coast is -127.5 N
         # and 52.125 W with a 450 km buffer
+        h2(HTML(
+          "Event",
+          "(<a href=http://spatialreference.org/ref/sr-org/14/>WGS 1984</a>)"
+        )),
         div(
           style = "display:inline-block; width:24%",
           numericInput(
@@ -463,27 +463,25 @@ ui <- fluidPage(
         )
       ),
 
-      h2("Buffers (km)"),
-      bootstrapPage(
         div(
           style = "display:inline-block; width:24%",
           numericInput(
-            inputId = "bufSpill", label = "Circle (radius)", value = 8,
+            inputId = "bufSpill", label = "Circle (radius; km)", value = 8,
             min = 0, step = 1
           )
         ),
         div(
           style = "display:inline-block; width:24%",
           numericInput(
-            inputId = "bufMap", label = "Map edge",
+            inputId = "bufMap", label = "Map edge (km)",
             value = 10, min = 1, step = 1
           )
         )
-      ),
+      ,
 
       h2("Spawns"),
       bootstrapPage(
-        div( style="display:inline-block; width:49%; vertical-align:text-top",
+        div( style="display:inline-block; width:100%; vertical-align:text-top",
         sliderInput(
           inputId = "yrRange", label = "Subset years", min = min(spawn$Year),
           max = max(spawn$Year), value = range(spawn$Year), sep = ""
