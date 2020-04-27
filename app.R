@@ -277,8 +277,7 @@ CropSpawn <- function(dat, yrs, ext, grp) {
     ) %>%
     dplyr::select(
       Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber,
-      Eastings, Northings, Longitude, Latitude, Start, End, Length, Width,
-      Method, SpawnIndex
+      Eastings, Northings, Longitude, Latitude, Start, End, Length, Width, Method, SpawnIndex
     ) %>%
     arrange(Year, Region, StatArea, Section, LocationCode)
   # Summarise spawns by location
@@ -330,15 +329,12 @@ MakeCircle <- function(center = c(0, 0), radius = 1, nPts = 100) {
 WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
   # Modify names and values for nicer printing
   res <- dat %>%
-    mutate(
-      Eastings = Eastings / 1000, Northings = Northings / 1000,
-      LocationCode = as.character(LocationCode)
-    ) %>%
+    select(-Eastings, -Northings) %>%
+    mutate(LocationCode = as.character(LocationCode)) %>%
     rename(
       SAR = Region, "Statistical Area" = StatArea,
-      "Location Code" = LocationCode, "Location Name" = LocationName,
-      "Spawn index (t)" = SpawnIndex, "Length (m)" = Length, 
-      "Eastings (km)" = Eastings, "Northings (km)" = Northings
+      "Location code" = LocationCode, "Location name" = LocationName,
+      "Spawn index (t)" = SpawnIndex, "Length (m)" = Length
     )
   # If grouping by location
   if ("loc" %in% input) {
@@ -350,14 +346,12 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
         "Mean spawn index (t)" = "Spawn index (t)"
       ) %>%
       datatable(options = list(
-        lengthMenu = list(c(15, -1), list("15", "All")),
+        lengthMenu = list(c(10, -1), list("10", "All")),
         pageLength = optPageLen, dom = optDom,
         language = list(zeroRecords = optNoData)
       )) %>%
-      formatRound(columns = c(
-        "Mean spawn index (t)", "Eastings (km)", "Northings (km)",
-        "Longitude", "Latitude"
-      ), digits = 3) %>%
+      formatRound(columns = c("Mean spawn index (t)", "Longitude", "Latitude"),
+                  digits = 3) %>%
       formatRound(columns = c("Length (m)", "Mean width (m)"), digits = 0)
   } else { # End if grouping by location, otherwise
     # Format
@@ -367,14 +361,12 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
         "Width (m)" = Width
         ) %>%
       datatable(options = list(
-        lengthMenu = list(c(15, -1), list("15", "All")),
+        lengthMenu = list(c(10, -1), list("10", "All")),
         pageLength = optPageLen, dom = optDom,
         language = list(zeroRecords = optNoData)
       )) %>%
-      formatRound(columns = c(
-        "Spawn index (t)", "Eastings (km)", "Northings (km)", "Longitude",
-        "Latitude"
-      ), digits = 3) %>%
+      formatRound(columns = c("Spawn index (t)", "Longitude", "Latitude"), 
+                  digits = 3) %>%
       formatRound(columns = c("Length (m)", "Width (m)"), digits = 0)
   } # End if not grouping by location
   # Return the data
@@ -847,7 +839,7 @@ server <- function(input, output) {
 
     # Wrangle into a pretty data table
     res <- WrangleDT(
-      dat = df, input = input$summary, optPageLen = 15, optDom = "lftip",
+      dat = df, input = input$summary, optPageLen = 10, optDom = "lftip",
       optNoData = "No data available in table"
     )
 
