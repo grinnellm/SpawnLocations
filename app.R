@@ -39,8 +39,8 @@ UsePackages <- function(pkgs, locn = "https://cran.rstudio.com/") {
   for (i in 1:length(rPkgs)) {
     # Load required packages using 'library'
     eval(parse(text = paste("suppressPackageStartupMessages(library(", rPkgs[i],
-      "))",
-      sep = ""
+                            "))",
+                            sep = ""
     )))
   } # End i loop over package names
 } # End UsePackages function
@@ -106,8 +106,8 @@ SumNA <- function(x, omitNA = TRUE) {
   # This version retuns NA if x is all NA, otherwise it returns the sum.
   # If all NA, NA; otherwise, sum
   ifelse(all(is.na(x)),
-    res <- NA,
-    res <- sum(x, na.rm = omitNA)
+         res <- NA,
+         res <- sum(x, na.rm = omitNA)
   )
   # Return the result
   return(res)
@@ -119,8 +119,8 @@ MeanNA <- function(x, omitNA = TRUE) {
   # This version retuns NA if x is all NA, otherwise it returns the mean.
   # If all NA, NA; otherwise, mean
   ifelse(all(is.na(x)),
-    res <- NA,
-    res <- mean(x, na.rm = omitNA)
+         res <- NA,
+         res <- mean(x, na.rm = omitNA)
   )
   # Return the result
   return(res)
@@ -146,15 +146,15 @@ ConvLocation <- function(xy) {
   # Ensure longitude is within range of spawns
   if (xy[1] < rangeSI$Long[1] | xy[1] > rangeSI$Long[2]) {
     stop("Longitude must be between ", paste(rangeSI$Long, collapse = " and "),
-      ".",
-      sep = "", call. = FALSE
+         ".",
+         sep = "", call. = FALSE
     )
   }
   # Ensure latitude is within range of spawns
   if (xy[2] < rangeSI$Lat[1] | xy[2] > rangeSI$Lat[2]) {
     stop("Latitude must be between ", paste(rangeSI$Lat, collapse = " and "),
-      ".",
-      sep = "", call. = FALSE
+         ".",
+         sep = "", call. = FALSE
     )
   }
   # Make a matrix
@@ -430,355 +430,358 @@ landPoly <- st_read(locLand, quiet = TRUE) %>%
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-
+  
   # # Allow reset of inputs
   # useShinyjs(),
-
+  
   # Application title
   titlePanel(title = "Find Pacific Herring spawn sites", windowTitle = "FIND"),
-
+  
   # Sidebar with input parameters
   sidebarLayout(
     # Sidebar (input etc)
     sidebarPanel(
       width = 4,
-
+      
       bootstrapPage(
         # Default location is PBS (49.21 N, -123.96 W); whole coast is -127.5 N
         # and 52.125 W with a 450 km buffer
-        h2(HTML(
-          "Event",
-          "(<a href=http://spatialreference.org/ref/sr-org/14/>WGS 1984</a>)"
-        )),
-        div(
-          style = "display:inline-block; width:24%",
-          numericInput(
-            inputId = "longitude", label = "Longitude", value = -123.96,
-            min = rangeSI$Long[1], max = rangeSI$Long[2], step = 0.01
-          )
-        ),
-        div(
-          style = "display:inline-block; width:24%",
-          numericInput(
-            inputId = "latitude", label = "Latitude", value = 49.21,
-            min = rangeSI$Lat[1], max = rangeSI$Lat[2], step = 0.01
-          )
-        )
-      ),
-
-      div(
-        style = "display:inline-block; width:24%",
-        numericInput(
-          inputId = "bufSpill", label = "Circle (radius; km)", value = 8,
-          min = 0, step = 1
-        )
-      ),
-      div(
-        style = "display:inline-block; width:24%",
-        numericInput(
-          inputId = "bufMap", label = "Map edge (km)", value = 10, min = 1,
-          step = 1
-        )
-      ),
-      h2("Spawns"),
-      bootstrapPage(
-        div(
-          style = "display:inline-block; width:100%; vertical-align:text-top",
-          sliderInput(
-            inputId = "yrRange", label = "Subset years", min = min(spawn$Year),
-            max = max(spawn$Year), value = range(spawn$Year), sep = ""
-          )
-        )
-        # div( style="display:inline-block; width:24%; vertical-align:text-top;
-        #   padding: 0px 12px",
-        #   selectInput(inputId="areas", label="Region",
-        #     choices=unique(spawn$Region), multiple=TRUE,
-        #     selected=unique(spawn$Region)) )
-      ),
-
-      bootstrapPage(
-        div(
-          style = "display:inline-block; width:64%",
-          h2("Display features"),
-          div(
-            style = "display:inline-block; vertical-align:text-top",
-            checkboxGroupInput(
-              inputId = "location", label = "Event",
-              choiceNames = c("Point", "Circle"),
-              choiceValues = c("pt", "circ"), selected = c("pt", "circ")
+        div(style = "display:inline-block; width:49%",
+            h2(HTML(
+              "Event"
+              # "(<a href=http://spatialreference.org/ref/sr-org/14/>WGS 1984</a>)"
+            )),
+            div(
+              style = "display:inline-block; width:40%",
+              numericInput(
+                inputId = "longitude", label = "Longitude", value = -123.96,
+                min = rangeSI$Long[1], max = rangeSI$Long[2], step = 0.01
+              )
             ),
-            checkboxGroupInput(
-              inputId = "sDisplay", label = "Spawns",
-              choiceNames = c("Location names"), choiceValues = c("lNames")
+            div(
+              style = "display:inline-block; width:40%",
+              numericInput(
+                inputId = "latitude", label = "Latitude", value = 49.21,
+                min = rangeSI$Lat[1], max = rangeSI$Lat[2], step = 0.01
+              )
             )
-          ),
-          # Add horizontal padding on this 'div' to make white space
-          div(
-            style = "display:inline-block; vertical-align:text-top;
-          padding: 0px 12px",
-            checkboxGroupInput(
-              inputId = "polys", label = "Polygons",
-              choiceNames = c(
-                "SAR boundaries", "Section boundaries", "Section labels"
-              ),
-              choiceValues = c("reg", "sec", "sLab"),
-              selected = c("sec", "sLab")
-            )
+        ),
+        div(style = "display:inline-block; width:49%",
+            h2("Buffers (km)")
+        ,
+        div(
+          style = "display:inline-block; width:40%",
+          numericInput(
+            inputId = "bufSpill", label = "Circle (radius)", value = 8,
+            min = 0, step = 1
           )
         ),
         div(
-          style = "display:inline-block; width:34%",
-          h2("Spawns"),
-          div(
-            style = "display:inline-block; vertical-align:text-top",
-            checkboxGroupInput(
-              inputId = "summary", label = "Aggregate",
-              choiceNames = c("By Location"), choiceValues = c("loc")
-            )
+          style = "display:inline-block; width:40%",
+          numericInput(
+            inputId = "bufMap", label = "Map edge", value = 10, min = 1,
+            step = 1
           )
-        )
-      ),
-
-      # h2( "View results" ),
-      div(
-        style = "text-align:center",
-        submitButton("Update", icon("refresh"))
+        ))),
+  h2("Spawns"),
+  bootstrapPage(
+    div(
+      style = "display:inline-block; width:100%; vertical-align:text-top",
+      sliderInput(
+        inputId = "yrRange", label = "Subset years", min = min(spawn$Year),
+        max = max(spawn$Year), value = range(spawn$Year), sep = ""
       )
-      # actionButton("resetAll", "Reset all")
-    ), # End sidebar panel
-
-    # Show a plot of the generated distribution
-    mainPanel(
-      width = 8,
-      # Start tabs
-      tabsetPanel(
-        type = "tabs", selected = "Figure",
-
-        tabPanel(
-          title = "Figure", br(),
-          withSpinner(ui_element = plotOutput(
-            outputId = "map", width = "100%", height = "650px",
-            click = "plotClick",
-            hover = hoverOpts(id = "plotHover", delayType = "debounce")
-          )),
-          DT::dataTableOutput(outputId = "spawnClick")
+    )
+    # div( style="display:inline-block; width:24%; vertical-align:text-top;
+    #   padding: 0px 12px",
+    #   selectInput(inputId="areas", label="Region",
+    #     choices=unique(spawn$Region), multiple=TRUE,
+    #     selected=unique(spawn$Region)) )
+  ),
+  
+  bootstrapPage(
+    h2("Display features"),
+    div(
+      style = "display:inline-block; vertical-align:text-top",
+      checkboxGroupInput(
+        inputId = "location", label = "Event",
+        choiceNames = c("Point", "Circle"),
+        choiceValues = c("pt", "circ"), selected = c("pt", "circ")
+      )
+    ),
+    div(
+      style = "display:inline-block; vertical-align:text-top",
+      checkboxGroupInput(
+        inputId = "sDisplay", label = "Spawns",
+        choiceNames = c("Location names"), choiceValues = c("lNames")
+      )
+    ),
+    # Add horizontal padding on this 'div' to make white space
+    div(
+      style = "display:inline-block; vertical-align:text-top;
+          padding: 0px 12px",
+      checkboxGroupInput(
+        inputId = "polys", label = "Polygons",
+        choiceNames = c(
+          "SAR boundaries", "Section boundaries", "Section labels"
         ),
+        choiceValues = c("reg", "sec", "sLab"),
+        selected = c("sec", "sLab")
+      )
+    )
+  ),
+  
+  bootstrapPage(
+    # h2("Spawns"),
+    div(
+      style = "display:inline-block; vertical-align:text-top",
+      checkboxGroupInput(
+        inputId = "summary", label = "Aggregate",
+        choiceNames = c("By Location"), choiceValues = c("loc")
+      )
+    )
+  ),
+  
+  # h2( "View results" ),
+  div(
+    style = "text-align:center",
+    submitButton("Update", icon("refresh"))
+  )
+  # actionButton("resetAll", "Reset all")
+), # End sidebar panel
 
-        tabPanel(
-          title = "Table", br(),
-          withSpinner(ui_element = DT::dataTableOutput(outputId = "dat"))
-        ),
-
-        tabPanel(
-          title = "Information", br(),
-          bootstrapPage(
-            div(
-              style = "display:inline-block; width:400pt;
+# Show a plot of the generated distribution
+mainPanel(
+  width = 8,
+  # Start tabs
+  tabsetPanel(
+    type = "tabs", selected = "Figure",
+    
+    tabPanel(
+      title = "Figure", br(),
+      withSpinner(ui_element = plotOutput(
+        outputId = "map", width = "100%", height = "650px",
+        click = "plotClick",
+        hover = hoverOpts(id = "plotHover", delayType = "debounce")
+      )),
+      DT::dataTableOutput(outputId = "spawnClick")
+    ),
+    
+    tabPanel(
+      title = "Table", br(),
+      withSpinner(ui_element = DT::dataTableOutput(outputId = "dat"))
+    ),
+    
+    tabPanel(
+      title = "Information", br(),
+      bootstrapPage(
+        div(
+          style = "display:inline-block; width:400pt;
               vertical-align:text-top",
-              p(HTML(
-                "In this analysis, we summarise spawns by year and",
-                "spawn number in tonnes (t).",
-                "We also indicate spawn start and end dates, length and width",
-                "in metres (m), as well as the survey method.",
-                "Alternatively, users can choose to summarise spawns by",
-                "Location (i.e., aggregate spawns over years and spawn",
-                "numbers).",
-                "In this case, spawns are described by the mean spawn index."
-              )),
-              p(
-                "'Incomplete' spawns are included in this analysis; they are",
-                "indicated by grey circles in the figure, and empty cells in",
-                "the table.",
-                "These spawns are rare, and they include spawns that were",
-                "observed but not surveyed, and spawns that were surveyed but",
-                "have insufficient data to calculate the spawn index."
-              ),
-              p(HTML(
-                "We use relatively coarse (i.e., low-resolution) land",
-                "polygons",
-                "(<a href=https://doi.org/10.1029/96JB00104>Wessel and Smith",
-                "1996</a>)",
-                "to enable a responsive analysis.",
-                "However, the coarse land polygons omit some geographic",
-                "features which causes some spawns to be displayed in open",
-                "water or on land.",
-                "Do not use these maps for navigation."
-              )),
-              h2("Stock assessment regions"),
-              p(HTML(
-                "Pacific Herring spawn survey observations have a nested",
-                "hierarchical structure:",
-                "observations are nested within transects,",
-                "transects are nested within spawns, and",
-                "spawns are nested within Locations",
-                "(<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>Grinnell et al. In prep.</a>).",
-                "For stock assessment purposes,",
-                "Locations are nested within Sections,",
-                "Sections are nested within Statistical Areas, and",
-                "Statistical Areas are nested within the five major and two",
-                "minor stock assessment regions (SARs) in British Columbia",
-                "(see Figure).",
-                "The terms 'major' and 'minor' describe relative differences",
-                "in the geographic and biomass scales represented.",
-                "SAR boundaries attempt to capture the habitat range of",
-                "relatively discrete migratory herring stocks, and are based",
-                "on historical records of commercial catch and spawning",
-                "sites."
-              )),
-              p(HTML(
-                "There are differences between major and minor SARs",
-                "regarding the amout of effort used to search and survey",
-                "Pacific Herring spawn.",
-                "Typically, minor SARs receive less search effort than major",
-                "SARs which could cause more spawns to be inadvertently",
-                "omitted in minor SARs.",
-                "In addition, spawn surveyors are more likely to use surface",
-                "surveys in minor SARs;",
-                "surface surveys are thought to be less accurate than dive",
-                "surveys which are used extensively in major SARs",
-                "(<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>Grinnell et al. In prep.</a>).",
-                "Finally, some spawns are reported by the public, which is",
-                "less common in minor SARs because they tend to be more",
-                "remote and difficult to access than major SARs.",
-                "These differences are accentuated in areas outside SAR",
-                "boundaries;",
-                "they receieve even less effort than minor SARs."
-              )),
-              h2("Interpreting spawn index data"),
-              p(HTML(
-                "There are several challenges to interpreting spawn",
-                "index data, including but not limited to",
-                "(<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>Grinnell et al. In prep.</a>):",
-                "<ul>",
-                "<li>The spawn index is not scaled by the spawn",
-                "survey scaling parameter <em>q</em>",
-                "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>);",
-                "therefore it is a relative index of spawning biomass,</li>",
-                "<li>The spawn index has two distinct periods defined by the",
-                "dominant survey method:",
-                "surface",
-                paste("(", qPeriods$Start[1], " to ", qPeriods$End[1], "),",
-                  sep = ""
-                ),
-                "and dive surveys",
-                paste("(", qPeriods$Start[2], " to ", qPeriods$End[2], "),</li>",
-                  sep = ""
-                ),
-                "<li>The spawn index is derived data with uncertainties and",
-                "assumptions, not observed data, and</li>",
-                "<li>The spawn index is 'presence only';",
-                "the absence of spawn index data does not necessarily indicate",
-                "the absence of spawn.</li>",
-                "</ul>"
-              ))
-            ),
-            div(
-              style = "display:inline-block; width:400pt;
-              vertical-align:text-top",
-              img(src = "BC.png", style = "width:100%"),
-              p(HTML(
-                "<font color='grey'>Boundaries for Pacific Herring",
-                "stock assessment regions (SARs) in British Columbia.",
-                "The major SARs are Haida Gwaii (HG), Prince Rupert District",
-                "(PRD), Central Coast (CC), Strait of Georgia (SoG), and West",
-                "Coast of Vancouver Island (WCVI).",
-                "The minor SARs are Area 27 (A27) and Area 2 West (A2W).",
-                "Units: kilometres (km).</font>"
-              ))
-            )
-          )
-        ),
-
-        tabPanel(
-          title = "Download", br(), style = "width:400pt",
           p(HTML(
-            "We provide geographic data in the following",
-            "<a href=http://spatialreference.org/ref/epsg/nad83-bc-albers/>",
-            paste(geoProj, ".", sep = ""), "</a>"
+            "In this analysis, we summarise spawns by year and",
+            "spawn number in tonnes (t).",
+            "We also indicate spawn start and end dates, length and width",
+            "in metres (m), as well as the survey method.",
+            "Alternatively, users can choose to summarise spawns by",
+            "Location (i.e., aggregate spawns over years and spawn",
+            "numbers).",
+            "In this case, spawns are described by the mean spawn index."
           )),
-          bootstrapPage(
-            h2("Spawn sites"),
-            div(
-              style = "display:inline-block",
-              downloadButton(
-                outputId = "downloadFigure",
-                label = "Download figure (*.png)"
-              )
-            ),
-            div(
-              style = "display:inline-block",
-              downloadButton(
-                outputId = "downloadTable",
-                label = "Download table (*.csv)"
-              )
-            )
+          p(
+            "'Incomplete' spawns are included in this analysis; they are",
+            "indicated by grey circles in the figure, and empty cells in",
+            "the table.",
+            "These spawns are rare, and they include spawns that were",
+            "observed but not surveyed, and spawns that were surveyed but",
+            "have insufficient data to calculate the spawn index."
           ),
-          bootstrapPage(
-            h2("Polygons"),
-            div(
-              style = "display:inline-block",
-              downloadButton(
-                outputId = "downloadSections",
-                label = "Download herring sections (*.csv)"
-              )
-            ),
-            div(
-              style = "display:inline-block",
-              downloadButton(
-                outputId = "downloadLand",
-                label = "Download land (*.csv)"
-              )
-            )
-          )
-        ),
-
-        tabPanel(
-          title = "Contact", br(), style = "width:400pt",
           p(HTML(
-            "For more information on Pacific Herring spawn data, contact",
-            "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,",
-            "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matt",
-            "Grinnell</a>, or",
-            "<a href=mailto:Matthew.Thompson@dfo-mpo.gc.ca@dfo-mpo.gc.ca>Matt",
-            "Thompson</a>,",
-            "DFO Science, Pacific Biological Station."
+            "We use relatively coarse (i.e., low-resolution) land",
+            "polygons",
+            "(<a href=https://doi.org/10.1029/96JB00104>Wessel and Smith",
+            "1996</a>)",
+            "to enable a responsive analysis.",
+            "However, the coarse land polygons omit some geographic",
+            "features which causes some spawns to be displayed in open",
+            "water or on land.",
+            "Do not use these maps for navigation."
           )),
-          br(),
-          img(src = "HerringDFO.jpg", style = "width:100%"),
+          h2("Stock assessment regions"),
           p(HTML(
-            "<font color='grey'>Pacific Herring (<em>Clupea",
-            "pallasii</em>). Image credit:",
-            "<a href=http://www.pac.dfo-mpo.gc.ca/>Fisheries and Oceans",
-            "Canada</a>.</font>"
+            "Pacific Herring spawn survey observations have a nested",
+            "hierarchical structure:",
+            "observations are nested within transects,",
+            "transects are nested within spawns, and",
+            "spawns are nested within Locations",
+            "(<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>Grinnell et al. In prep.</a>).",
+            "For stock assessment purposes,",
+            "Locations are nested within Sections,",
+            "Sections are nested within Statistical Areas, and",
+            "Statistical Areas are nested within the five major and two",
+            "minor stock assessment regions (SARs) in British Columbia",
+            "(see Figure).",
+            "The terms 'major' and 'minor' describe relative differences",
+            "in the geographic and biomass scales represented.",
+            "SAR boundaries attempt to capture the habitat range of",
+            "relatively discrete migratory herring stocks, and are based",
+            "on historical records of commercial catch and spawning",
+            "sites."
+          )),
+          p(HTML(
+            "There are differences between major and minor SARs",
+            "regarding the amout of effort used to search and survey",
+            "Pacific Herring spawn.",
+            "Typically, minor SARs receive less search effort than major",
+            "SARs which could cause more spawns to be inadvertently",
+            "omitted in minor SARs.",
+            "In addition, spawn surveyors are more likely to use surface",
+            "surveys in minor SARs;",
+            "surface surveys are thought to be less accurate than dive",
+            "surveys which are used extensively in major SARs",
+            "(<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>Grinnell et al. In prep.</a>).",
+            "Finally, some spawns are reported by the public, which is",
+            "less common in minor SARs because they tend to be more",
+            "remote and difficult to access than major SARs.",
+            "These differences are accentuated in areas outside SAR",
+            "boundaries;",
+            "they receieve even less effort than minor SARs."
+          )),
+          h2("Interpreting spawn index data"),
+          p(HTML(
+            "There are several challenges to interpreting spawn",
+            "index data, including but not limited to",
+            "(<a href=https://github.com/grinnellm/HerringSpawnDocumentation/blob/master/SpawnIndexTechnicalReport.pdf>Grinnell et al. In prep.</a>):",
+            "<ul>",
+            "<li>The spawn index is not scaled by the spawn",
+            "survey scaling parameter <em>q</em>",
+            "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>);",
+            "therefore it is a relative index of spawning biomass,</li>",
+            "<li>The spawn index has two distinct periods defined by the",
+            "dominant survey method:",
+            "surface",
+            paste("(", qPeriods$Start[1], " to ", qPeriods$End[1], "),",
+                  sep = ""
+            ),
+            "and dive surveys",
+            paste("(", qPeriods$Start[2], " to ", qPeriods$End[2], "),</li>",
+                  sep = ""
+            ),
+            "<li>The spawn index is derived data with uncertainties and",
+            "assumptions, not observed data, and</li>",
+            "<li>The spawn index is 'presence only';",
+            "the absence of spawn index data does not necessarily indicate",
+            "the absence of spawn.</li>",
+            "</ul>"
           ))
         ),
-
-        tabPanel(
-          title = "About", br(), style = "width:400pt",
+        div(
+          style = "display:inline-block; width:400pt;
+              vertical-align:text-top",
+          img(src = "BC.png", style = "width:100%"),
           p(HTML(
-            "<b>FIND</b> (FIND Is Not Difficult) was built using",
-            "<a href=https://shiny.rstudio.com/>Shiny</a> inside",
-            "<a href=https://www.rstudio.com/>RStudio</a>.",
-            "View the source code and report issues on our",
-            "<a href=https://github.com/grinnellm/FIND>GitHub repository</a>.",
-            "This version",
-            # paste("(", Sys.Date(), ")", sep=""),
-            "was built with",
-            R.version.string,
-            "and the following packages."
-          )),
-          withSpinner(ui_element = DT::dataTableOutput(outputId = "packages"))
+            "<font color='grey'>Boundaries for Pacific Herring",
+            "stock assessment regions (SARs) in British Columbia.",
+            "The major SARs are Haida Gwaii (HG), Prince Rupert District",
+            "(PRD), Central Coast (CC), Strait of Georgia (SoG), and West",
+            "Coast of Vancouver Island (WCVI).",
+            "The minor SARs are Area 27 (A27) and Area 2 West (A2W).",
+            "Units: kilometres (km).</font>"
+          ))
         )
-      ) # End tabs
-    ) # End main panel
-  ) # End sidebar layout
+      )
+    ),
+    
+    tabPanel(
+      title = "Download", br(), style = "width:400pt",
+      p(HTML(
+        "We provide geographic data in the following",
+        "<a href=http://spatialreference.org/ref/epsg/nad83-bc-albers/>",
+        paste(geoProj, ".", sep = ""), "</a>"
+      )),
+      bootstrapPage(
+        h2("Spawn sites"),
+        div(
+          style = "display:inline-block",
+          downloadButton(
+            outputId = "downloadFigure",
+            label = "Download figure (*.png)"
+          )
+        ),
+        div(
+          style = "display:inline-block",
+          downloadButton(
+            outputId = "downloadTable",
+            label = "Download table (*.csv)"
+          )
+        )
+      ),
+      bootstrapPage(
+        h2("Polygons"),
+        div(
+          style = "display:inline-block",
+          downloadButton(
+            outputId = "downloadSections",
+            label = "Download herring sections (*.csv)"
+          )
+        ),
+        div(
+          style = "display:inline-block",
+          downloadButton(
+            outputId = "downloadLand",
+            label = "Download land (*.csv)"
+          )
+        )
+      )
+    ),
+    
+    tabPanel(
+      title = "Contact", br(), style = "width:400pt",
+      p(HTML(
+        "For more information on Pacific Herring spawn data, contact",
+        "<a href=mailto:Jaclyn.Cleary@dfo-mpo.gc.ca>Jaclyn Cleary</a>,",
+        "<a href=mailto:Matthew.Grinnell@dfo-mpo.gc.ca>Matt",
+        "Grinnell</a>, or",
+        "<a href=mailto:Matthew.Thompson@dfo-mpo.gc.ca@dfo-mpo.gc.ca>Matt",
+        "Thompson</a>,",
+        "DFO Science, Pacific Biological Station."
+      )),
+      br(),
+      img(src = "HerringDFO.jpg", style = "width:100%"),
+      p(HTML(
+        "<font color='grey'>Pacific Herring (<em>Clupea",
+        "pallasii</em>). Image credit:",
+        "<a href=http://www.pac.dfo-mpo.gc.ca/>Fisheries and Oceans",
+        "Canada</a>.</font>"
+      ))
+    ),
+    
+    tabPanel(
+      title = "About", br(), style = "width:400pt",
+      p(HTML(
+        "<b>FIND</b> (FIND Is Not Difficult) was built using",
+        "<a href=https://shiny.rstudio.com/>Shiny</a> inside",
+        "<a href=https://www.rstudio.com/>RStudio</a>.",
+        "View the source code and report issues on our",
+        "<a href=https://github.com/grinnellm/FIND>GitHub repository</a>.",
+        "This version",
+        # paste("(", Sys.Date(), ")", sep=""),
+        "was built with",
+        R.version.string,
+        "and the following packages."
+      )),
+      withSpinner(ui_element = DT::dataTableOutput(outputId = "packages"))
+    )
+  ) # End tabs
+) # End main panel
+) # End sidebar layout
 ) # End ui
 
 ##### Server #####
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
+  
   # Show modeal dialogue on startup - requires a click to proceed
   showModal(
     modalDialog(
@@ -791,17 +794,17 @@ server <- function(input, output) {
       )
     )
   )
-
+  
   # Get package info
   packInfo <- reactive(
     GetPackages()
   )
-
+  
   # Get the spill location
   spill <- reactive(
     ConvLocation(xy = c(input$longitude, input$latitude))
   )
-
+  
   # Clip stock and land shapefiles
   shapesSub <- reactive(
     ClipPolys(
@@ -809,14 +812,14 @@ server <- function(input, output) {
       buf = input$bufMap * 1000
     )
   )
-
+  
   # Make a circle
   circDF <- reactive(
     MakeCircle(
       center = coordinates(spill()$xySP), radius = input$bufSpill * 1000
     )
   )
-
+  
   # Get spawn data
   spawnSub <- reactive(
     CropSpawn(
@@ -824,49 +827,49 @@ server <- function(input, output) {
       grp = input$summary
     )
   )
-
+  
   # Get the data
   output$dat <- DT::renderDataTable({
-
+    
     # Ensure there are spawn locations to show
     validate(need(
       nrow(spawnSub()) >= 1,
       "Error: No spawns match these criteria."
     ))
-
+    
     # Get the data
     df <- spawnSub()
-
+    
     # Wrangle into a pretty data table
     res <- WrangleDT(
       dat = df, input = input$summary, optPageLen = 10, optDom = "lftip",
       optNoData = "No data available in table"
     )
-
+    
     # Return the table
     return(res)
   }) # End data
-
+  
   # Make the figure (map)
   output$map <- renderPlot(res = 150, {
-
+    
     # Ensure map buffer is larger than spill buffer
     validate(need(
       input$bufSpill <= input$bufMap,
       "Error: Spill buffer can not exceed map bufer."
     ))
-
+    
     # Ensure there are spawn locations to show
     validate(need(
       nrow(spawnSub()) >= 1, "Error: No spawns match these criteria."
     ))
-
+    
     # Plot the area (default map)
     hMap <- ggplot(data = shapesSub()$landDF, aes(x = Eastings, y = Northings)) +
       geom_polygon(
         data = shapesSub()$landDF, aes(group = group), fill = "lightgrey"
       )
-
+    
     # If showing sections
     if ("sec" %in% input$polys) {
       # Update the map
@@ -876,7 +879,7 @@ server <- function(input, output) {
           colour = "black"
         )
     } # End if showing sections
-
+    
     # If showing sections labels
     if ("sLab" %in% input$polys) {
       # Ensure polygons are present
@@ -890,7 +893,7 @@ server <- function(input, output) {
           data = shapesSub()$secCentDF, alpha = 0.5, aes(label = Section)
         )
     } # End if showing labels
-
+    
     # If showing SAR boudaries
     if ("reg" %in% input$polys) {
       # Update the map
@@ -900,21 +903,21 @@ server <- function(input, output) {
           colour = "black"
         )
     } # End if showing SARs
-
+    
     # If showing the point location
     if ("pt" %in% input$location) {
       # Update the map
       hMap <- hMap +
         geom_point(data = spill()$xyDF, colour = "red", shape = 42, size = 8)
     } # End if showing the point location
-
+    
     # If showing the circle
     if ("circ" %in% input$location) {
       # Update the map
       hMap <- hMap +
         geom_path(data = circDF(), colour = "red", size = 0.25)
     } # End if showing the circle
-
+    
     # If aggregating by location
     if ("loc" %in% input$summary) {
       # Extract the number of spawns
@@ -946,7 +949,7 @@ server <- function(input, output) {
         ) +
         labs(colour = "Spawn\nindex (t)")
     } # End if not aggregating by location
-
+    
     # If showing location names
     if ("lNames" %in% input$sDisplay) {
       # Get unique locations
@@ -960,8 +963,8 @@ server <- function(input, output) {
           box.padding = unit(0.5, "lines"), segment.colour = "darkgrey"
         )
     } # End if showing location names
-
-
+    
+    
     # TODO Working on a way to add second axes with Longitude and Latitude
     # fun <- Vectorize(function( x, dat=spawnSub() ) {
     #   res <- dat %>%
@@ -969,13 +972,13 @@ server <- function(input, output) {
     #   # res <- x/2000 + sqrt(x/2000)
     #   return( res )
     # })
-
+    
     # Get number of unique years
     nYrs <- length(unique(input$yrRange))
-
+    
     # Get unique years
     uYrs <- paste(unique(input$yrRange), collapse = " to ")
-
+    
     # Add map layers
     hMap <- hMap +
       scale_colour_viridis(na.value = "black", labels = comma) +
@@ -996,7 +999,7 @@ server <- function(input, output) {
       ) +
       # annotation_north_arrow( location="tl", style=north_arrow_nautical() ) +
       myTheme
-
+    
     # Save the map (if download requested) -- not sure why this has to be here
     output$downloadFigure <- downloadHandler(
       filename = "SpawnMap.png",
@@ -1007,32 +1010,32 @@ server <- function(input, output) {
       },
       contentType = "image/png"
     )
-
+    
     # Print the map
     return(hMap)
   }) # End map
-
+  
   # Save data (spawn index; if download requested)
   output$downloadTable <- downloadHandler(
     filename = "SpawnData.csv",
     content = function(file) write_csv(x = spawnSub(), path = file),
     contentType = "text/csv"
   )
-
+  
   # Save herring section polygons
   output$downloadSections <- downloadHandler(
     filename = "SectionPolygons.csv",
     content = function(file) write_csv(x = shapesSub()$secDF, path = file),
     contentType = "text/csv"
   )
-
+  
   # Save land polygons
   output$downloadLand <- downloadHandler(
     filename = "LandPolygons.csv",
     content = function(file) write_csv(x = shapesSub()$landDF, path = file),
     contentType = "text/csv"
   )
-
+  
   # Package info
   output$packages <- DT::renderDataTable({
     # Get package info
@@ -1041,7 +1044,7 @@ server <- function(input, output) {
         lengthMenu = list(c(15, -1), list("15", "All")), pageLength = 15
       ))
   })
-
+  
   # Use mouse click to select points
   output$spawnClick <- renderDataTable({
     # Select point closest to the point
@@ -1061,7 +1064,7 @@ server <- function(input, output) {
     # Return the table
     return(res)
   })
-
+  
   # # Use mouse hover to select points (fewer details)
   # output$spawnHover <- renderPrint( {
   #   if( !is.null(input$plotHover) ) {
@@ -1074,8 +1077,8 @@ server <- function(input, output) {
   #   }
   # }
   # )
-
-
+  
+  
   # # Reset all inputs
   # observeEvent( input$resetAll, reset("form") )
 } # End server
