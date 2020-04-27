@@ -82,7 +82,7 @@ geoProj <- "Projection: BC Albers (NAD 1983)"
 locStocks <- file.path("Data", "Polygons", "HerringSections.shp")
 
 # Location of the BC land file
-locLand <- file.path("Data", "Polygons", "GSHHS_f_L1_Clip.shp") 
+locLand <- file.path("Data", "Polygons", "GSHHS_f_L1_Clip.shp")
 
 # Change default ggplot theme to 'black and white'
 theme_set(theme_bw())
@@ -291,7 +291,7 @@ CropSpawn <- function(dat, yrs, ext, grp) {
         Eastings = unique(Eastings), Northings = unique(Northings),
         Longitude = unique(Longitude), Latitude = unique(Latitude),
         Start = min(Start, na.rm = TRUE), End = max(End, na.rm = TRUE),
-        Length = SumNA(Length), Width=MeanNA(Width),
+        Length = SumNA(Length), Width = MeanNA(Width),
         Method = ifelse(length(unique(Method)) > 1, "Various", Method),
         SpawnIndex = MeanNA(SpawnIndex)
       ) %>%
@@ -350,8 +350,10 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
         pageLength = optPageLen, dom = optDom,
         language = list(zeroRecords = optNoData)
       )) %>%
-      formatRound(columns = c("Mean spawn index (t)", "Longitude", "Latitude"),
-                  digits = 3) %>%
+      formatRound(
+        columns = c("Mean spawn index (t)", "Longitude", "Latitude"),
+        digits = 3
+      ) %>%
       formatRound(columns = c("Length (m)", "Mean width (m)"), digits = 0)
   } else { # End if grouping by location, otherwise
     # Format
@@ -359,14 +361,16 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
       rename(
         "Spawn number" = SpawnNumber, "Start date" = Start, "End date" = End,
         "Width (m)" = Width
-        ) %>%
+      ) %>%
       datatable(options = list(
         lengthMenu = list(c(10, -1), list("10", "All")),
         pageLength = optPageLen, dom = optDom,
         language = list(zeroRecords = optNoData)
       )) %>%
-      formatRound(columns = c("Spawn index (t)", "Longitude", "Latitude"), 
-                  digits = 3) %>%
+      formatRound(
+        columns = c("Spawn index (t)", "Longitude", "Latitude"),
+        digits = 3
+      ) %>%
       formatRound(columns = c("Length (m)", "Width (m)"), digits = 0)
   } # End if not grouping by location
   # Return the data
@@ -382,9 +386,9 @@ spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
     Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber
   ) %>%
   summarise(
-    Start = unique(Start), End = unique(End), 
+    Start = unique(Start), End = unique(End),
     Length = unique(Length), Width = unique(Width),
-    Method = unique(Method), 
+    Method = unique(Method),
     Eastings = unique(Eastings), Northings = unique(Northings),
     Longitude = unique(Longitude), Latitude = unique(Latitude),
     SpawnIndex = SumNA(c(SurfSI, MacroSI, UnderSI)), Survey = unique(Survey)
@@ -393,12 +397,12 @@ spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
   filter(!is.na(Eastings), !is.na(Northings)) %>%
   dplyr::select(
     Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber,
-    Start, End, Eastings, Northings, Longitude, Latitude, Length, Width, 
+    Start, End, Eastings, Northings, Longitude, Latitude, Length, Width,
     Method, SpawnIndex, Survey
-  ) #%>%
-  # st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
-  # st_transform( 3347 ) %>%
-  # as_Spatial()
+  ) # %>%
+# st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
+# st_transform( 3347 ) %>%
+# as_Spatial()
 
 # Get survey time periods
 qPeriods <- spawn %>%
@@ -415,12 +419,12 @@ rangeSI <- list(
 
 # Load the Section shapefile (has Statistical Areas and Regions)
 secPoly <- st_read(locStocks, quiet = TRUE) %>%
-  st_transform( crs=3005 ) %>%
+  st_transform(crs = 3005) %>%
   as_Spatial()
 
 # Load land polygon
 landPoly <- st_read(locLand, quiet = TRUE) %>%
-  st_transform( crs=3005 ) %>%
+  st_transform(crs = 3005) %>%
   as_Spatial()
 
 ##### User interface #####
@@ -439,7 +443,7 @@ ui <- fluidPage(
     # Sidebar (input etc)
     sidebarPanel(
       width = 4,
-      
+
       bootstrapPage(
         # Default location is PBS (49.21 N, -123.96 W); whole coast is -127.5 N
         # and 52.125 W with a 450 km buffer
@@ -463,29 +467,29 @@ ui <- fluidPage(
         )
       ),
 
-        div(
-          style = "display:inline-block; width:24%",
-          numericInput(
-            inputId = "bufSpill", label = "Circle (radius; km)", value = 8,
-            min = 0, step = 1
-          )
-        ),
-        div(
-          style = "display:inline-block; width:24%",
-          numericInput(
-            inputId = "bufMap", label = "Map edge (km)",
-            value = 10, min = 1, step = 1
-          )
+      div(
+        style = "display:inline-block; width:24%",
+        numericInput(
+          inputId = "bufSpill", label = "Circle (radius; km)", value = 8,
+          min = 0, step = 1
         )
-      ,
-
+      ),
+      div(
+        style = "display:inline-block; width:24%",
+        numericInput(
+          inputId = "bufMap", label = "Map edge (km)",
+          value = 10, min = 1, step = 1
+        )
+      ),
       h2("Spawns"),
       bootstrapPage(
-        div( style="display:inline-block; width:100%; vertical-align:text-top",
-        sliderInput(
-          inputId = "yrRange", label = "Subset years", min = min(spawn$Year),
-          max = max(spawn$Year), value = range(spawn$Year), sep = ""
-        )  )
+        div(
+          style = "display:inline-block; width:100%; vertical-align:text-top",
+          sliderInput(
+            inputId = "yrRange", label = "Subset years", min = min(spawn$Year),
+            max = max(spawn$Year), value = range(spawn$Year), sep = ""
+          )
+        )
         # div( style="display:inline-block; width:24%; vertical-align:text-top;
         #   padding: 0px 12px",
         #   selectInput(inputId="areas", label="Region",
