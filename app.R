@@ -181,8 +181,7 @@ ClipPolys <- function(stocks, land, pt, buf) {
     # Some light wrangling
     dat@data <- dat@data %>%
       mutate(
-        StatArea = as.character(StatArea),
-        Section = as.character(Section)
+        StatArea = as.character(StatArea), Section = as.character(Section)
       ) %>%
       dplyr::select(SAR, StatArea, Section)
     # Get results
@@ -277,7 +276,8 @@ CropSpawn <- function(dat, yrs, ext, grp) {
     ) %>%
     dplyr::select(
       Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber,
-      Eastings, Northings, Longitude, Latitude, Start, End, Length, Width, Method, SpawnIndex
+      Eastings, Northings, Longitude, Latitude, Start, End, Length, Width,
+      Method, SpawnIndex
     ) %>%
     arrange(Year, Region, StatArea, Section, LocationCode)
   # Summarise spawns by location
@@ -368,8 +368,7 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
         language = list(zeroRecords = optNoData)
       )) %>%
       formatRound(
-        columns = c("Spawn index (t)", "Longitude", "Latitude"),
-        digits = 3
+        columns = c("Spawn index (t)", "Longitude", "Latitude"), digits = 3
       ) %>%
       formatRound(columns = c("Length (m)", "Width (m)"), digits = 0)
   } # End if not grouping by location
@@ -397,8 +396,8 @@ spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
   filter(!is.na(Eastings), !is.na(Northings)) %>%
   dplyr::select(
     Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber,
-    Start, End, Eastings, Northings, Longitude, Latitude, Length, Width,
-    Method, SpawnIndex, Survey
+    Start, End, Eastings, Northings, Longitude, Latitude, Length, Width, Method,
+    SpawnIndex, Survey
   ) # %>%
 # st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
 # st_transform( 3347 ) %>%
@@ -477,8 +476,8 @@ ui <- fluidPage(
       div(
         style = "display:inline-block; width:24%",
         numericInput(
-          inputId = "bufMap", label = "Map edge (km)",
-          value = 10, min = 1, step = 1
+          inputId = "bufMap", label = "Map edge (km)", value = 10, min = 1,
+          step = 1
         )
       ),
       h2("Spawns"),
@@ -887,7 +886,9 @@ server <- function(input, output) {
       ))
       # Update the map
       hMap <- hMap +
-        geom_label(data = shapesSub()$secCentDF, alpha = 0.5, aes(label = Section))
+        geom_label(
+          data = shapesSub()$secCentDF, alpha = 0.5, aes(label = Section)
+        )
     } # End if showing labels
 
     # If showing SAR boudaries
@@ -933,7 +934,9 @@ server <- function(input, output) {
           alpha = 0.5
         ) +
         labs(colour = "Mean\nspawn\nindex (t)", size = "Number\nof spawns") +
-        guides(colour = guide_colourbar(order = 1), size = guide_legend(order = 2)) +
+        guides(
+          colour = guide_colourbar(order = 1), size = guide_legend(order = 2)
+        ) +
         scale_size_area(breaks = nSpawnShow)
     } else { # End if aggregatign by location, otherwise
       # Update the map
