@@ -441,7 +441,7 @@ ui <- fluidPage(
   sidebarLayout(
     # Sidebar (input etc)
     sidebarPanel(
-      width = 4,
+      width = 3,
       
       bootstrapPage(
         # Default location is PBS (49.21 N, -123.96 W); whole coast is -127.5 N
@@ -452,14 +452,14 @@ ui <- fluidPage(
               # "(<a href=http://spatialreference.org/ref/sr-org/14/>WGS 1984</a>)"
             )),
             div(
-              style = "display:inline-block; width:40%",
+              style = "display:inline-block; width:49%",
               numericInput(
                 inputId = "longitude", label = "Longitude", value = -123.96,
                 min = rangeSI$Long[1], max = rangeSI$Long[2], step = 0.01
               )
             ),
             div(
-              style = "display:inline-block; width:40%",
+              style = "display:inline-block; width:49%",
               numericInput(
                 inputId = "latitude", label = "Latitude", value = 49.21,
                 min = rangeSI$Lat[1], max = rangeSI$Lat[2], step = 0.01
@@ -470,14 +470,14 @@ ui <- fluidPage(
             h2("Buffers (km)")
         ,
         div(
-          style = "display:inline-block; width:40%",
+          style = "display:inline-block; width:49%",
           numericInput(
-            inputId = "bufSpill", label = "Circle (radius)", value = 8,
+            inputId = "bufSpill", label = "Circle radius", value = 8,
             min = 0, step = 1
           )
         ),
         div(
-          style = "display:inline-block; width:40%",
+          style = "display:inline-block; width:49%",
           numericInput(
             inputId = "bufMap", label = "Map edge", value = 10, min = 1,
             step = 1
@@ -491,12 +491,19 @@ ui <- fluidPage(
         inputId = "yrRange", label = "Subset years", min = min(spawn$Year),
         max = max(spawn$Year), value = range(spawn$Year), sep = ""
       )
-    )
-    # div( style="display:inline-block; width:24%; vertical-align:text-top;
-    #   padding: 0px 12px",
-    #   selectInput(inputId="areas", label="Region",
-    #     choices=unique(spawn$Region), multiple=TRUE,
-    #     selected=unique(spawn$Region)) )
+    ),
+    div(
+      style = "display:inline-block; width:24%; vertical-align:text-top",
+      checkboxGroupInput(
+        inputId = "summary", label = "Aggregate",
+        choiceNames = c("By Location"), choiceValues = c("loc")
+      )
+    ),
+    div( style="display:inline-block; width:24%; vertical-align:text-top;
+      padding: 0px 12px",
+      selectInput(inputId="areas", label="Region",
+        choices=unique(spawn$Region), multiple=TRUE, size = 3,
+        selectize = FALSE, selected=unique(spawn$Region)) )
   ),
   
   bootstrapPage(
@@ -531,17 +538,6 @@ ui <- fluidPage(
     )
   ),
   
-  bootstrapPage(
-    # h2("Spawns"),
-    div(
-      style = "display:inline-block; vertical-align:text-top",
-      checkboxGroupInput(
-        inputId = "summary", label = "Aggregate",
-        choiceNames = c("By Location"), choiceValues = c("loc")
-      )
-    )
-  ),
-  
   # h2( "View results" ),
   div(
     style = "text-align:center",
@@ -552,7 +548,7 @@ ui <- fluidPage(
 
 # Show a plot of the generated distribution
 mainPanel(
-  width = 8,
+  width = 9,
   # Start tabs
   tabsetPanel(
     type = "tabs", selected = "Figure",
