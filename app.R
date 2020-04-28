@@ -376,9 +376,11 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
 
 # Load spawn data, and aggregate by location code
 spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
-  mutate(Start = yday(Start), End = yday(End),
-         StatArea = formatC(StatArea, width = 2, format = "d", flag = "0"),
-         Section = formatC(Section, width = 3, format = "d", flag = "0")) %>%
+  mutate(
+    Start = yday(Start), End = yday(End),
+    StatArea = formatC(StatArea, width = 2, format = "d", flag = "0"),
+    Section = formatC(Section, width = 3, format = "d", flag = "0")
+  ) %>%
   group_by(
     Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber
   ) %>%
