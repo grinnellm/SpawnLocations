@@ -250,10 +250,13 @@ ClipPolys <- function(stocks, land, pt, buf) {
 } # End ClipPolys function
 
 # Function to crop (spatially) spawn
-CropSpawn <- function(dat, yrs, ext, grp) {
+CropSpawn <- function(dat, yrs, ext, grp, reg, sa, sec) {
   # Filter spawn index
   dat <- dat %>%
-    filter(Year >= yrs[1], Year <= yrs[2])
+    filter(
+      Year >= yrs[1], Year <= yrs[2], Region %in% reg, StatArea %in% sa,
+      Section %in% sec
+    )
   # Convert to a spatial object
   coordinates(dat) <- ~ Eastings + Northings
   # Give the projection
@@ -487,12 +490,12 @@ ui <- fluidPage(
           )
         )
       ),
-      h2("Spawns"),
+      h2("Subset spawns"),
       bootstrapPage(
         div(
           style = "display:inline-block; width:100%; vertical-align:text-top",
           sliderInput(
-            inputId = "yrRange", label = "Subset years", min = min(spawn$Year),
+            inputId = "yrRange", label = "Year(s)", min = min(spawn$Year),
             max = max(spawn$Year), value = range(spawn$Year), sep = ""
           )
         ),
@@ -519,7 +522,10 @@ ui <- fluidPage(
             choices = unique(spawn$Section), multiple = TRUE, size = 3,
             selectize = FALSE, selected = unique(spawn$Section)
           )
-        ),
+        )
+      ),
+      bootstrapPage(
+        h2("Summarise spawns"),
         div(
           style = "display:inline-block; width:24%; vertical-align:text-top",
           checkboxGroupInput(
@@ -546,10 +552,8 @@ ui <- fluidPage(
             choiceNames = c("Location names"), choiceValues = c("lNames")
           )
         ),
-        # Add horizontal padding on this 'div' to make white space
         div(
-          style = "display:inline-block; vertical-align:text-top;
-          padding: 0px 12px",
+          style = "display:inline-block; vertical-align:text-top",
           checkboxGroupInput(
             inputId = "polys", label = "Polygons",
             choiceNames = c(
@@ -564,7 +568,7 @@ ui <- fluidPage(
       div(
         style = "text-align:center",
         submitButton("Update", icon("refresh"))
-      )
+      )#,
       # actionButton("resetAll", "Reset all")
     ), # End sidebar panel
 
@@ -842,7 +846,8 @@ server <- function(input, output) {
   spawnSub <- reactive(
     CropSpawn(
       dat = spawn, yrs = input$yrRange, ext = shapesSub()$extBuff,
-      grp = input$summary
+      grp = input$summary, reg = input$regions, sa = input$statAreas,
+      sec = input$sections
     )
   )
 
@@ -1095,7 +1100,6 @@ server <- function(input, output) {
   #   }
   # }
   # )
-
 
   # # Reset all inputs
   # observeEvent( input$resetAll, reset("form") )
