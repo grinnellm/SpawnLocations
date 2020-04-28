@@ -398,7 +398,8 @@ spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
     Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber,
     Start, End, Eastings, Northings, Longitude, Latitude, Length, Width, Method,
     SpawnIndex, Survey
-  ) # %>%
+  ) %>%
+  arrange(Region, StatArea, Section, LocationCode, Year) # %>%
 # st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
 # st_transform( 3347 ) %>%
 # as_Spatial()
@@ -492,18 +493,28 @@ ui <- fluidPage(
         max = max(spawn$Year), value = range(spawn$Year), sep = ""
       )
     ),
+    div( style="display:inline-block; width:24%; vertical-align:text-top;
+      padding: 0px 12px",
+      selectInput(inputId="regions", label="Region (s)",
+        choices=unique(spawn$Region), multiple=TRUE, size = 3,
+        selectize = FALSE, selected=unique(spawn$Region)) ),
+    div( style="display:inline-block; width:24%; vertical-align:text-top;
+      padding: 0px 12px",
+         selectInput(inputId="statAreas", label="Statistical area(s)",
+                     choices=unique(spawn$StatArea), multiple=TRUE, size = 3,
+                     selectize = FALSE, selected=unique(spawn$StatArea)) ),
+    div( style="display:inline-block; width:24%; vertical-align:text-top;
+      padding: 0px 12px",
+         selectInput(inputId="sections", label="Section(s)",
+                     choices=unique(spawn$Section), multiple=TRUE, size = 3,
+                     selectize = FALSE, selected=unique(spawn$Section)) ),
     div(
       style = "display:inline-block; width:24%; vertical-align:text-top",
       checkboxGroupInput(
         inputId = "summary", label = "Aggregate",
         choiceNames = c("By Location"), choiceValues = c("loc")
       )
-    ),
-    div( style="display:inline-block; width:24%; vertical-align:text-top;
-      padding: 0px 12px",
-      selectInput(inputId="areas", label="Region",
-        choices=unique(spawn$Region), multiple=TRUE, size = 3,
-        selectize = FALSE, selected=unique(spawn$Region)) )
+    )
   ),
   
   bootstrapPage(
