@@ -269,11 +269,7 @@ CropSpawn <- function(dat, yrs, ext, grp) {
   if (nrow(dat) < 1) stop("No spawn data in this area.", call. = FALSE)
   # Light wrangling
   dat <- dat %>%
-    mutate(
-      Year = as.integer(Year),
-      StatArea = formatC(StatArea, width = 2, format = "d", flag = "0"),
-      Section = formatC(Section, width = 3, format = "d", flag = "0")
-    ) %>%
+    mutate(Year = as.integer(Year)) %>%
     dplyr::select(
       Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber,
       Eastings, Northings, Longitude, Latitude, Start, End, Length, Width,
@@ -380,7 +376,9 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
 
 # Load spawn data, and aggregate by location code
 spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
-  mutate(Start = yday(Start), End = yday(End)) %>%
+  mutate(Start = yday(Start), End = yday(End),
+         StatArea = formatC(StatArea, width = 2, format = "d", flag = "0"),
+         Section = formatC(Section, width = 3, format = "d", flag = "0")) %>%
   group_by(
     Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber
   ) %>%
@@ -497,17 +495,15 @@ ui <- fluidPage(
           )
         ),
         div(
-          style = "display:inline-block; width:24%; vertical-align:text-top;
-      padding: 0px 12px",
+          style = "display:inline-block; width:32%; vertical-align:text-top",
           selectInput(
-            inputId = "regions", label = "Region (s)",
+            inputId = "regions", label = "Region(s)",
             choices = unique(spawn$Region), multiple = TRUE, size = 3,
             selectize = FALSE, selected = unique(spawn$Region)
           )
         ),
         div(
-          style = "display:inline-block; width:24%; vertical-align:text-top;
-      padding: 0px 12px",
+          style = "display:inline-block; width:32%; vertical-align:text-top",
           selectInput(
             inputId = "statAreas", label = "Statistical area(s)",
             choices = unique(spawn$StatArea), multiple = TRUE, size = 3,
@@ -515,8 +511,7 @@ ui <- fluidPage(
           )
         ),
         div(
-          style = "display:inline-block; width:24%; vertical-align:text-top;
-      padding: 0px 12px",
+          style = "display:inline-block; width:32%; vertical-align:text-top",
           selectInput(
             inputId = "sections", label = "Section(s)",
             choices = unique(spawn$Section), multiple = TRUE, size = 3,
