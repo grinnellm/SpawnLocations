@@ -175,7 +175,7 @@ ui <- fluidPage(
           title = "Information", br(),
           bootstrapPage(
             div(
-              style = "display:inline-block; width:400pt;
+              style = "display:inline-block; width:49%;
               vertical-align:text-top",
               p(HTML(
                 "In this analysis, we summarise spawns by year and",
@@ -275,7 +275,7 @@ ui <- fluidPage(
               ))
             ),
             div(
-              style = "display:inline-block; width:400pt;
+              style = "display:inline-block; width:49%;
               vertical-align:text-top",
               img(src = "BC.png", style = "width:100%"),
               p(HTML(
