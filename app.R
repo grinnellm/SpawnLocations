@@ -48,7 +48,8 @@ UsePackages <- function(pkgs, locn = "https://cran.rstudio.com/") {
 # Make packages available ("shinyjs" "plotly")
 UsePackages(pkgs = c(
   "tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", "viridis",
-  "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial", "lubridate", "sf"
+  "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial", "lubridate", 
+  "sf", "gfiscamutils"
 ))
 
 ##### Controls #####
@@ -99,32 +100,6 @@ myTheme <- theme(
 )
 
 ##### Functions #####
-
-# Calculate sum if there are non-NA values, return NA if all values are NA
-SumNA <- function(x, omitNA = TRUE) {
-  # An alternate version to sum(x, na.rm=TRUE), which returns 0 if x is all NA.
-  # This version retuns NA if x is all NA, otherwise it returns the sum.
-  # If all NA, NA; otherwise, sum
-  ifelse(all(is.na(x)),
-    res <- NA,
-    res <- sum(x, na.rm = omitNA)
-  )
-  # Return the result
-  return(res)
-} # End SumNA function
-
-# Calculate mean if there are non-NA values, return NA if all values are NA
-MeanNA <- function(x, omitNA = TRUE) {
-  # An alternate version to mean(x, na.rm=TRUE), which returns 0 if x is all NA.
-  # This version retuns NA if x is all NA, otherwise it returns the mean.
-  # If all NA, NA; otherwise, mean
-  ifelse(all(is.na(x)),
-    res <- NA,
-    res <- mean(x, na.rm = omitNA)
-  )
-  # Return the result
-  return(res)
-} # End MeanNA function
 
 # Get used packages (for session info)
 GetPackages <- function() {
