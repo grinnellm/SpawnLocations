@@ -238,7 +238,7 @@ CropSpawn <- function(dat, yrs, ext, grp, reg, sa, sec) {
         Eastings = unique(Eastings), Northings = unique(Northings),
         Longitude = unique(Longitude), Latitude = unique(Latitude),
         Start = min(Start, na.rm = TRUE), End = max(End, na.rm = TRUE),
-        Length = SumNA(Length), Width = MeanNA(Width),
+        Length = MeanNA(Length), Width = MeanNA(Width),
         Method = ifelse(length(unique(Method)) > 1, "Various", Method),
         SpawnIndex = MeanNA(SpawnIndex)
       ) %>%
@@ -281,7 +281,7 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
     rename(
       SAR = Region, "Statistical Area" = StatArea,
       "Location code" = LocationCode, "Location name" = LocationName,
-      "Spawn index (t)" = SpawnIndex, "Length (m)" = Length
+      "Spawn index (t)" = SpawnIndex
     )
   # If grouping by location
   if ("loc" %in% input) {
@@ -289,8 +289,8 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
     res <- res %>%
       rename(
         "Start day of year" = Start, "End day of year" = End,
-        "Number of spawns" = Number, "Mean width (m)" = Width,
-        "Mean spawn index (t)" = "Spawn index (t)"
+        "Number of spawns" = Number,  "Mean length (m)" = Length,
+        "Mean width (m)" = Width, "Mean spawn index (t)" = "Spawn index (t)"
       ) %>%
       datatable(options = list(
         lengthMenu = list(c(15, -1), list("15", "All")),
@@ -301,13 +301,13 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
         columns = c("Mean spawn index (t)", "Longitude", "Latitude"),
         digits = 3
       ) %>%
-      formatRound(columns = c("Length (m)", "Mean width (m)"), digits = 0)
+      formatRound(columns = c("Mean length (m)", "Mean width (m)"), digits = 0)
   } else { # End if grouping by location, otherwise
     # Format
     res <- res %>%
       rename(
         "Spawn number" = SpawnNumber, "Start date" = Start, "End date" = End,
-        "Width (m)" = Width
+        "Length (m)" = Length, "Width (m)" = Width
       ) %>%
       datatable(options = list(
         lengthMenu = list(c(15, -1), list("15", "All")),
