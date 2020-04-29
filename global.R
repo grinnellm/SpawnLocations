@@ -1,0 +1,406 @@
+##### Header #####
+#
+# Author:       Matthew H. Grinnell
+# Affiliation:  Pacific Biological Station, Fisheries and Oceans Canada (DFO)
+# Group:        Stock Assessment and Research, Quantitative Assessment Methods
+# Address:      3190 Hammond Bay Road, Nanaimo, BC, Canada, V9T 6N7
+# Contact:      e-mail: matt.grinnell@dfo-mpo.gc.ca | tel: 250.756.7055
+# Project:      Herring
+# Code name:    FIND (FIND Is Not Difficult)
+# Version:      1.0
+# Date started: Jan 08, 2019
+# Date edited:  Apr 22, 2020
+#
+# Overview:
+# Show herring spawn events within a given distance from a point.
+#
+# Requirements:
+# RStudio, various R packages, herring spawn index data, as well as land and
+# herring section shapefiles.
+#
+# Notes:
+# This is a Shiny web application; run it by clicking the 'Run App' button in
+# RStudio.
+
+##### Housekeeping #####
+
+# General options
+graphics.off() # Turn graphics off
+
+# Install missing packages and load required packages (if required)
+UsePackages <- function(pkgs, locn = "https://cran.rstudio.com/") {
+  # Reverse the list
+  rPkgs <- rev(pkgs)
+  # Identify missing (i.e., not yet installed) packages
+  newPkgs <- rPkgs[!(rPkgs %in% installed.packages()[, "Package"])]
+  # Install missing packages if required
+  if (length(newPkgs)) install.packages(newPkgs, repos = locn)
+  # Loop over all packages
+  for (i in 1:length(rPkgs)) {
+    # Load required packages using 'library'
+    eval(parse(text = paste("suppressPackageStartupMessages(library(", rPkgs[i],
+      "))",
+      sep = ""
+    )))
+  } # End i loop over package names
+} # End UsePackages function
+
+# Make packages available ("shinyjs" "plotly")
+UsePackages(pkgs = c(
+  "tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", "viridis",
+  "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial", "lubridate", 
+  "sf", "gfiscamutils"
+))
+
+##### Controls #####
+
+# Saved csv datafile (from Spawn.R)
+spawnLoc <- file.path("Data", "SpawnRaw.csv")
+
+# Input coordinate reference system (point location; spill)
+crsSpill <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+
+# Input coordinate reference system (herring sections)
+crsSect <- "+proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000
++y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+
+# Input coordinate reference system (land)
+crsLand <- "+proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000
++y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+
+# Input coordinate reference system (spawn)
+crsSpawn <- "+proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000
++y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+
+# Output coordinate reference system (BC Albers)
+crsOut <- "+proj=aea +lat_1=50 +lat_2=58.5 +lat_0=45 +lon_0=-126 +x_0=1000000
++y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+
+# Geographic projection
+geoProj <- "Projection: BC Albers (NAD 1983)"
+
+# Location of the BC stocks shapefiles
+locStocks <- file.path("Data", "Polygons", "HerringSections.shp")
+
+# Location of the BC land file
+locLand <- file.path("Data", "Polygons", "GSHHS_f_L1_Clip.shp")
+
+# Change default ggplot theme to 'black and white'
+theme_set(theme_bw())
+
+# Modify default theme
+myTheme <- theme(
+  legend.box.background = element_rect(fill = alpha("white", 0.7)),
+  legend.box.margin = margin(1, 1, 1, 1, "mm"), legend.key = element_blank(),
+  legend.margin = margin(), legend.text.align = 1,
+  panel.grid.major = element_line(colour = "darkgrey", size = 0.2),
+  panel.grid.minor = element_line(colour = "darkgrey", size = 0.1),
+  legend.background = element_rect(fill = "transparent"),
+  plot.margin = unit(c(0.1, 0.6, 0.1, 0.1), "lines")
+)
+
+##### Functions #####
+
+# Get used packages (for session info)
+GetPackages <- function() {
+  # Get list of loaded packages
+  myPkgs <- names(sessionInfo()$otherPkgs)
+  # Get and wrangle packages
+  res <- session_info()$packages %>%
+    as_tibble() %>%
+    dplyr::select(package, loadedversion, source) %>%
+    rename(Package = package, Version = loadedversion, Source = source) %>%
+    filter(Package %in% myPkgs) %>%
+    arrange(Package)
+  # Return the table
+  return(res)
+} # End GetPackages function
+
+# Convert location to Albers
+ConvLocation <- function(xy) {
+  # Ensure longitude is within range of spawns
+  if (xy[1] < rangeSI$Long[1] | xy[1] > rangeSI$Long[2]) {
+    stop("Longitude must be between ", paste(rangeSI$Long, collapse = " and "),
+      ".",
+      sep = "", call. = FALSE
+    )
+  }
+  # Ensure latitude is within range of spawns
+  if (xy[2] < rangeSI$Lat[1] | xy[2] > rangeSI$Lat[2]) {
+    stop("Latitude must be between ", paste(rangeSI$Lat, collapse = " and "),
+      ".",
+      sep = "", call. = FALSE
+    )
+  }
+  # Make a matrix
+  xyMat <- matrix(xy, ncol = 2)
+  # Convert to spatial points
+  xySP <- SpatialPoints(coords = xyMat, proj4string = CRS(crsSpill))
+  # Transform to correct projection
+  xySP <- spTransform(x = xySP, CRSobj = CRS(crsOut))
+  # Make a data frame
+  xyDF <- data.frame(xySP) %>%
+    rename(Eastings = coords.x1, Northings = coords.x2)
+  # Return the points
+  return(list(xySP = xySP, xyDF = xyDF))
+} # End ConvLocation function
+
+# Function to wrangle shapefiles
+ClipPolys <- function(stocks, land, pt, buf) {
+  # Stop if buffer is negative
+  if (buf < 0) {
+    stop("Buffer must be non-negative.", call. = FALSE)
+  }
+  # Function to perform some light wrangling
+  UpdateSections <- function(dat) {
+    # Some light wrangling
+    dat@data <- dat@data %>%
+      mutate(
+        StatArea = as.character(StatArea), Section = as.character(Section)
+      ) %>%
+      dplyr::select(SAR, StatArea, Section)
+    # Get results
+    res <- dat
+    # Return updated sections
+    return(res)
+  } # End UpdateSections function
+  # Update sections
+  secBC <- UpdateSections(dat = stocks)
+  # Project to BC
+  secBC <- spTransform(x = secBC, CRSobj = CRS(crsOut))
+  # Get a buffer around the point in question
+  buff <- gBuffer(spgeom = pt, width = buf, byid = FALSE)
+  # Calculate the extent
+  extBuff <- bbox(buff)
+  # Convert the extent to a table
+  extDF <- tibble(Eastings = extBuff[1, ], Northings = extBuff[2, ])
+  # Determine x:y aspect ration (for plotting)
+  xyRatio <- diff(extDF$Eastings) / diff(extDF$Northings)
+  # Crop the sections
+  secBC <- crop(x = secBC, y = extBuff)
+  # Error if the point is outside the herring sections (study area)
+  if (is.null(secBC)) {
+    stop("The event is outside the study area.", call. = FALSE)
+  }
+  # Determine section centroids
+  secCent <- gCentroid(spgeom = secBC, byid = TRUE)
+  # Convert to data frame
+  secCentDF <- secCent %>%
+    as_tibble() %>%
+    rename(Eastings = x, Northings = y) %>%
+    mutate(Section = formatC(secBC$Section, width = 3, flag = "0")) %>%
+    arrange(Section)
+  # Convert to data frame and select stat areas in question
+  secDF <- secBC %>%
+    fortify(region = "Section") %>%
+    rename(Eastings = long, Northings = lat, Section = group) %>%
+    as_tibble()
+  # Transform
+  landSPDF <- spTransform(x = land, CRSobj = CRS(crsOut))
+  # Clip the land to the buffer: big
+  landSPDF <- crop(x = landSPDF, y = extBuff)
+  # Convert to data frame
+  landDF <- landSPDF %>%
+    fortify(region = "id") %>%
+    rename(Eastings = long, Northings = lat) %>%
+    as_tibble()
+  # Dissolve to region
+  regSPDF <- aggregate(
+    x = secBC, by = list(Temp = secBC$SAR), FUN = unique, dissolve = TRUE
+  )
+  # Remove non-SAR areas
+  regSPDF <- regSPDF[regSPDF@data$SAR != -1, ]
+  # Convert to data frame
+  regDF <- regSPDF %>%
+    fortify(region = "SAR") %>%
+    rename(Eastings = long, Northings = lat, Region = group) %>%
+    as_tibble()
+  # Build a list to return
+  res <- list(
+    secDF = secDF, secCentDF = secCentDF, landDF = landDF, extDF = extDF,
+    extBuff = extBuff, xyRatio = xyRatio, regDF = regDF
+  )
+  # Return info
+  return(res)
+} # End ClipPolys function
+
+# Function to crop (spatially) spawn
+CropSpawn <- function(dat, yrs, ext, grp, reg, sa, sec) {
+  # Filter spawn index
+  dat <- dat %>%
+    filter(
+      Year >= yrs[1], Year <= yrs[2], Region %in% reg, StatArea %in% sa,
+      Section %in% sec
+    )
+  # Convert to a spatial object
+  coordinates(dat) <- ~ Eastings + Northings
+  # Give the projection
+  crs(dat) <- CRS(crsSpawn)
+  # Transform
+  datSP <- spTransform(x = dat, CRSobj = CRS(crsOut))
+  # Clip to extent
+  datSP <- crop(x = datSP, y = ext)
+  # Make a data frame
+  dat <- data.frame(datSP) %>%
+    as_tibble()
+  # Error if all the spawn data are cropped
+  if (nrow(dat) < 1) stop("No spawn data in this area.", call. = FALSE)
+  # Light wrangling
+  dat <- dat %>%
+    mutate(Year = as.integer(Year)) %>%
+    dplyr::select(
+      Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber,
+      Eastings, Northings, Longitude, Latitude, Start, End, Length, Width,
+      Method, SpawnIndex
+    ) %>%
+    arrange(Year, Region, StatArea, Section, LocationCode)
+  # Summarise spawns by location
+  if ("loc" %in% grp) {
+    dat <- dat %>%
+      group_by(
+        Region, StatArea, Section, LocationCode, LocationName
+      ) %>%
+      summarise(
+        Number = n(),
+        Eastings = unique(Eastings), Northings = unique(Northings),
+        Longitude = unique(Longitude), Latitude = unique(Latitude),
+        Start = min(Start, na.rm = TRUE), End = max(End, na.rm = TRUE),
+        Length = SumNA(Length), Width = MeanNA(Width),
+        Method = ifelse(length(unique(Method)) > 1, "Various", Method),
+        SpawnIndex = MeanNA(SpawnIndex)
+      ) %>%
+      ungroup() %>%
+      mutate(Number = as.integer(Number))
+  } else { # End if summarising by location, otherwise
+    # Format dates: month day
+    dat <- dat %>%
+      mutate(
+        Start = format(as.Date(paste(Start, Year), format = "%j %Y"), "%b %d"),
+        End = format(as.Date(paste(End, Year), format = "%j %Y"), "%b %d")
+      )
+  }
+  # Return the data
+  return(dat)
+} # End CropSpawn function
+
+# Draw a circle
+MakeCircle <- function(center = c(0, 0), radius = 1, nPts = 100) {
+  # Stop if radius is negative
+  if (radius < 0) {
+    stop("Radius must be non-negative.", call. = FALSE)
+  }
+  # Vector of points
+  tt <- seq(from = 0, to = 2 * pi, length.out = nPts)
+  # X values (math!)
+  xx <- center[1] + radius * cos(tt)
+  # Y values (and geometry!)
+  yy <- center[2] + radius * sin(tt)
+  # Return the data (x and y for a circle)
+  return(tibble(Eastings = xx, Northings = yy))
+} # End MakeCircle function
+
+# Wrangle to data table
+WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
+  # Modify names and values for nicer printing
+  res <- dat %>%
+    select(-Eastings, -Northings) %>%
+    mutate(LocationCode = as.character(LocationCode)) %>%
+    rename(
+      SAR = Region, "Statistical Area" = StatArea,
+      "Location code" = LocationCode, "Location name" = LocationName,
+      "Spawn index (t)" = SpawnIndex, "Length (m)" = Length
+    )
+  # If grouping by location
+  if ("loc" %in% input) {
+    # Rename and format
+    res <- res %>%
+      rename(
+        "Start day of year" = Start, "End day of year" = End,
+        "Number of spawns" = Number, "Mean width (m)" = Width,
+        "Mean spawn index (t)" = "Spawn index (t)"
+      ) %>%
+      datatable(options = list(
+        lengthMenu = list(c(10, -1), list("10", "All")),
+        pageLength = optPageLen, dom = optDom,
+        language = list(zeroRecords = optNoData)
+      )) %>%
+      formatRound(
+        columns = c("Mean spawn index (t)", "Longitude", "Latitude"),
+        digits = 3
+      ) %>%
+      formatRound(columns = c("Length (m)", "Mean width (m)"), digits = 0)
+  } else { # End if grouping by location, otherwise
+    # Format
+    res <- res %>%
+      rename(
+        "Spawn number" = SpawnNumber, "Start date" = Start, "End date" = End,
+        "Width (m)" = Width
+      ) %>%
+      datatable(options = list(
+        lengthMenu = list(c(10, -1), list("10", "All")),
+        pageLength = optPageLen, dom = optDom,
+        language = list(zeroRecords = optNoData)
+      )) %>%
+      formatRound(
+        columns = c("Spawn index (t)", "Longitude", "Latitude"), digits = 3
+      ) %>%
+      formatRound(columns = c("Length (m)", "Width (m)"), digits = 0)
+  } # End if not grouping by location
+  # Return the data
+  return(res)
+} # End WrangleDT function
+
+##### Data #####
+
+# Load spawn data, and aggregate by location code
+spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
+  mutate(
+    Start = yday(Start), End = yday(End),
+    StatArea = formatC(StatArea, width = 2, format = "d", flag = "0"),
+    Section = formatC(Section, width = 3, format = "d", flag = "0")
+  ) %>%
+  group_by(
+    Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber
+  ) %>%
+  summarise(
+    Start = unique(Start), End = unique(End),
+    Length = unique(Length), Width = unique(Width),
+    Method = unique(Method),
+    Eastings = unique(Eastings), Northings = unique(Northings),
+    Longitude = unique(Longitude), Latitude = unique(Latitude),
+    SpawnIndex = SumNA(c(SurfSI, MacroSI, UnderSI)), Survey = unique(Survey)
+  ) %>%
+  ungroup() %>%
+  filter(!is.na(Eastings), !is.na(Northings)) %>%
+  dplyr::select(
+    Year, Region, StatArea, Section, LocationCode, LocationName, SpawnNumber,
+    Start, End, Eastings, Northings, Longitude, Latitude, Length, Width, Method,
+    SpawnIndex, Survey
+  ) %>%
+  arrange(Region, StatArea, Section, LocationCode, Year) # %>%
+# st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
+# st_transform( 3347 ) %>%
+# as_Spatial()
+
+# Get survey time periods
+qPeriods <- spawn %>%
+  mutate(Survey = factor(Survey, levels = c("Surface", "Dive"))) %>%
+  group_by(Survey) %>%
+  summarise(Start = min(Year), End = max(Year)) %>%
+  ungroup()
+
+# Range of longitude and latitude in spawn data
+rangeSI <- list(
+  Long = round(range(spawn$Longitude, na.rm = TRUE), digits = 2),
+  Lat = round(range(spawn$Latitude, na.rm = TRUE), digits = 2)
+)
+
+# Load the Section shapefile (has Statistical Areas and Regions)
+secPoly <- st_read(locStocks, quiet = TRUE) %>%
+  st_transform(crs = 3005) %>%
+  as_Spatial()
+
+# Load land polygon
+landPoly <- st_read(locLand, quiet = TRUE) %>%
+  st_transform(crs = 3005) %>%
+  as_Spatial()
