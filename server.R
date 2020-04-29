@@ -62,7 +62,7 @@ server <- function(input, output) {
     
     # Wrangle into a pretty data table
     res <- WrangleDT(
-      dat = df, input = input$summary, optPageLen = 10, optDom = "lftip",
+      dat = df, input = input$summary, optPageLen = 15, optDom = "lftip",
       optNoData = "No data available in table"
     )
     

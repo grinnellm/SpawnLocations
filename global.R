@@ -293,7 +293,7 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
         "Mean spawn index (t)" = "Spawn index (t)"
       ) %>%
       datatable(options = list(
-        lengthMenu = list(c(10, -1), list("10", "All")),
+        lengthMenu = list(c(15, -1), list("15", "All")),
         pageLength = optPageLen, dom = optDom,
         language = list(zeroRecords = optNoData)
       )) %>%
@@ -310,7 +310,7 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
         "Width (m)" = Width
       ) %>%
       datatable(options = list(
-        lengthMenu = list(c(10, -1), list("10", "All")),
+        lengthMenu = list(c(15, -1), list("15", "All")),
         pageLength = optPageLen, dom = optDom,
         language = list(zeroRecords = optNoData)
       )) %>%

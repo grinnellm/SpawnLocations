@@ -9,10 +9,12 @@ ui <- fluidPage(
   
   # Sidebar with input parameters
   sidebarLayout(
+    
     # Sidebar (input etc)
     sidebarPanel(
       width = 3,
       
+      ##### Event and buffers #####
       bootstrapPage(
         # Default location is PBS (49.21 N, -123.96 W); whole coast is -127.5 N
         # and 52.125 W with a 450 km buffer
@@ -56,6 +58,8 @@ ui <- fluidPage(
           )
         )
       ),
+      
+      ##### Subset spawns #####
       h2("Subset spawns"),
       bootstrapPage(
         div(
@@ -90,6 +94,8 @@ ui <- fluidPage(
           )
         )
       ),
+      
+      ##### Summarise spawns #####
       bootstrapPage(
         h2("Summarise spawns"),
         div(
@@ -101,6 +107,7 @@ ui <- fluidPage(
         )
       ),
       
+      ##### Display features #####
       bootstrapPage(
         h2("Display features"),
         div(
@@ -130,6 +137,7 @@ ui <- fluidPage(
         )
       ),
       
+      ##### View results #####
       # h2( "View results" ),
       div(
         style = "text-align:center",
@@ -145,6 +153,7 @@ ui <- fluidPage(
       tabsetPanel(
         type = "tabs", selected = "Figure",
         
+        ##### Figure #####
         tabPanel(
           title = "Figure", br(),
           withSpinner(ui_element = plotOutput(
@@ -155,11 +164,13 @@ ui <- fluidPage(
           DT::dataTableOutput(outputId = "spawnClick")
         ),
         
+        ##### Table #####
         tabPanel(
           title = "Table", br(),
           withSpinner(ui_element = DT::dataTableOutput(outputId = "dat"))
         ),
         
+        ##### Information #####
         tabPanel(
           title = "Information", br(),
           bootstrapPage(
@@ -280,6 +291,7 @@ ui <- fluidPage(
           )
         ),
         
+        ##### Download #####
         tabPanel(
           title = "Download", br(), style = "width:400pt",
           p(HTML(
@@ -323,6 +335,7 @@ ui <- fluidPage(
           )
         ),
         
+        ##### Contact #####
         tabPanel(
           title = "Contact", br(), style = "width:400pt",
           p(HTML(
@@ -344,6 +357,7 @@ ui <- fluidPage(
           ))
         ),
         
+        ##### About #####
         tabPanel(
           title = "About", br(), style = "width:400pt",
           p(HTML(
