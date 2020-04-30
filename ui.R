@@ -1,19 +1,19 @@
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-  
+
   # # Allow reset of inputs
   # useShinyjs(),
-  
+
   # Application title
   titlePanel(title = "Find Pacific Herring spawn sites", windowTitle = "FIND"),
-  
+
   # Sidebar with input parameters
   sidebarLayout(
-    
+
     # Sidebar (input etc)
     sidebarPanel(
       width = 3,
-      
+
       ##### Event and buffers #####
       bootstrapPage(
         # Default location is PBS (49.21 N, -123.96 W); whole coast is -127.5 N
@@ -58,7 +58,7 @@ ui <- fluidPage(
           )
         )
       ),
-      
+
       ##### Subset spawns #####
       h2("Subset spawns"),
       bootstrapPage(
@@ -94,7 +94,7 @@ ui <- fluidPage(
           )
         )
       ),
-      
+
       ##### Summarise spawns #####
       bootstrapPage(
         h2("Summarise spawns"),
@@ -106,7 +106,7 @@ ui <- fluidPage(
           )
         )
       ),
-      
+
       ##### Display features #####
       bootstrapPage(
         h2("Display features"),
@@ -136,23 +136,23 @@ ui <- fluidPage(
           )
         )
       ),
-      
+
       ##### View results #####
       # h2( "View results" ),
       div(
         style = "text-align:center",
         submitButton("Update", icon("refresh"))
-      )#,
+      ) # ,
       # actionButton("resetAll", "Reset all")
     ), # End sidebar panel
-    
+
     # Show a plot of the generated distribution
     mainPanel(
       width = 9,
       # Start tabs
       tabsetPanel(
         type = "tabs", selected = "Figure",
-        
+
         ##### Figure #####
         tabPanel(
           title = "Figure", br(),
@@ -163,13 +163,13 @@ ui <- fluidPage(
           )),
           DT::dataTableOutput(outputId = "spawnClick")
         ),
-        
+
         ##### Table #####
         tabPanel(
           title = "Table", br(),
           withSpinner(ui_element = DT::dataTableOutput(outputId = "dat"))
         ),
-        
+
         ##### Information #####
         tabPanel(
           title = "Information", br(),
@@ -211,7 +211,7 @@ ui <- fluidPage(
                 "observations are nested within transects,",
                 "transects are nested within spawns, and",
                 "spawns are nested within Locations",
-                SimpleCite(GrinnellEtal, trail="."),
+                SimpleCite(GrinnellEtal, trail = "."),
                 "For stock assessment purposes,",
                 "Locations are nested within Sections,",
                 "Sections are nested within Statistical Areas, and",
@@ -235,8 +235,8 @@ ui <- fluidPage(
                 "In addition, spawn surveyors are more likely to use surface",
                 "surveys in minor SARs;",
                 "surface surveys are thought to be less accurate than dive",
-                "surveys which are used extensively in major SARs", 
-                SimpleCite(GrinnellEtal, trail="."), 
+                "surveys which are used extensively in major SARs",
+                SimpleCite(GrinnellEtal, trail = "."),
                 "Finally, some spawns are reported by the public, which is",
                 "less common in minor SARs because they tend to be more",
                 "remote and difficult to access than major SARs.",
@@ -247,22 +247,22 @@ ui <- fluidPage(
               h2("Interpreting spawn index data"),
               p(HTML(
                 "There are several challenges to interpreting spawn",
-                "index data, including but not limited to", 
-                SimpleCite(GrinnellEtal, trail=":"),
+                "index data, including but not limited to",
+                SimpleCite(GrinnellEtal, trail = ":"),
                 "<ul>",
                 "<li>The spawn index is not scaled by the spawn",
-                "survey scaling parameter <em>q</em>", 
-                SimpleCite(CSAS2018, trail=";"), "therefore it",
+                "survey scaling parameter <em>q</em>",
+                SimpleCite(CSAS2018, trail = ";"), "therefore it",
                 "is a relative index of spawning biomass,</li>",
                 "<li>The spawn index has two distinct periods defined by the",
                 "dominant survey method:",
                 "surface",
                 paste("(", qPeriods$Start[1], " to ", qPeriods$End[1], "),",
-                      sep = ""
+                  sep = ""
                 ),
                 "and dive surveys",
                 paste("(", qPeriods$Start[2], " to ", qPeriods$End[2], "),</li>",
-                      sep = ""
+                  sep = ""
                 ),
                 "<li>The spawn index is derived data with uncertainties and",
                 "assumptions, not observed data, and</li>",
@@ -276,7 +276,8 @@ ui <- fluidPage(
               style = "display:inline-block; width:39%;
               vertical-align:text-top",
               img(src = "BC.png", style = "width:100%"),
-              p("Boundaries for Pacific Herring stock assessment regions",
+              p(
+                "Boundaries for Pacific Herring stock assessment regions",
                 "(SARs) in British Columbia.",
                 "The major SARs are Haida Gwaii (HG), Prince Rupert District",
                 "(PRD), Central Coast (CC), Strait of Georgia (SoG), and West",
@@ -287,7 +288,7 @@ ui <- fluidPage(
             )
           )
         ),
-        
+
         ##### Download #####
         tabPanel(
           title = "Download", br(), style = "width:400pt",
@@ -331,7 +332,7 @@ ui <- fluidPage(
             )
           )
         ),
-        
+
         ##### Contact #####
         tabPanel(
           title = "Contact", br(), style = "width:400pt",
@@ -353,7 +354,7 @@ ui <- fluidPage(
             "Canada</a>.</font>"
           ))
         ),
-        
+
         ##### About #####
         tabPanel(
           title = "About", br(), style = "width:400pt",

@@ -21,7 +21,7 @@ UsePackages <- function(pkgs, locn = "https://cran.rstudio.com/") {
 # Make packages available ("shinyjs" "plotly")
 UsePackages(pkgs = c(
   "tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", "viridis",
-  "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial", "lubridate", 
+  "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial", "lubridate",
   "sf", "gfiscamutils"
 ))
 
@@ -78,22 +78,22 @@ myTheme <- theme(
 GrinnellEtal <- list(
   link = "https://github.com/grinnellm/SpawnIndex/blob/master/tr/Draft.pdf",
   text = "Grinnell et al. In prep."
-  )
+)
 
 # GSHHS polygon
 WesselSmith1996 <- list(
   link = "https://doi.org/10.1029/96JB00104",
   text = "Wessel and Smith 1996"
-  )
+)
 
 # CSAS q
 CSAS2018 <- list(
   link = paste("http://www.dfo-mpo.gc.ca/csas-sccs/",
-               "Publications/SAR-AS/2018/2018_002-eng.html",
-               sep = ""
-               ),
+    "Publications/SAR-AS/2018/2018_002-eng.html",
+    sep = ""
+  ),
   text = "CSAS 2018"
-  )
+)
 
 ##### Functions #####
 
@@ -312,7 +312,7 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
     res <- res %>%
       rename(
         "Start day of year" = Start, "End day of year" = End,
-        "Number of spawns" = Number,  "Mean length (m)" = Length,
+        "Number of spawns" = Number, "Mean length (m)" = Length,
         "Mean width (m)" = Width, "Mean spawn index (t)" = "Spawn index (t)"
       ) %>%
       datatable(options = list(
@@ -347,13 +347,15 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
 } # End WrangleDT function
 
 # Insert simple citation
-SimpleCite <- function(ref, parens=TRUE, trail=""){
+SimpleCite <- function(ref, parens = TRUE, trail = "") {
   # Format hyperlink and text
   dat <- paste("<a href=", ref$link, ">", ref$text, "</a>", sep = "")
   # Add parentheses if requested
-  if(parens) dat <- paste("(", dat, ")", sep = "")
+  if (parens) dat <- paste("(", dat, ")", sep = "")
   # Add trailing formatting if any
   res <- paste(dat, trail, sep = "")
+  # Return citation
+  return(res)
 } # End SimpleCite function
 
 ##### Data #####

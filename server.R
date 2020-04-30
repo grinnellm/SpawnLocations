@@ -1,6 +1,6 @@
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-  
+
   # Show modeal dialogue on startup - requires a click to proceed
   showModal(
     modalDialog(
@@ -13,17 +13,17 @@ server <- function(input, output) {
       )
     )
   )
-  
+
   # Get package info
   packInfo <- reactive(
     GetPackages()
   )
-  
+
   # Get the spill location
   spill <- reactive(
     ConvLocation(xy = c(input$longitude, input$latitude))
   )
-  
+
   # Clip stock and land shapefiles
   shapesSub <- reactive(
     ClipPolys(
@@ -31,14 +31,14 @@ server <- function(input, output) {
       buf = input$bufMap * 1000
     )
   )
-  
+
   # Make a circle
   circDF <- reactive(
     MakeCircle(
       center = coordinates(spill()$xySP), radius = input$bufSpill * 1000
     )
   )
-  
+
   # Get spawn data
   spawnSub <- reactive(
     CropSpawn(
@@ -47,49 +47,49 @@ server <- function(input, output) {
       sec = input$sections
     )
   )
-  
+
   # Get the data
   output$dat <- DT::renderDataTable({
-    
+
     # Ensure there are spawn locations to show
     validate(need(
       nrow(spawnSub()) >= 1,
       "Error: No spawns match these criteria."
     ))
-    
+
     # Get the data
     df <- spawnSub()
-    
+
     # Wrangle into a pretty data table
     res <- WrangleDT(
       dat = df, input = input$summary, optPageLen = 15, optDom = "lftip",
       optNoData = "No data available in table"
     )
-    
+
     # Return the table
     return(res)
   }) # End data
-  
+
   # Make the figure (map)
   output$map <- renderPlot(res = 150, {
-    
+
     # Ensure map buffer is larger than spill buffer
     validate(need(
       input$bufSpill <= input$bufMap,
       "Error: Spill buffer can not exceed map bufer."
     ))
-    
+
     # Ensure there are spawn locations to show
     validate(need(
       nrow(spawnSub()) >= 1, "Error: No spawns match these criteria."
     ))
-    
+
     # Plot the area (default map)
     hMap <- ggplot(data = shapesSub()$landDF, aes(x = Eastings, y = Northings)) +
       geom_polygon(
         data = shapesSub()$landDF, aes(group = group), fill = "lightgrey"
       )
-    
+
     # If showing sections
     if ("sec" %in% input$polys) {
       # Update the map
@@ -99,7 +99,7 @@ server <- function(input, output) {
           colour = "black"
         )
     } # End if showing sections
-    
+
     # If showing sections labels
     if ("sLab" %in% input$polys) {
       # Ensure polygons are present
@@ -113,7 +113,7 @@ server <- function(input, output) {
           data = shapesSub()$secCentDF, alpha = 0.5, aes(label = Section)
         )
     } # End if showing labels
-    
+
     # If showing SAR boudaries
     if ("reg" %in% input$polys) {
       # Update the map
@@ -123,21 +123,21 @@ server <- function(input, output) {
           colour = "black"
         )
     } # End if showing SARs
-    
+
     # If showing the point location
     if ("pt" %in% input$location) {
       # Update the map
       hMap <- hMap +
         geom_point(data = spill()$xyDF, colour = "red", shape = 42, size = 8)
     } # End if showing the point location
-    
+
     # If showing the circle
     if ("circ" %in% input$location) {
       # Update the map
       hMap <- hMap +
         geom_path(data = circDF(), colour = "red", size = 0.25)
     } # End if showing the circle
-    
+
     # If aggregating by location
     if ("loc" %in% input$summary) {
       # Extract the number of spawns
@@ -169,7 +169,7 @@ server <- function(input, output) {
         ) +
         labs(colour = "Spawn\nindex (t)")
     } # End if not aggregating by location
-    
+
     # If showing location names
     if ("lNames" %in% input$sDisplay) {
       # Get unique locations
@@ -183,8 +183,8 @@ server <- function(input, output) {
           box.padding = unit(0.5, "lines"), segment.colour = "darkgrey"
         )
     } # End if showing location names
-    
-    
+
+
     # TODO Working on a way to add second axes with Longitude and Latitude
     # fun <- Vectorize(function( x, dat=spawnSub() ) {
     #   res <- dat %>%
@@ -192,13 +192,13 @@ server <- function(input, output) {
     #   # res <- x/2000 + sqrt(x/2000)
     #   return( res )
     # })
-    
+
     # Get number of unique years
     nYrs <- length(unique(input$yrRange))
-    
+
     # Get unique years
     uYrs <- paste(unique(input$yrRange), collapse = " to ")
-    
+
     # Add map layers
     hMap <- hMap +
       scale_colour_viridis(na.value = "black", labels = comma) +
@@ -219,7 +219,7 @@ server <- function(input, output) {
       ) +
       # annotation_north_arrow( location="tl", style=north_arrow_nautical() ) +
       myTheme
-    
+
     # Save the map (if download requested) -- not sure why this has to be here
     output$downloadFigure <- downloadHandler(
       filename = "SpawnMap.png",
@@ -230,32 +230,32 @@ server <- function(input, output) {
       },
       contentType = "image/png"
     )
-    
+
     # Print the map
     return(hMap)
   }) # End map
-  
+
   # Save data (spawn index; if download requested)
   output$downloadTable <- downloadHandler(
     filename = "SpawnData.csv",
     content = function(file) write_csv(x = spawnSub(), path = file),
     contentType = "text/csv"
   )
-  
+
   # Save herring section polygons
   output$downloadSections <- downloadHandler(
     filename = "SectionPolygons.csv",
     content = function(file) write_csv(x = shapesSub()$secDF, path = file),
     contentType = "text/csv"
   )
-  
+
   # Save land polygons
   output$downloadLand <- downloadHandler(
     filename = "LandPolygons.csv",
     content = function(file) write_csv(x = shapesSub()$landDF, path = file),
     contentType = "text/csv"
   )
-  
+
   # Package info
   output$packages <- DT::renderDataTable({
     # Get package info
@@ -264,7 +264,7 @@ server <- function(input, output) {
         lengthMenu = list(c(15, -1), list("15", "All")), pageLength = 15
       ))
   })
-  
+
   # Use mouse click to select points
   output$spawnClick <- renderDataTable({
     # Select point closest to the point
@@ -284,7 +284,7 @@ server <- function(input, output) {
     # Return the table
     return(res)
   })
-  
+
   # # Use mouse hover to select points (fewer details)
   # output$spawnHover <- renderPrint( {
   #   if( !is.null(input$plotHover) ) {
@@ -297,7 +297,7 @@ server <- function(input, output) {
   #   }
   # }
   # )
-  
+
   # # Reset all inputs
   # observeEvent( input$resetAll, reset("form") )
 } # End server
