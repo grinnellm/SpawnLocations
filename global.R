@@ -72,6 +72,29 @@ myTheme <- theme(
   plot.margin = unit(c(0.1, 0.6, 0.1, 0.1), "lines")
 )
 
+##### References #####
+
+# Spawn index technical report
+GrinnellEtal <- list(
+  link = "https://github.com/grinnellm/SpawnIndex/blob/master/tr/Draft.pdf",
+  text = "Grinnell et al. In prep."
+  )
+
+# GSHHS polygon
+WesselSmith1996 <- list(
+  link = "https://doi.org/10.1029/96JB00104",
+  text = "Wessel and Smith 1996"
+  )
+
+# CSAS q
+CSAS2018 <- list(
+  link = paste("http://www.dfo-mpo.gc.ca/csas-sccs/",
+               "Publications/SAR-AS/2018/2018_002-eng.html",
+               sep = ""
+               ),
+  text = "CSAS 2018"
+  )
+
 ##### Functions #####
 
 # Get used packages (for session info)
@@ -322,6 +345,16 @@ WrangleDT <- function(dat, input, optPageLen, optDom, optNoData) {
   # Return the data
   return(res)
 } # End WrangleDT function
+
+# Insert simple citation
+SimpleCite <- function(ref, parens=TRUE, trail=""){
+  # Format hyperlink and text
+  dat <- paste("<a href=", ref$link, ">", ref$text, "</a>", sep = "")
+  # Add parentheses if requested
+  if(parens) dat <- paste("(", dat, ")", sep = "")
+  # Add trailing formatting if any
+  res <- paste(dat, trail, sep = "")
+} # End SimpleCite function
 
 ##### Data #####
 

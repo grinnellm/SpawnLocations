@@ -197,10 +197,8 @@ ui <- fluidPage(
               ),
               p(HTML(
                 "We use relatively coarse (i.e., low-resolution) land",
-                "polygons",
-                "(<a href=https://doi.org/10.1029/96JB00104>Wessel and Smith",
-                "1996</a>)",
-                "to enable a responsive analysis.",
+                "polygons", SimpleCite(WesselSmith1996), "to enable a",
+                "responsive analysis.",
                 "However, the coarse land polygons omit some geographic",
                 "features which causes some spawns to be displayed in open",
                 "water or on land.",
@@ -213,7 +211,7 @@ ui <- fluidPage(
                 "observations are nested within transects,",
                 "transects are nested within spawns, and",
                 "spawns are nested within Locations",
-                "(<a href=https://github.com/grinnellm/SpawnIndex/blob/master/tr/Draft.pdf>Grinnell et al. In prep.</a>).",
+                SimpleCite(GrinnellEtal, trail="."),
                 "For stock assessment purposes,",
                 "Locations are nested within Sections,",
                 "Sections are nested within Statistical Areas, and",
@@ -237,8 +235,8 @@ ui <- fluidPage(
                 "In addition, spawn surveyors are more likely to use surface",
                 "surveys in minor SARs;",
                 "surface surveys are thought to be less accurate than dive",
-                "surveys which are used extensively in major SARs",
-                "(<a href=https://github.com/grinnellm/SpawnIndex/blob/master/tr/Draft.pdf>Grinnell et al. In prep.</a>).",
+                "surveys which are used extensively in major SARs", 
+                SimpleCite(GrinnellEtal, trail="."), 
                 "Finally, some spawns are reported by the public, which is",
                 "less common in minor SARs because they tend to be more",
                 "remote and difficult to access than major SARs.",
@@ -249,13 +247,13 @@ ui <- fluidPage(
               h2("Interpreting spawn index data"),
               p(HTML(
                 "There are several challenges to interpreting spawn",
-                "index data, including but not limited to",
-                "(<a href=https://github.com/grinnellm/SpawnIndex/blob/master/tr/Draft.pdf>Grinnell et al. In prep.</a>):",
+                "index data, including but not limited to", 
+                SimpleCite(GrinnellEtal, trail=":"),
                 "<ul>",
                 "<li>The spawn index is not scaled by the spawn",
-                "survey scaling parameter <em>q</em>",
-                "(<a href=http://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2018/2018_002-eng.html>CSAS 2018</a>);",
-                "therefore it is a relative index of spawning biomass,</li>",
+                "survey scaling parameter <em>q</em>", 
+                SimpleCite(CSAS2018, trail=";"), "therefore it",
+                "is a relative index of spawning biomass,</li>",
                 "<li>The spawn index has two distinct periods defined by the",
                 "dominant survey method:",
                 "surface",
@@ -275,18 +273,17 @@ ui <- fluidPage(
               ))
             ),
             div(
-              style = "display:inline-block; width:49%;
+              style = "display:inline-block; width:39%;
               vertical-align:text-top",
               img(src = "BC.png", style = "width:100%"),
-              p(HTML(
-                "<font color='grey'>Boundaries for Pacific Herring",
-                "stock assessment regions (SARs) in British Columbia.",
+              p("Boundaries for Pacific Herring stock assessment regions",
+                "(SARs) in British Columbia.",
                 "The major SARs are Haida Gwaii (HG), Prince Rupert District",
                 "(PRD), Central Coast (CC), Strait of Georgia (SoG), and West",
                 "Coast of Vancouver Island (WCVI).",
                 "The minor SARs are Area 27 (A27) and Area 2 West (A2W).",
-                "Units: kilometres (km).</font>"
-              ))
+                "Units: kilometres (km)."
+              )
             )
           )
         ),
