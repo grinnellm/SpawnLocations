@@ -274,7 +274,7 @@ server <- function(input, output) {
     # Custom text if no records
     noRecords <- paste(
       "No spawns selected;",
-      "click on a point and then click 'Update' to view details."
+      "select a point and then click 'Update' to view details."
     )
     # Wrangle into a pretty data table
     res <- WrangleDT(

@@ -5,7 +5,7 @@ ui <- fluidPage(
   # useShinyjs(),
 
   # Application title
-  titlePanel(title = "Find Pacific Herring spawn sites", windowTitle = "FIND"),
+  titlePanel(title = "FIND", windowTitle = "FIND"),
 
   # Sidebar with input parameters
   sidebarLayout(
@@ -16,6 +16,11 @@ ui <- fluidPage(
 
       ##### Event and buffers #####
       bootstrapPage(
+        p(HTML(
+          "Find Pacific Herring spawn sites.",
+          "This is a draft.",
+          "Click <b>Update</b> to apply settings and view results."
+        )),
         # Default location is PBS (49.21 N, -123.96 W); whole coast is -127.5 N
         # and 52.125 W with a 450 km buffer
         div(
@@ -111,7 +116,7 @@ ui <- fluidPage(
       bootstrapPage(
         h2("Display features"),
         div(
-          style = "display:inline-block; vertical-align:text-top",
+          style = "display:inline-block; width:32%; vertical-align:text-top",
           checkboxGroupInput(
             inputId = "location", label = "Event",
             choiceNames = c("Point", "Circle"),
@@ -119,14 +124,14 @@ ui <- fluidPage(
           )
         ),
         div(
-          style = "display:inline-block; vertical-align:text-top",
+          style = "display:inline-block; width:32%; vertical-align:text-top",
           checkboxGroupInput(
             inputId = "sDisplay", label = "Spawns",
             choiceNames = c("Location names"), choiceValues = c("lNames")
           )
         ),
         div(
-          style = "display:inline-block; vertical-align:text-top",
+          style = "display:inline-block; width:32%; vertical-align:text-top",
           checkboxGroupInput(
             inputId = "polys", label = "Polygons",
             choiceNames = c(
@@ -343,7 +348,8 @@ ui <- fluidPage(
             "Grinnell</a>, or",
             "<a href=mailto:Matthew.Thompson@dfo-mpo.gc.ca@dfo-mpo.gc.ca>Matt",
             "Thompson</a>,",
-            "DFO Science, Pacific Biological Station."
+            "DFO Science, Pacific Biological Station.",
+            "Contact Matt Grinnellfor questions regarding this App."
           )),
           br(),
           img(src = "HerringDFO.jpg", style = "width:100%"),

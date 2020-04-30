@@ -385,10 +385,10 @@ spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
     Start, End, Eastings, Northings, Longitude, Latitude, Length, Width, Method,
     SpawnIndex, Survey
   ) %>%
-  arrange(Region, StatArea, Section, LocationCode, Year) # %>%
-# st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
-# st_transform( 3347 ) %>%
-# as_Spatial()
+  arrange(Region, StatArea, Section, LocationCode, Year) #%>%
+ # st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
+ # st_transform( 3347 ) %>%
+ # as_Spatial()
 
 # Get survey time periods
 qPeriods <- spawn %>%
