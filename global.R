@@ -229,16 +229,21 @@ CropSpawn <- function(dat, yrs, ext, grp, reg, sa, sec) {
       Section %in% sec
     )
   # Convert to a spatial object
-  coordinates(dat) <- ~ Eastings + Northings
+  # coordinates(dat) <- ~ Eastings + Northings
   # Give the projection
-  crs(dat) <- CRS(crsSpawn)
+  # crs(dat) <- CRS(crsSpawn)
   # Transform
-  datSP <- spTransform(x = dat, CRSobj = CRS(crsOut))
+  # datSP <- spTransform(x = dat, CRSobj = CRS(crsOut))
   # Clip to extent
-  datSP <- crop(x = datSP, y = ext)
+  dat <- st_crop(x = dat, xmin=ext["x","min"], ymin=ext["y","min"],
+                 xmax=ext["x","max"], ymax = ext["y","max"])
+  coords <- st_coordinates(dat)
+  colnames(coords) <- c("Eastings", "Northings")
+  st_geometry(dat) <- NULL
   # Make a data frame
-  dat <- data.frame(datSP) %>%
-    as_tibble()
+  dat <- data.frame(dat) %>%
+    as_tibble() %>%
+    mutate(Eastings=coords[,"Eastings"], Northings=coords[,"Northings"])
   # Error if all the spawn data are cropped
   if (nrow(dat) < 1) stop("No spawn data in this area.", call. = FALSE)
   # Light wrangling
@@ -385,8 +390,8 @@ spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
     Start, End, Eastings, Northings, Longitude, Latitude, Length, Width, Method,
     SpawnIndex, Survey
   ) %>%
-  arrange(Region, StatArea, Section, LocationCode, Year) #%>%
- # st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
+  arrange(Region, StatArea, Section, LocationCode, Year) %>%
+  st_as_sf( coords=c("Eastings", "Northings"), crs=3347 ) #%>%
  # st_transform( 3347 ) %>%
  # as_Spatial()
 
