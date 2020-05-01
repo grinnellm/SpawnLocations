@@ -22,7 +22,7 @@ UsePackages <- function(pkgs, locn = "https://cran.rstudio.com/") {
 UsePackages(pkgs = c(
   "tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", "viridis",
   "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial", "lubridate",
-  "sf", "gfiscamutils"
+  "sf", "gfiscamutils", "ggmap"
 ))
 
 ##### Controls #####
@@ -235,6 +235,7 @@ CropSpawn <- function(dat, yrs, ext, grp, reg, sa, sec) {
   # Transform
   # datSP <- spTransform(x = dat, CRSobj = CRS(crsOut))
   # Clip to extent
+  # TODO: This has a warning re spatial consistency
   dat <- st_crop(x = dat, xmin=ext["x","min"], ymin=ext["y","min"],
                  xmax=ext["x","max"], ymax = ext["y","max"])
   coords <- st_coordinates(dat)

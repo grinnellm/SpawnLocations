@@ -73,70 +73,83 @@ server <- function(input, output) {
   # Make the figure (map)
   output$map <- renderPlot(res = 150, {
 
-    # Ensure map buffer is larger than spill buffer
-    validate(need(
-      input$bufSpill <= input$bufMap,
-      "Error: Spill buffer can not exceed map bufer."
-    ))
+    # # Ensure map buffer is larger than spill buffer
+    # validate(need(
+    #   input$bufSpill <= input$bufMap,
+    #   "Error: Spill buffer can not exceed map bufer."
+    # ))
 
-    # Ensure there are spawn locations to show
-    validate(need(
-      nrow(spawnSub()) >= 1, "Error: No spawns match these criteria."
-    ))
-
+    # # Ensure there are spawn locations to show
+    # validate(need(
+    #   nrow(spawnSub()) >= 1, "Error: No spawns match these criteria."
+    # ))
+    
+    coast <- get_stamenmap( 
+      bbox = c(left = min(spawnSub()$Longitude),
+               bottom = min(spawnSub()$Latitude),
+               right = max(spawnSub()$Longitude),
+               top = max(spawnSub()$Latitude)), 
+      zoom = 12)
+    hMap <- ggmap(coast) 
+      
     # Plot the area (default map)
-    hMap <- ggplot(data = shapesSub()$landDF, aes(x = Eastings, y = Northings)) +
-      geom_polygon(
-        data = shapesSub()$landDF, aes(group = group), fill = "lightgrey"
-      )
+    # hMap <- ggplot(data = shapesSub()$landDF) +
+    #   geom_polygon(
+    #     data = shapesSub()$landDF,
+    #     aes(x = Eastings, y = Northings, group = group), fill = "lightgrey"
+    #   ) +
+    #   geom_sf( data=spawnSub(), mapping = aes(#x = Eastings, y = Northings,
+    #                                           colour=SpawnIndex,
+    #                                           geometry=SpawnIndex)) +
+    #   coord_sf(crs=st_crs(shapesSub()$landSPDF))
 
-    # If showing sections
-    if ("sec" %in% input$polys) {
-      # Update the map
-      hMap <- hMap +
-        geom_path(
-          data = shapesSub()$secDF, aes(group = Section), size = 0.25,
-          colour = "black"
-        )
-    } # End if showing sections
+    # # If showing sections
+    # if ("sec" %in% input$polys) {
+    #   # Update the map
+    #   hMap <- hMap +
+    #     geom_path(
+    #       data = shapesSub()$secDF, aes(group = Section), size = 0.25,
+    #       colour = "black"
+    #     )
+    # } # End if showing sections
 
-    # If showing sections labels
-    if ("sLab" %in% input$polys) {
-      # Ensure polygons are present
-      validate(need(
-        "sec" %in% input$polys,
-        "Error: Enable section polygons to show labels."
-      ))
-      # Update the map
-      hMap <- hMap +
-        geom_label(
-          data = shapesSub()$secCentDF, alpha = 0.5, aes(label = Section)
-        )
-    } # End if showing labels
+    # # If showing sections labels
+    # if ("sLab" %in% input$polys) {
+    #   # Ensure polygons are present
+    #   validate(need(
+    #     "sec" %in% input$polys,
+    #     "Error: Enable section polygons to show labels."
+    #   ))
+    #   # Update the map
+    #   hMap <- hMap +
+    #     geom_label(
+    #       data = shapesSub()$secCentDF, alpha = 0.5, aes(label = Section)
+    #     )
+    # } # End if showing labels
 
-    # If showing SAR boudaries
-    if ("reg" %in% input$polys) {
-      # Update the map
-      hMap <- hMap +
-        geom_path(
-          data = shapesSub()$regDF, aes(group = Region), size = 1,
-          colour = "black"
-        )
-    } # End if showing SARs
+    # # If showing SAR boudaries
+    # if ("reg" %in% input$polys) {
+    #   # Update the map
+    #   hMap <- hMap +
+    #     geom_path(
+    #       data = shapesSub()$regDF, aes(group = Region), size = 1,
+    #       colour = "black"
+    #     )
+    # } # End if showing SARs
 
-    # If showing the point location
-    if ("pt" %in% input$location) {
-      # Update the map
-      hMap <- hMap +
-        geom_point(data = spill()$xyDF, colour = "red", shape = 42, size = 8)
-    } # End if showing the point location
+    # # If showing the point location
+    # if ("pt" %in% input$location) {
+    #   # Update the map
+    #   hMap <- hMap +
+    #     geom_point(data = spill()$xyDF, colour = "red", shape = 42, size = 8)
+    # } # End if showing the point location
 
-    # If showing the circle
-    if ("circ" %in% input$location) {
-      # Update the map
-      hMap <- hMap +
-        geom_path(data = circDF(), colour = "red", size = 0.25)
-    } # End if showing the circle
+    # # If showing the circle
+    # if ("circ" %in% input$location) {
+    #   # Update the map
+    #   hMap <- hMap +
+    #     geom_path(data = circDF(), colour = "red", size = 0.25)
+    # } # End if showing the circle
 
     # If aggregating by location
     if ("loc" %in% input$summary) {
@@ -153,7 +166,8 @@ server <- function(input, output) {
       # Update the map
       hMap <- hMap +
         geom_point(
-          data = spawnSub(), aes(colour = SpawnIndex, size = Number),
+          data = spawnSub(), 
+          aes(colour = SpawnIndex, size = Number, x = Longitude, y = Latitude),
           alpha = 0.5
         ) +
         labs(colour = "Mean\nspawn\nindex (t)", size = "Number of\nspawns") +
@@ -165,25 +179,26 @@ server <- function(input, output) {
       # Update the map
       hMap <- hMap +
         geom_point(
-          data = spawnSub(), aes(colour = SpawnIndex), size = 4, alpha = 0.5
+          data = spawnSub(), 
+          aes(colour = SpawnIndex, x = Longitude, y = Latitude), 
+          size = 4, alpha = 0.5
         ) +
         labs(colour = "Spawn\nindex (t)")
     } # End if not aggregating by location
 
-    # If showing location names
-    if ("lNames" %in% input$sDisplay) {
-      # Get unique locations
-      uSpawns <- spawnSub() %>%
-        select(Eastings, Northings, LocationName) %>%
-        distinct()
-      # Show location names
-      hMap <- hMap +
-        geom_text_repel(
-          data = uSpawns, mapping = aes(label = LocationName), size = 2,
-          box.padding = unit(0.5, "lines"), segment.colour = "darkgrey"
-        )
-    } # End if showing location names
-
+    # # If showing location names
+    # if ("lNames" %in% input$sDisplay) {
+    #   # Get unique locations
+    #   uSpawns <- spawnSub() %>%
+    #     select(Eastings, Northings, LocationName) %>%
+    #     distinct()
+    #   # Show location names
+    #   hMap <- hMap +
+    #     geom_text_repel(
+    #       data = uSpawns, mapping = aes(label = LocationName), size = 2,
+    #       box.padding = unit(0.5, "lines"), segment.colour = "darkgrey"
+    #     )
+    # } # End if showing location names
 
     # TODO Working on a way to add second axes with Longitude and Latitude
     # fun <- Vectorize(function( x, dat=spawnSub() ) {
@@ -199,26 +214,26 @@ server <- function(input, output) {
     # Get unique years
     uYrs <- paste(unique(input$yrRange), collapse = " to ")
 
-    # Add map layers
-    hMap <- hMap +
-      scale_colour_viridis(na.value = "black", labels = comma) +
-      coord_equal() +
-      labs(
-        x = "Eastings (km)", y = "Northings (km)", caption = geoProj,
-        title = paste("Year", ifelse(nYrs > 1, "s", ""), ": ", uYrs, sep = "")
-      ) +
-      scale_x_continuous(
-        labels = function(x) comma(x / 1000), expand = c(0, 0)
-      ) +
-      # sec.axis=sec_axis(trans=~fun(x=.))
-      scale_y_continuous(
-        labels = function(x) comma(x / 1000), expand = c(0, 0)
-      ) +
-      expand_limits(
-        x = shapesSub()$extDF$Eastings, y = shapesSub()$extDF$Northings
-      ) +
-      # annotation_north_arrow( location="tl", style=north_arrow_nautical() ) +
-      myTheme
+    # # Add map layers
+    # hMap <- hMap +
+    #   scale_colour_viridis(na.value = "black", labels = comma) +
+    #   coord_equal() +
+    #   labs(
+    #     x = "Eastings (km)", y = "Northings (km)", caption = geoProj,
+    #     title = paste("Year", ifelse(nYrs > 1, "s", ""), ": ", uYrs, sep = "")
+    #   ) +
+    #   scale_x_continuous(
+    #     labels = function(x) comma(x / 1000), expand = c(0, 0)
+    #   ) +
+    #   # sec.axis=sec_axis(trans=~fun(x=.))
+    #   scale_y_continuous(
+    #     labels = function(x) comma(x / 1000), expand = c(0, 0)
+    #   ) +
+    #   expand_limits(
+    #     x = shapesSub()$extDF$Eastings, y = shapesSub()$extDF$Northings
+    #   ) +
+    #   # annotation_north_arrow( location="tl", style=north_arrow_nautical() ) +
+    #   myTheme
 
     # Save the map (if download requested) -- not sure why this has to be here
     output$downloadFigure <- downloadHandler(
