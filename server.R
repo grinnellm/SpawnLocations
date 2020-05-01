@@ -186,19 +186,20 @@ server <- function(input, output) {
         labs(colour = "Spawn\nindex (t)")
     } # End if not aggregating by location
 
-    # # If showing location names
-    # if ("lNames" %in% input$sDisplay) {
-    #   # Get unique locations
-    #   uSpawns <- spawnSub() %>%
-    #     select(Eastings, Northings, LocationName) %>%
-    #     distinct()
-    #   # Show location names
-    #   hMap <- hMap +
-    #     geom_text_repel(
-    #       data = uSpawns, mapping = aes(label = LocationName), size = 2,
-    #       box.padding = unit(0.5, "lines"), segment.colour = "darkgrey"
-    #     )
-    # } # End if showing location names
+    # If showing location names
+    if ("lNames" %in% input$sDisplay) {
+      # Get unique locations
+      uSpawns <- spawnSub() %>%
+        select(Longitude, Latitude, LocationName) %>%
+        distinct()
+      # Show location names
+      hMap <- hMap +
+        geom_text_repel(
+          data = uSpawns, mapping = aes(label = LocationName, x=Longitude,
+                                        y=Latitude), size = 2,
+          box.padding = unit(0.5, "lines"), segment.colour = "darkgrey"
+        )
+    } # End if showing location names
 
     # TODO Working on a way to add second axes with Longitude and Latitude
     # fun <- Vectorize(function( x, dat=spawnSub() ) {
@@ -214,26 +215,25 @@ server <- function(input, output) {
     # Get unique years
     uYrs <- paste(unique(input$yrRange), collapse = " to ")
 
-    # # Add map layers
-    # hMap <- hMap +
-    #   scale_colour_viridis(na.value = "black", labels = comma) +
-    #   coord_equal() +
-    #   labs(
-    #     x = "Eastings (km)", y = "Northings (km)", caption = geoProj,
-    #     title = paste("Year", ifelse(nYrs > 1, "s", ""), ": ", uYrs, sep = "")
-    #   ) +
-    #   scale_x_continuous(
-    #     labels = function(x) comma(x / 1000), expand = c(0, 0)
-    #   ) +
-    #   # sec.axis=sec_axis(trans=~fun(x=.))
-    #   scale_y_continuous(
-    #     labels = function(x) comma(x / 1000), expand = c(0, 0)
-    #   ) +
-    #   expand_limits(
-    #     x = shapesSub()$extDF$Eastings, y = shapesSub()$extDF$Northings
-    #   ) +
-    #   # annotation_north_arrow( location="tl", style=north_arrow_nautical() ) +
-    #   myTheme
+    # Add map layers
+    hMap <- hMap +
+      scale_colour_viridis(na.value = "black", labels = comma) +
+      # coord_equal() +
+      labs(
+        title = paste("Year", ifelse(nYrs > 1, "s", ""), ": ", uYrs, sep = "")
+      ) +
+      # scale_x_continuous(
+      #   labels = function(x) comma(x / 1000), expand = c(0, 0)
+      # ) +
+      # # sec.axis=sec_axis(trans=~fun(x=.))
+      # scale_y_continuous(
+      #   labels = function(x) comma(x / 1000), expand = c(0, 0)
+      # ) +
+      # expand_limits(
+      #   x = shapesSub()$extDF$Eastings, y = shapesSub()$extDF$Northings
+      # ) +
+      # annotation_north_arrow( location="tl", style=north_arrow_nautical() ) +
+      myTheme
 
     # Save the map (if download requested) -- not sure why this has to be here
     output$downloadFigure <- downloadHandler(
