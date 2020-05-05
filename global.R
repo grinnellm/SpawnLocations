@@ -358,28 +358,30 @@ SimpleCite <- function(ref, parens = TRUE, trail = "") {
 } # End SimpleCite function
 
 # Calculate sum if there are non-NA values, return NA if all values are NA
-SumNA <- function( x, omitNA=TRUE ) {
+SumNA <- function(x, omitNA = TRUE) {
   # An alternate version to sum(x, na.rm=TRUE), which returns 0 if x is all NA.
   # This version retuns NA if x is all NA, otherwise it returns the sum.
   # If all NA, NA; otherwise, sum
-  ifelse( all(is.na(x)),
-          res <- NA,
-          res <- sum(x, na.rm=omitNA) )
+  ifelse(all(is.na(x)),
+    res <- NA,
+    res <- sum(x, na.rm = omitNA)
+  )
   # Return the result
-  return( res )
-}  # End SumNA function
+  return(res)
+} # End SumNA function
 
 # Calculate mean if there are non-NA values, return NA if all values are NA
-MeanNA <- function( x, omitNA=TRUE ) {
+MeanNA <- function(x, omitNA = TRUE) {
   # An alternate version to mean(x, na.rm=TRUE), which returns 0 if x is all NA.
   # This version retuns NA if x is all NA, otherwise it returns the mean.
   # If all NA, NA; otherwise, mean
-  ifelse( all(is.na(x)),
-          res <- NA,
-          res <- mean(x, na.rm=omitNA) )
+  ifelse(all(is.na(x)),
+    res <- NA,
+    res <- mean(x, na.rm = omitNA)
+  )
   # Return the result
-  return( res )
-}  # End MeanNA function
+  return(res)
+} # End MeanNA function
 
 ##### Data #####
 
