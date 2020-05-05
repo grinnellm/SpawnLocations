@@ -385,6 +385,10 @@ spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
     Start, End, Eastings, Northings, Longitude, Latitude, Length, Width, Method,
     SpawnIndex, Survey
   ) %>%
+  replace_na(replace = list(Region = "Other")) %>%
+  mutate(
+    Region = factor(Region, levels=c("HG", "PRD", "CC", "SoG", "WCVI", "A27",
+                                     "A2W", "Other"))) %>%
   arrange(Region, StatArea, Section, LocationCode, Year) #%>%
  # st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
  # st_transform( 3347 ) %>%
