@@ -21,8 +21,7 @@ UsePackages <- function(pkgs, locn = "https://cran.rstudio.com/") {
 # Make packages available ("shinyjs" "plotly")
 UsePackages(pkgs = c(
   "tidyverse", "rgeos", "rgdal", "raster", "shinycssloaders", "viridis",
-  "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial", "lubridate",
-  "sf", "gfiscamutils"
+  "scales", "DT", "maptools", "shiny", "ggrepel", "ggspatial", "lubridate", "sf"
 ))
 
 ##### Controls #####
@@ -358,6 +357,30 @@ SimpleCite <- function(ref, parens = TRUE, trail = "") {
   return(res)
 } # End SimpleCite function
 
+# Calculate sum if there are non-NA values, return NA if all values are NA
+SumNA <- function( x, omitNA=TRUE ) {
+  # An alternate version to sum(x, na.rm=TRUE), which returns 0 if x is all NA.
+  # This version retuns NA if x is all NA, otherwise it returns the sum.
+  # If all NA, NA; otherwise, sum
+  ifelse( all(is.na(x)),
+          res <- NA,
+          res <- sum(x, na.rm=omitNA) )
+  # Return the result
+  return( res )
+}  # End SumNA function
+
+# Calculate mean if there are non-NA values, return NA if all values are NA
+MeanNA <- function( x, omitNA=TRUE ) {
+  # An alternate version to mean(x, na.rm=TRUE), which returns 0 if x is all NA.
+  # This version retuns NA if x is all NA, otherwise it returns the mean.
+  # If all NA, NA; otherwise, mean
+  ifelse( all(is.na(x)),
+          res <- NA,
+          res <- mean(x, na.rm=omitNA) )
+  # Return the result
+  return( res )
+}  # End MeanNA function
+
 ##### Data #####
 
 # Load spawn data, and aggregate by location code
@@ -387,12 +410,14 @@ spawn <- read_csv(file = spawnLoc, col_types = cols(), guess_max = 10000) %>%
   ) %>%
   replace_na(replace = list(Region = "Other")) %>%
   mutate(
-    Region = factor(Region, levels=c("HG", "PRD", "CC", "SoG", "WCVI", "A27",
-                                     "A2W", "Other"))) %>%
-  arrange(Region, StatArea, Section, LocationCode, Year) #%>%
- # st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
- # st_transform( 3347 ) %>%
- # as_Spatial()
+    Region = factor(Region, levels = c(
+      "HG", "PRD", "CC", "SoG", "WCVI", "A27", "A2W", "Other"
+    ))
+  ) %>%
+  arrange(Region, StatArea, Section, LocationCode, Year) # %>%
+# st_as_sf( coords=c("Longitude", "Latitude"), crs=4326 ) %>%
+# st_transform( 3347 ) %>%
+# as_Spatial()
 
 # Get survey time periods
 qPeriods <- spawn %>%
