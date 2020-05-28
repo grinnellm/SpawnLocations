@@ -269,7 +269,7 @@ ui <- fluidPage(
                 "<li>Surface surveys use two different methods to estimate the",
                 "number of egg layers:",
                 "<ul>",
-                "<li>Spawn intensity categories (five catetories from 1951 to",
+                "<li>Spawn intensity categories (five categories from 1951 to",
                 "1968, and nine categories from 1969 to 1978), and</li>",
                 "<li>Direct estimates from 1979 to present, and",
                 "</li>",
