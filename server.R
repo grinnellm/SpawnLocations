@@ -114,8 +114,8 @@ server <- function(input, output) {
         )
     } # End if showing labels
 
-    # If showing SAR boudaries
-    if ("reg" %in% input$polys) {
+    # If showing SAR boundaries
+    if ("reg" %in% input$polys & !is.null(shapesSub()$regDF)) {
       # Update the map
       hMap <- hMap +
         geom_path(

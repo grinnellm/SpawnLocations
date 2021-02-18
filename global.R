@@ -25,6 +25,9 @@ UsePackages(pkgs = c(
   "sf", "devtools"
 ))
 
+# Suppress summarise info
+options(dplyr.summarise.inform = FALSE)
+
 ##### Controls #####
 
 # Saved csv datafile (from Spawn.R)
@@ -207,10 +210,14 @@ ClipPolys <- function(stocks, land, pt, buf) {
   # Remove non-SAR areas
   regSPDF <- regSPDF[regSPDF@data$SAR != -1, ]
   # Convert to data frame
-  regDF <- regSPDF %>%
+  if(nrow(regSPDF@data) >=1) {
+    regDF <- regSPDF %>%
     fortify(region = "SAR") %>%
     rename(Eastings = long, Northings = lat, Region = group) %>%
     as_tibble()
+  } else {
+    regDF <- NULL
+  }
   # Build a list to return
   res <- list(
     secDF = secDF, secCentDF = secCentDF, landDF = landDF, extDF = extDF,
